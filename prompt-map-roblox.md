@@ -1,5 +1,12 @@
 # Prompt pour Fable 5 — Créer une map Roblox magnifique et rejouable
 
+> **✦ Le résultat est déjà dans ce repo !** Le thème choisi est **« Les Îles Célestes
+> d'Aurora »** : un archipel d'îles flottantes au lever de soleil doré, avec un Grand
+> Cristal central, une forêt luminescente, des cascades qui tombent dans le vide, des
+> ruines antiques et 2 zones secrètes. Le script complet prêt à coller dans Roblox
+> Studio est dans [`map-iles-celestes.lua`](map-iles-celestes.lua) — le mode d'emploi
+> est en tête du fichier.
+
 ## Comment l'utiliser
 
 1. Copie le prompt ci-dessous et colle-le dans une conversation avec Fable 5 (Claude).
