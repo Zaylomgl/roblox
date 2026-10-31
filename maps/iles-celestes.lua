@@ -1437,9 +1437,16 @@ local dossierPads = map:WaitForChild("JumpPads")
 local TEMPS_REAPPARITION = map:GetAttribute("TempsReapparition") or 25
 local MULTIPLICATEUR_PADS = map:GetAttribute("MultiplicateurPads") or 1
 
--- ── Leaderboard ──────────────────────────────────────────────────────────────
+-- ── Noyau commun (sauvegarde, boutique, récompenses) s'il est installé ──────
+-- Avec le noyau (build du pipeline avec --src src), les cristaux sont crédités
+-- dans le profil sauvegardé du joueur. Sans lui (script collé seul dans
+-- Studio), on garde un simple leaderboard non sauvegardé.
+local dossierNoyau = game:GetService("ServerScriptService"):FindFirstChild("Noyau")
+local API = dossierNoyau and dossierNoyau:FindFirstChild("API") and require(dossierNoyau.API)
+
+-- ── Leaderboard (uniquement sans le noyau, qui gère le sien) ────────────────
 local function preparerJoueur(joueur)
-	if joueur:FindFirstChild("leaderstats") then return end
+	if API or joueur:FindFirstChild("leaderstats") then return end
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
 	local cristaux = Instance.new("IntValue")
@@ -1461,10 +1468,15 @@ local function brancherCristal(cristal)
 		if not joueur then return end
 		cristal:SetAttribute("Pris", true)
 
-		local stats = joueur:FindFirstChild("leaderstats")
-		local compteur = stats and stats:FindFirstChild("🔮 Cristaux")
-		if compteur then
-			compteur.Value += cristal:GetAttribute("Valeur") or 1
+		local valeur = cristal:GetAttribute("Valeur") or 1
+		if API then
+			API.ajouterMonnaie(joueur, valeur, "cristal")
+		else
+			local stats = joueur:FindFirstChild("leaderstats")
+			local compteur = stats and stats:FindFirstChild("🔮 Cristaux")
+			if compteur then
+				compteur.Value += valeur
+			end
 		end
 
 		local son = cristal:FindFirstChildOfClass("Sound")

@@ -1,7 +1,7 @@
 --[[
 	Construit une map hors de Roblox Studio.
 
-	Usage : lune run pipeline/build <script-de-map.lua> [sortie.rbxl] [--silencieux]
+	Usage : lune run pipeline/build <script-de-map.lua> [sortie.rbxl] [--silencieux] [--src <dossier>]
 
 	Exécute le script de construction (celui qu'on collerait dans la barre de
 	commande de Studio) dans un environnement Roblox simulé, puis enregistre le
@@ -13,21 +13,29 @@ local luau = require("@lune/luau")
 local process = require("@lune/process")
 local roblox = require("@lune/roblox")
 
+local injection = require("./lib/injection")
 local rbxenv = require("./lib/rbxenv")
 
 local args = {}
 local silencieux = false
-for _, a in process.args do
+local dossierSrc = nil
+local i = 1
+while i <= #process.args do
+	local a = process.args[i]
 	if a == "--silencieux" then
 		silencieux = true
+	elseif a == "--src" then
+		i += 1
+		dossierSrc = process.args[i]
 	else
 		table.insert(args, a)
 	end
+	i += 1
 end
 
 local cheminScript = args[1]
 if not cheminScript then
-	print("Usage : lune run pipeline/build <script-de-map.lua> [sortie.rbxl] [--silencieux]")
+	print("Usage : lune run pipeline/build <script-de-map.lua> [sortie.rbxl] [--silencieux] [--src <dossier>]")
 	process.exit(2)
 end
 
@@ -49,6 +57,12 @@ local ok, erreur = pcall(fonction)
 if not ok then
 	print(`✖ Le script de map a planté pendant la construction :\n{erreur}`)
 	process.exit(1)
+end
+
+-- Scripts du jeu (noyau commun, etc.) versionnés en fichiers dans src/.
+if dossierSrc then
+	local n = injection.injecter(game, dossierSrc)
+	print(`  + {n} script(s) injecté(s) depuis {dossierSrc}/`)
 end
 
 rbxenv.preparerPourEnregistrement(game)

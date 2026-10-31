@@ -24,6 +24,40 @@ Le validateur lui-même est testé (`pipeline/tests/`) sur des places artificiel
 dont on connaît la réponse : saut faisable, vide trop large, marche trop haute,
 rampe, pad de saut, zone mortelle, etc.
 
+## Tests du jeu (`lune run pipeline/test`)
+
+| Fichier | Ce qui est testé |
+|---|---|
+| `tests/analyse.test.luau` | Le validateur de maps, sur des places artificielles |
+| `tests/noyau.test.luau` | Les modules purs du noyau (`src/ServerScriptService/Noyau`) : profil, récompense quotidienne (jours UTC, séries), achats (jamais de double crédit, jamais de perte), sauvegarde (verrou de session, pannes du DataStore) |
+| `tests/integration.test.luau` | Les **vrais scripts** du jeu (serveur, interface, map) exécutés dans un **moteur Roblox simulé** (`lib/moteur.luau`) avec des joueurs simulés : arrivée, interface, récompense le lendemain, achats, pass x2, collecte de cristaux, départ/retour, panne du DataStore, fermeture du serveur |
+
+Le moteur simulé utilise les vraies instances Roblox de Lune : un nom de
+propriété mal écrit ou une valeur du mauvais type fait échouer le test, comme
+dans Roblox. Il ajoute les événements, les services (DataStore, Marketplace,
+Players…), un ordonnanceur de tâches et une horloge virtuelle. Il ne simule
+**ni la physique, ni le rendu, ni le réseau** : les tests dans le vrai moteur
+passeront par l'API Open Cloud « Luau Execution ».
+
+Chaque série de tests a été vérifiée en sabotant volontairement le code
+(double crédit, verrou non libéré, faute de frappe dans une propriété…) : les
+tests échouent bien.
+
+## Noyau commun (`src/`)
+
+Injecté dans chaque place au moment du build (`--src src`), à la manière de Rojo :
+`src/<Service>/…`, `nom.server.luau` → Script, `nom.client.luau` → LocalScript,
+`nom.luau` → ModuleScript.
+
+- `Principal.server.luau` : chargement/sauvegarde des profils, leaderstats,
+  récompense quotidienne, achats (ProcessReceipt, Game Passes).
+- `Noyau/API.luau` : ce qu'un script de map peut appeler (`ajouterMonnaie`,
+  `depenserMonnaie`, `donneesJeu`, `possedePass`).
+- `ReplicatedStorage/Partage/Configuration.luau` : monnaie, récompenses,
+  passes et produits (IDs à 0 tant qu'ils ne sont pas créés sur Roblox).
+- `StarterPlayerScripts/Interface.client.luau` : compteur, récompense du jour,
+  boutique.
+
 ## Installation
 
 Il faut [Rust/cargo](https://rustup.rs), puis :
@@ -100,8 +134,8 @@ modifie `StarterPlayer` ou `Workspace.Gravity`, ce sont ses valeurs qui comptent
 ## Prochaines étapes prévues
 
 1. **Recherche de niche** à partir des classements Roblox (`apis.roblox.com/explore-api`).
-2. **Boucle de jeu complète** sur la map : sauvegarde, progression, récompenses
-   quotidiennes, monétisation non agressive.
+2. **Boucle de jeu propre à la niche choisie** (le noyau commun — sauvegarde,
+   récompenses quotidiennes, boutique — est en place).
 3. **Tests dans le vrai moteur** via l'API Open Cloud « Luau Execution », et
    **publication automatique** de la place (nécessite `ROBLOX_API_KEY`, voir
    `pipeline/experience.json` pour les identifiants de l'expérience).

@@ -88,7 +88,7 @@ def prendre_photo() -> pathlib.Path:
         print(f"  ✔ {appareil} : " + ", ".join(f"{k}={len(v)}" for k, v in classements.items()))
     DONNEES.mkdir(parents=True, exist_ok=True)
     chemin = DONNEES / f"{maintenant.strftime('%Y-%m-%dT%H%MZ')}.json"
-    chemin.write_text(json.dumps(photo, ensure_ascii=False, indent=1))
+    chemin.write_text(json.dumps(photo, ensure_ascii=False, separators=(",", ":")))
     return chemin
 
 

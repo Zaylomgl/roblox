@@ -14,9 +14,10 @@ done
 echo "═══ 1/4 Tests du validateur"
 lune run pipeline/test
 
-echo "═══ 2/4 Lint et formatage du pipeline"
+echo "═══ 2/4 Lint et formatage (pipeline + scripts du jeu)"
 selene pipeline/
-stylua --check pipeline/
+(cd pipeline/lint && selene ../../src)
+stylua --check pipeline/ src/
 
 if [ "$#" -gt 0 ]; then maps=("$@"); else maps=(maps/*.lua); fi
 
@@ -27,7 +28,7 @@ echo "═══ 4/4 Construction + validation"
 echec=0
 for map in "${maps[@]}"; do
 	nom="$(basename "$map" .lua)"
-	lune run pipeline/build "$map" "build/$nom.rbxl" --silencieux
+	lune run pipeline/build "$map" "build/$nom.rbxl" --silencieux --src src
 	if ! lune run pipeline/validate "build/$nom.rbxl" reports; then echec=1; fi
 	# Lint des scripts embarqués (extraits par le validateur)
 	if compgen -G "build/$nom/scripts/*.luau" >/dev/null; then
