@@ -10,6 +10,7 @@
 ]]
 
 local luau = require("@lune/luau")
+local roblox = require("@lune/roblox")
 
 local config = require("../config")
 local geometrie = require("./geometrie")
@@ -190,6 +191,48 @@ function M.analyser(game, nom: string)
 					table.insert(assetsExternes, `{cheminDe(objet)}.{prop} = {texte}`)
 				end
 			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- 1 bis. Terrain voxel décrit par un plan (ServerStorage.PlanTerrain)
+	--------------------------------------------------------------------------------
+	-- Hors de Roblox, le Terrain ne peut pas être rempli : la map enregistre ses
+	-- opérations dans un ModuleScript, rejoué au démarrage du serveur. Les dessus
+	-- « marchables » (plateaux des îles) deviennent des pièces VIRTUELLES, jamais
+	-- ajoutées à la place, utilisées seulement par le test d'accessibilité.
+
+	local terrainPlan = { operations = 0, surfacesMarchables = 0 }
+	local serverStorage = game:FindFirstChildOfClass("ServerStorage")
+	local modulePlan = serverStorage and serverStorage:FindFirstChild("PlanTerrain")
+	if modulePlan and modulePlan:IsA("ModuleScript") then
+		local ok, plan = pcall(function()
+			return luau.load(modulePlan.Source, { debugName = "PlanTerrain" })()
+		end)
+		if ok and type(plan) == "table" and type(plan.OPERATIONS) == "table" then
+			for _, op in plan.OPERATIONS do
+				terrainPlan.operations += 1
+				if op[1] == "Cylindre" and op[3] == true then
+					local c, parametres = op[4], op[5]
+					local virtuelle = roblox.Instance.new("Part")
+					virtuelle.Name = "TerrainVirtuel"
+					virtuelle.Shape = roblox.Enum.PartType.Cylinder
+					-- Terrain:FillCylinder a son axe sur Y ; un cylindre Part, sur X.
+					virtuelle.Size = roblox.Vector3.new(parametres[1], parametres[2] * 2, parametres[2] * 2)
+					virtuelle.CFrame = roblox.CFrame.new(c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11], c[12])
+						* roblox.CFrame.Angles(0, 0, math.rad(90))
+					table.insert(pieces, virtuelle)
+					terrainPlan.surfacesMarchables += 1
+				end
+			end
+		else
+			signaler(
+				"erreur",
+				"Terrain",
+				"PLAN_TERRAIN_ILLISIBLE",
+				`ServerStorage.PlanTerrain ne renvoie pas de table OPERATIONS : le Terrain ne sera pas généré. ({tostring(plan)})`,
+				{ cheminDe(modulePlan) }
+			)
 		end
 	end
 
@@ -618,6 +661,7 @@ function M.analyser(game, nom: string)
 			statut = if compte.erreur > 0 then "A_CORRIGER" else "OK",
 		resume = compte,
 		statistiques = stats,
+		terrain = terrainPlan,
 		monde = {
 			gravite = gravite,
 			vitesseMarche = vitesseMarche,

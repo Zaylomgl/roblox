@@ -13,6 +13,13 @@
 --   3. Colle TOUT ce script dans la barre de commande, puis appuie sur Entrée.
 --   4. Lance Play : tu apparais sur le Belvédère, face au Grand Cristal.
 --
+-- RENDU RÉALISTE : les îles sont en Terrain voxel (herbe animée, roche,
+-- vraie eau), l'éclairage est en mode Future avec lumière tirée du ciel (PBR),
+-- et les matériaux sont ceux, texturés, de Roblox (pierre, bois, verre…).
+-- Dans Studio, le Terrain est rempli tout de suite (le Terrain existant est
+-- effacé) ; dans le build du pipeline, il est rejoué au démarrage du serveur
+-- à partir de ServerStorage.PlanTerrain.
+--
 -- Le script installe aussi automatiquement un Script serveur qui gère :
 -- le leaderboard (🔮 Cristaux), la collecte + réapparition des cristaux,
 -- les pads de saut vers le Sanctuaire, et toutes les animations (cristaux
@@ -36,16 +43,16 @@ local CONFIG = {
 -- Palette : 4 familles de couleurs maximum pour garder une identité forte
 -- (verts chauds, roche brune, cristal violet/turquoise, accents or/rose).
 local PALETTE = {
-	Herbe          = Color3.fromRGB(101, 173, 92),
-	HerbeClaire    = Color3.fromRGB(133, 196, 105),
-	Feuillage      = Color3.fromRGB(88, 158, 82),
-	FeuillageClair = Color3.fromRGB(121, 184, 96),
-	Rose           = Color3.fromRGB(255, 156, 196),
-	RoseClair      = Color3.fromRGB(255, 190, 216),
-	Bois           = Color3.fromRGB(105, 76, 52),
-	BoisClair      = Color3.fromRGB(151, 112, 76),
-	Roche          = Color3.fromRGB(92, 86, 82),
-	RochePale      = Color3.fromRGB(126, 118, 111),
+	Herbe          = Color3.fromRGB(86, 122, 58),
+	HerbeClaire    = Color3.fromRGB(108, 138, 70),
+	Feuillage      = Color3.fromRGB(64, 96, 44),
+	FeuillageClair = Color3.fromRGB(88, 120, 56),
+	Rose           = Color3.fromRGB(226, 158, 184),
+	RoseClair      = Color3.fromRGB(242, 192, 210),
+	Bois           = Color3.fromRGB(84, 64, 48),
+	BoisClair      = Color3.fromRGB(122, 96, 72),
+	Roche          = Color3.fromRGB(104, 100, 94),
+	RochePale      = Color3.fromRGB(138, 132, 122),
 	Terre          = Color3.fromRGB(112, 84, 61),
 	Pierre         = Color3.fromRGB(168, 158, 143),
 	PierreClaire   = Color3.fromRGB(199, 188, 168),
@@ -86,6 +93,17 @@ end
 
 local anciensNuages = workspace.Terrain:FindFirstChildOfClass("Clouds")
 if anciensNuages then anciensNuages:Destroy() end
+
+local ancienPlan = game:GetService("ServerStorage"):FindFirstChild("PlanTerrain")
+if ancienPlan then ancienPlan:Destroy() end
+
+-- Le Terrain ne peut être rempli que dans Roblox (pas lors du build du pipeline).
+local terrain = workspace.Terrain
+local terrainDirect = pcall(function() return terrain.FillBlock end)
+terrain:SetAttribute("PlanApplique", nil)
+if terrainDirect then
+	terrain:Clear()
+end
 
 if CONFIG.SUPPRIMER_BASEPLATE then
 	local baseplate = workspace:FindFirstChild("Baseplate")
@@ -149,6 +167,7 @@ local function creerPart(props)
 	p.Color = props.Color or Color3.fromRGB(255, 255, 255)
 	p.Material = props.Material or Enum.Material.SmoothPlastic
 	p.Transparency = props.Transparency or 0
+	p.Reflectance = props.Reflectance or 0
 	p.Name = props.Name or "Decor"
 	p.Parent = props.Parent or map
 	return p
@@ -214,101 +233,166 @@ local function semer(centre, rayonMin, rayonMax, n, fabriquer)
 end
 
 --------------------------------------------------------------------------------
+-- 2 bis. TERRAIN VOXEL (herbe animée, roche, vraie eau)
+--------------------------------------------------------------------------------
+-- Chaque opération est remplie tout de suite si c'est possible (Studio) ET
+-- enregistrée dans ServerStorage.PlanTerrain, que le script de jeu rejoue au
+-- démarrage du serveur (build du pipeline, où le Terrain n'existe pas encore).
+-- Le Terrain est fait de voxels de 4 studs : les détails fins restent en pièces.
+-- `marchable` : le dessus sert de sol au validateur d'accessibilité du pipeline.
+
+local planTerrain = {}
+
+local function terrainRemplir(forme, cf, parametres, materiau, marchable)
+	table.insert(planTerrain, {
+		forme = forme, materiau = materiau.Name, marchable = marchable == true,
+		cf = { cf:GetComponents() }, parametres = parametres,
+	})
+	if terrainDirect then
+		if forme == "Cylindre" then
+			terrain:FillCylinder(cf, parametres[1], parametres[2], materiau)
+		elseif forme == "Boule" then
+			terrain:FillBall(cf.Position, parametres[1], materiau)
+		elseif forme == "Bloc" then
+			terrain:FillBlock(cf, Vector3.new(parametres[1], parametres[2], parametres[3]), materiau)
+		end
+	end
+end
+
+-- Cylindre vertical de Terrain (axe Y), centré sur `centre`.
+local function terrainCylindre(centre, hauteur, rayon, materiau, marchable)
+	terrainRemplir("Cylindre", CFrame.new(centre), { hauteur, rayon }, materiau, marchable)
+end
+
+local function terrainBoule(centre, rayon, materiau)
+	terrainRemplir("Boule", CFrame.new(centre), { rayon }, materiau, false)
+end
+
+local function terrainBloc(cf, taille, materiau)
+	terrainRemplir("Bloc", cf, { taille.X, taille.Y, taille.Z }, materiau, false)
+end
+
+--------------------------------------------------------------------------------
 -- 3. AMBIANCE : lumière dorée, atmosphère, ciel, nuages
 --------------------------------------------------------------------------------
 
 pcall(function()
-	Lighting.Technology = Enum.Technology.Future -- meilleures ombres/lumières si dispo
+	Lighting.Technology = Enum.Technology.Future -- ombres et lumières réalistes
 end)
 
 Lighting.ClockTime = CONFIG.HEURE
 Lighting.GeographicLatitude = 25
-Lighting.Brightness = 2.8
-Lighting.ExposureCompensation = 0.12
-Lighting.Ambient = Color3.fromRGB(84, 76, 92)
-Lighting.OutdoorAmbient = Color3.fromRGB(134, 118, 122)
+Lighting.Brightness = 3
+Lighting.ExposureCompensation = 0
+-- Lumière d'ambiance et reflets tirés du ciel (rendu PBR) plutôt qu'une couleur
+-- fixe : c'est ce qui rend la pierre, le bois, le verre et l'eau crédibles.
+-- La doc Roblox conseille de baisser Ambient/OutdoorAmbient en contrepartie.
+Lighting.EnvironmentDiffuseScale = 1
+Lighting.EnvironmentSpecularScale = 1
+Lighting.Ambient = Color3.fromRGB(38, 36, 42)
+Lighting.OutdoorAmbient = Color3.fromRGB(92, 88, 96)
 Lighting.GlobalShadows = true
-Lighting.ShadowSoftness = 0.15
+Lighting.ShadowSoftness = 0.2
 
-local ciel = Instance.new("Sky")
+local ciel = Instance.new("Sky") -- ciel physique par défaut de Roblox (pas de texture externe)
 ciel.Name = "Aurora_Ciel"
-ciel.SunAngularSize = 16
+ciel.SunAngularSize = 11
 ciel.MoonAngularSize = 9
-ciel.StarCount = 2500
+ciel.StarCount = 3000
 ciel.Parent = Lighting
 
-local atmosphere = Instance.new("Atmosphere")
+local atmosphere = Instance.new("Atmosphere") -- perspective aérienne : les îles lointaines bleuissent
 atmosphere.Name = "Aurora_Atmosphere"
-atmosphere.Density = 0.32
-atmosphere.Offset = 0.6
-atmosphere.Color = Color3.fromRGB(213, 160, 130)
-atmosphere.Decay = Color3.fromRGB(122, 92, 106)
-atmosphere.Glare = 0.32
-atmosphere.Haze = 1.9
+atmosphere.Density = 0.3
+atmosphere.Offset = 0.25
+atmosphere.Color = Color3.fromRGB(199, 178, 166)
+atmosphere.Decay = Color3.fromRGB(96, 104, 120)
+atmosphere.Glare = 0.3
+atmosphere.Haze = 1.2
 atmosphere.Parent = Lighting
 
-local bloom = Instance.new("BloomEffect")
+local bloom = Instance.new("BloomEffect") -- seulement sur les vraies sources de lumière
 bloom.Name = "Aurora_Bloom"
-bloom.Intensity = 0.45
-bloom.Size = 26
-bloom.Threshold = 1.15
+bloom.Intensity = 0.25
+bloom.Size = 24
+bloom.Threshold = 1.4
 bloom.Parent = Lighting
 
-local couleurs = Instance.new("ColorCorrectionEffect")
+local couleurs = Instance.new("ColorCorrectionEffect") -- étalonnage neutre, couleurs naturelles
 couleurs.Name = "Aurora_Couleurs"
-couleurs.Brightness = 0.015
-couleurs.Contrast = 0.06
-couleurs.Saturation = 0.12
-couleurs.TintColor = Color3.fromRGB(255, 246, 234)
+couleurs.Brightness = 0
+couleurs.Contrast = 0.08
+couleurs.Saturation = -0.04
+couleurs.TintColor = Color3.fromRGB(255, 250, 244)
 couleurs.Parent = Lighting
 
 local rayons = Instance.new("SunRaysEffect")
 rayons.Name = "Aurora_Rayons"
-rayons.Intensity = 0.18
-rayons.Spread = 0.9
+rayons.Intensity = 0.06
+rayons.Spread = 0.6
 rayons.Parent = Lighting
 
 if not CONFIG.QUALITE_MOBILE then
 	local profondeur = Instance.new("DepthOfFieldEffect")
 	profondeur.Name = "Aurora_Profondeur"
-	profondeur.FarIntensity = 0.12
-	profondeur.FocusDistance = 60
-	profondeur.InFocusRadius = 120
-	profondeur.NearIntensity = 0.2
+	profondeur.FarIntensity = 0.08
+	profondeur.FocusDistance = 80
+	profondeur.InFocusRadius = 150
+	profondeur.NearIntensity = 0
 	profondeur.Parent = Lighting
 end
 
-local nuages = Instance.new("Clouds")
-nuages.Cover = 0.52
-nuages.Density = 0.32
-nuages.Color = Color3.fromRGB(255, 228, 205)
+local nuages = Instance.new("Clouds") -- nuages volumétriques de Roblox
+nuages.Cover = 0.62
+nuages.Density = 0.45
+nuages.Color = Color3.fromRGB(255, 248, 240)
 nuages.Parent = workspace.Terrain
+
+-- Eau du Terrain : reflets du ciel, vagues légères, teinte de lac de montagne.
+terrain.WaterColor = Color3.fromRGB(32, 86, 96)
+terrain.WaterReflectance = 1
+terrain.WaterTransparency = 0.7
+terrain.WaterWaveSize = 0.12
+terrain.WaterWaveSpeed = 8
+pcall(function()
+	terrain.Decoration = true -- herbe 3D animée sur le matériau Grass
+	terrain.GrassLength = 0.8
+end)
 
 --------------------------------------------------------------------------------
 -- 4. PRÉFABS : arbres, lanternes, rochers, fleurs, champignons, colonnes...
 --------------------------------------------------------------------------------
 
 local function creerRocher(position, taille, dossier)
-	creerPart({
+	local couleur = rng:NextNumber() < 0.5 and PALETTE.Roche or PALETTE.RochePale
+	local bloc = creerPart({
 		Size = Vector3.new(taille * rng:NextNumber(0.8, 1.2), taille * rng:NextNumber(0.6, 0.9), taille * rng:NextNumber(0.8, 1.2)),
 		CFrame = CFrame.new(position + Vector3.new(0, taille * 0.25, 0))
 			* CFrame.Angles(jitter(0.3), rng:NextNumber(0, math.pi * 2), jitter(0.3)),
-		Material = Enum.Material.Slate,
-		Color = rng:NextNumber() < 0.5 and PALETTE.Roche or PALETTE.RochePale,
+		Material = Enum.Material.Rock,
+		Color = couleur,
+		Parent = dossier, Name = "Rocher",
+	})
+	creerPart({ -- second bloc imbriqué : casse la silhouette « boîte »
+		Size = bloc.Size * Vector3.new(0.7, 0.8, 0.65),
+		CFrame = bloc.CFrame * CFrame.new(bloc.Size.X * 0.25, bloc.Size.Y * 0.2, -bloc.Size.Z * 0.15)
+			* CFrame.Angles(jitter(0.5), jitter(0.8), jitter(0.5)),
+		Material = Enum.Material.Rock,
+		Color = couleur:Lerp(PALETTE.Terre, 0.15),
 		Parent = dossier, Name = "Rocher",
 	})
 end
 
 local function creerFleur(position, dossier)
-	local teintes = { PALETTE.RoseClair, PALETTE.Ambre, Color3.fromRGB(245, 240, 220) }
-	cylindreVertical(position + Vector3.new(0, 0.45, 0), 0.9, 0.16, {
-		Material = Enum.Material.Grass, Color = PALETTE.FeuillageClair,
+	local teintes = { Color3.fromRGB(236, 196, 210), Color3.fromRGB(240, 206, 120), Color3.fromRGB(238, 234, 222) }
+	cylindreVertical(position + Vector3.new(0, 0.45, 0), 0.9, 0.12, {
+		Material = Enum.Material.LeafyGrass, Color = PALETTE.FeuillageClair,
 		CanCollide = false, CastShadow = false, Parent = dossier, Name = "Fleur",
 	})
 	creerPart({
-		Shape = Enum.PartType.Ball, Size = Vector3.new(0.5, 0.5, 0.5),
-		Position = position + Vector3.new(0, 1, 0),
-		Material = Enum.Material.SmoothPlastic,
+		Shape = Enum.PartType.Ball, Size = Vector3.new(0.38, 0.38, 0.38),
+		Position = position + Vector3.new(0, 0.95, 0),
+		Material = Enum.Material.Fabric,
 		Color = teintes[rng:NextInteger(1, #teintes)],
 		CanCollide = false, CastShadow = false, Parent = dossier, Name = "Fleur",
 	})
@@ -321,29 +405,36 @@ local function creerArbre(position, echelle, genre, dossier)
 	local couleurTronc = (genre == "classique") and PALETTE.Bois or PALETTE.BoisClair
 	if genre == "or" then couleurTronc = Color3.fromRGB(226, 214, 196) end
 
-	cylindreVertical(position + Vector3.new(0, 3.2 * echelle, 0), 6.4 * echelle, 1.4 * echelle, {
+	cylindreVertical(position + Vector3.new(0, 2.2 * echelle, 0), 4.4 * echelle, 1.5 * echelle, {
 		Material = Enum.Material.Wood, Color = couleurTronc,
 		Parent = dossier, Name = "Tronc",
+	})
+	cylindreVertical(position + Vector3.new(jitter(0.2), 5.6 * echelle, jitter(0.2)), 3.2 * echelle, 1.05 * echelle, {
+		Material = Enum.Material.Wood, Color = couleurTronc,
+		CanCollide = false, Parent = dossier, Name = "Tronc",
 	})
 
 	local teintes
 	if genre == "classique" then
-		teintes = { PALETTE.Feuillage, PALETTE.FeuillageClair }
+		teintes = { PALETTE.Feuillage, PALETTE.FeuillageClair, Color3.fromRGB(74, 104, 48) }
 	elseif genre == "luciole" then
-		teintes = { PALETTE.Rose, PALETTE.RoseClair }
+		teintes = { PALETTE.Rose, PALETTE.RoseClair, Color3.fromRGB(212, 142, 170) }
 	else
-		teintes = { PALETTE.Or, Color3.fromRGB(255, 220, 140) }
+		teintes = { Color3.fromRGB(214, 176, 96), Color3.fromRGB(232, 198, 120), Color3.fromRGB(196, 158, 82) }
 	end
 
+	-- couronne en grappes irrégulières (matériau feuillage texturé de Roblox)
 	local feuillageHaut
-	for i = 1, 3 do
-		local taille = (7.6 - i * 1.5) * echelle
+	for i = 1, 6 do
+		local taille = rng:NextNumber(3.6, 5.6) * echelle
+		local angle = (i / 6) * math.pi * 2 + jitter(0.4)
+		local ecart = if i == 6 then 0 else rng:NextNumber(1.4, 2.6) * echelle
 		feuillageHaut = creerPart({
 			Shape = Enum.PartType.Ball,
 			Size = Vector3.new(taille, taille, taille),
-			Position = position + Vector3.new(jitter(1.1 * echelle), (4.6 + i * 1.8) * echelle, jitter(1.1 * echelle)),
-			Material = Enum.Material.Grass,
-			Color = teintes[(i % 2) + 1],
+			Position = position + Vector3.new(math.cos(angle) * ecart, (if i == 6 then 9.6 else rng:NextNumber(6.6, 8.4)) * echelle, math.sin(angle) * ecart),
+			Material = Enum.Material.LeafyGrass,
+			Color = teintes[(i % 3) + 1],
 			CanCollide = false, Parent = dossier, Name = "Feuillage",
 		})
 	end
@@ -384,16 +475,16 @@ local function creerLanterne(position, dossier)
 	local lampe = creerPart({
 		Size = Vector3.new(1.1, 1.4, 1.1),
 		Position = position + Vector3.new(0, 4.4, 0),
-		Material = Enum.Material.Neon, Color = PALETTE.Ambre,
+		Material = Enum.Material.Glass, Color = Color3.fromRGB(255, 204, 140), Transparency = 0.2,
 		CanCollide = false, Parent = dossier, Name = "Lanterne",
 	})
 	creerPart({
 		Size = Vector3.new(1.4, 0.3, 1.4),
 		Position = position + Vector3.new(0, 5.25, 0),
-		Material = Enum.Material.Wood, Color = PALETTE.Bois,
+		Material = Enum.Material.CorrodedMetal, Color = Color3.fromRGB(58, 52, 46),
 		CanCollide = false, Parent = dossier, Name = "Lanterne",
 	})
-	creerLumiere(lampe, PALETTE.Ambre, 15, 1.1)
+	creerLumiere(lampe, Color3.fromRGB(255, 186, 110), 16, 1.4)
 	creerEmetteur(lampe, { -- lucioles autour de la lanterne
 		Color = ColorSequence.new(Color3.fromRGB(255, 236, 150)),
 		Size = NumberSequence.new(0.22, 0.1),
@@ -409,14 +500,14 @@ end
 local function creerChampignon(position, echelle, dossier)
 	echelle = echelle or 1
 	cylindreVertical(position + Vector3.new(0, 0.8 * echelle, 0), 1.6 * echelle, 0.7 * echelle, {
-		Material = Enum.Material.SmoothPlastic, Color = Color3.fromRGB(235, 228, 210),
+		Material = Enum.Material.Sandstone, Color = Color3.fromRGB(226, 218, 200),
 		CanCollide = false, Parent = dossier, Name = "Champignon",
 	})
 	local chapeau = creerPart({
 		Shape = Enum.PartType.Ball,
-		Size = Vector3.new(2.1 * echelle, 2.1 * echelle, 2.1 * echelle),
+		Size = Vector3.new(2.1 * echelle, 1.5 * echelle, 2.1 * echelle),
 		Position = position + Vector3.new(0, 1.7 * echelle, 0),
-		Material = Enum.Material.Neon, Color = PALETTE.Turquoise,
+		Material = Enum.Material.Glass, Color = PALETTE.Turquoise, Transparency = 0.25,
 		CanCollide = false, Parent = dossier, Name = "Champignon",
 	})
 	creerLumiere(chapeau, PALETTE.Turquoise, 11 * echelle, 0.9)
@@ -425,12 +516,12 @@ end
 local function creerColonne(position, hauteur, cassee, dossier)
 	creerPart({
 		Size = Vector3.new(3.4, 1, 3.4), Position = position + Vector3.new(0, 0.5, 0),
-		Material = Enum.Material.Sandstone, Color = PALETTE.PierreClaire,
+		Material = Enum.Material.Limestone, Color = PALETTE.PierreClaire,
 		Parent = dossier, Name = "Colonne",
 	})
 	local h = cassee and rng:NextNumber(2.5, 4.5) or hauteur
 	cylindreVertical(position + Vector3.new(0, 1 + h / 2, 0), h, 2.4, {
-		Material = Enum.Material.Sandstone, Color = PALETTE.Pierre,
+		Material = Enum.Material.Limestone, Color = PALETTE.Pierre,
 		Parent = dossier, Name = "Colonne",
 	})
 	if cassee then
@@ -440,19 +531,19 @@ local function creerColonne(position, hauteur, cassee, dossier)
 			Size = Vector3.new(math.max(2, hauteur - h), 2.4, 2.4),
 			CFrame = CFrame.new(position + Vector3.new(math.cos(angle) * 4.5, 1.2, math.sin(angle) * 4.5))
 				* CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), math.rad(jitter(6))),
-			Material = Enum.Material.Sandstone, Color = PALETTE.PierreClaire,
+			Material = Enum.Material.Limestone, Color = PALETTE.PierreClaire,
 			Parent = dossier, Name = "ColonneTombee",
 		})
 	else
 		creerPart({
 			Size = Vector3.new(3.2, 1, 3.2), Position = position + Vector3.new(0, 1.5 + h, 0),
-			Material = Enum.Material.Sandstone, Color = PALETTE.PierreClaire,
+			Material = Enum.Material.Limestone, Color = PALETTE.PierreClaire,
 			Parent = dossier, Name = "Chapiteau",
 		})
 	end
 	if rng:NextNumber() < 0.7 then -- un peu de mousse au pied
 		cylindreVertical(position + Vector3.new(jitter(1), 1.06, jitter(1)), 0.25, rng:NextNumber(2.4, 3.6), {
-			Material = Enum.Material.Grass, Color = PALETTE.Feuillage,
+			Material = Enum.Material.LeafyGrass, Color = PALETTE.Feuillage,
 			CanCollide = false, CastShadow = false, Parent = dossier, Name = "Mousse",
 		})
 	end
@@ -474,7 +565,7 @@ local function creerPanneau(position, texte, dossier)
 		Size = Vector3.new(2.6, 3.2, 0.9),
 		CFrame = CFrame.new(position + Vector3.new(0, 1.6, 0))
 			* CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), math.rad(jitter(4))),
-		Material = Enum.Material.Slate, Color = PALETTE.RochePale,
+		Material = Enum.Material.Rock, Color = PALETTE.RochePale,
 		Parent = dossier, Name = "Panneau",
 	})
 	local gui = Instance.new("BillboardGui")
@@ -502,7 +593,7 @@ local function creerCascade(positionHaut, direction, largeur, hauteurChute, doss
 	creerPart({
 		Size = Vector3.new(largeur, hauteurChute, 0.7),
 		CFrame = repere * CFrame.new(0, -hauteurChute / 2 + 0.6, -1.3),
-		Material = Enum.Material.Glass, Color = PALETTE.Eau, Transparency = 0.45,
+		Material = Enum.Material.Glass, Color = Color3.fromRGB(176, 214, 224), Transparency = 0.5,
 		CanCollide = false, CastShadow = false, Parent = dossier, Name = "VoileCascade",
 	})
 
@@ -538,14 +629,17 @@ end
 -- 5. LES ÎLES : squelette générique (plateau d'herbe + cône rocheux + brume)
 --------------------------------------------------------------------------------
 
--- def.centre = centre de la SURFACE (le dessus de l'herbe est à cette hauteur)
+-- def.centre = centre de la SURFACE (le dessus de l'herbe est à cette hauteur).
+-- Hauteurs multiples de 4 : le Terrain est fait de voxels de 4 studs, et une
+-- surface hors de cette grille se retrouve arrondie (sol 2 studs trop bas,
+-- couche d'herbe perdue : constaté dans le vrai moteur via Luau Execution).
 local ILES = {
 	Cristal = { nom = "Ile du Grand Cristal", centre = Vector3.new(0, 200, 0), rayon = 55, couleurHerbe = PALETTE.Herbe },
-	Spawn = { nom = "Le Belvedere", centre = Vector3.new(-170, 190, 0), rayon = 45, couleurHerbe = PALETTE.Herbe },
-	Foret = { nom = "Foret Lumineuse", centre = Vector3.new(10, 206, -178), rayon = 52, couleurHerbe = PALETTE.Feuillage },
-	Cascades = { nom = "Ile des Cascades", centre = Vector3.new(170, 186, 28), rayon = 48, couleurHerbe = PALETTE.Herbe },
-	Ruines = { nom = "Ruines d'Elyndor", centre = Vector3.new(28, 214, 175), rayon = 42, couleurHerbe = Color3.fromRGB(148, 176, 100) },
-	Sanctuaire = { nom = "Sanctuaire Celeste", centre = Vector3.new(62, 318, 208), rayon = 17, couleurHerbe = PALETTE.HerbeClaire },
+	Spawn = { nom = "Le Belvedere", centre = Vector3.new(-170, 188, 0), rayon = 45, couleurHerbe = PALETTE.Herbe },
+	Foret = { nom = "Foret Lumineuse", centre = Vector3.new(10, 204, -178), rayon = 52, couleurHerbe = PALETTE.Feuillage, herbe = Enum.Material.LeafyGrass },
+	Cascades = { nom = "Ile des Cascades", centre = Vector3.new(170, 188, 28), rayon = 48, couleurHerbe = PALETTE.Herbe },
+	Ruines = { nom = "Ruines d'Elyndor", centre = Vector3.new(28, 212, 175), rayon = 42, couleurHerbe = Color3.fromRGB(148, 176, 100) },
+	Sanctuaire = { nom = "Sanctuaire Celeste", centre = Vector3.new(62, 316, 208), rayon = 17, couleurHerbe = PALETTE.HerbeClaire },
 }
 
 local function creerIle(def)
@@ -556,39 +650,46 @@ local function creerIle(def)
 
 	local c, r = def.centre, def.rayon
 
-	-- le plateau d'herbe, son liseré clair et la couche de terre
-	cylindreVertical(c - Vector3.new(0, 1.2, 0), 2.4, r * 2, {
-		Material = Enum.Material.Grass, Color = def.couleurHerbe,
-		Parent = dossier, Name = "Plateau",
-	})
-	cylindreVertical(c - Vector3.new(0, 2.1, 0), 1.1, r * 2 + 1.8, {
-		Material = Enum.Material.Grass, Color = PALETTE.HerbeClaire,
-		Parent = dossier, Name = "Lisere",
-	})
-	cylindreVertical(c - Vector3.new(0, 4.1, 0), 3, r * 1.94, {
-		Material = Enum.Material.Ground, Color = PALETTE.Terre,
-		Parent = dossier, Name = "Terre",
-	})
-
-	-- le cône rocheux renversé qui pend sous l'île
-	local fractions = { 0.82, 0.64, 0.47, 0.31, 0.17 }
-	local hauteurCouche = math.max(4, r * 0.36)
-	local y = c.Y - 5.6
+	-- Le dessous rocheux en Terrain : un cône renversé, fait d'un noyau par
+	-- couche et de boules irrégulières sur le pourtour (roche, basalte, ardoise).
+	local roches = { Enum.Material.Rock, Enum.Material.Rock, Enum.Material.Basalt, Enum.Material.Slate }
+	local fractions = { 0.9, 0.74, 0.58, 0.43, 0.29, 0.16 }
+	local pas = math.max(4, r * 0.3)
+	local y = c.Y - 6
 	for i, fraction in ipairs(fractions) do
-		y -= hauteurCouche * 0.92
-		cylindreVertical(Vector3.new(c.X + jitter(r * 0.05), y, c.Z + jitter(r * 0.05)), hauteurCouche, r * 2 * fraction, {
-			Material = Enum.Material.Slate,
-			Color = (i % 2 == 0) and PALETTE.Roche or PALETTE.RochePale,
-			Parent = dossier, Name = "Roche",
-		})
+		local rayonCouche = r * fraction
+		y -= pas * 0.85
+		local centreCouche = Vector3.new(c.X + jitter(r * 0.04), y, c.Z + jitter(r * 0.04))
+		terrainCylindre(centreCouche, pas * 1.15, rayonCouche * 0.92, if i == 1 then Enum.Material.Ground else Enum.Material.Rock, false)
+		local nb = math.max(5, math.floor(rayonCouche / 4.5))
+		for k = 1, nb do
+			local angle = (k / nb) * math.pi * 2 + jitter(0.3)
+			local distance = rayonCouche * rng:NextNumber(0.72, 0.92)
+			terrainBoule(
+				Vector3.new(centreCouche.X + math.cos(angle) * distance, y + jitter(pas * 0.4), centreCouche.Z + math.sin(angle) * distance),
+				math.max(3, rayonCouche * rng:NextNumber(0.2, 0.32)),
+				roches[rng:NextInteger(1, #roches)]
+			)
+		end
 	end
-	local basY = y - hauteurCouche * 0.7
-	creerPart({
-		Shape = Enum.PartType.Ball, Size = Vector3.new(r * 0.3, r * 0.3, r * 0.3),
-		Position = Vector3.new(c.X, basY, c.Z),
-		Material = Enum.Material.Slate, Color = PALETTE.Roche,
-		Parent = dossier, Name = "Pointe",
-	})
+	local basY = y - pas * 0.9
+	terrainBoule(Vector3.new(c.X, basY, c.Z), math.max(4, r * 0.14), Enum.Material.Basalt)
+
+	-- le sol : une couche de terre, puis le plateau d'herbe dont le DESSUS est à c.Y
+	-- (même hauteur que l'ancien plateau en pièces : ponts et chemins restent alignés)
+	-- (couches alignées sur la grille de 4 studs : herbe = exactement un voxel)
+	terrainCylindre(c - Vector3.new(0, 8, 0), 8, r * 0.97, Enum.Material.Ground, false)
+	terrainCylindre(c - Vector3.new(0, 2, 0), 4, r, def.herbe or Enum.Material.Grass, true)
+	-- bord naturel : des mottes de terre et de roche juste sous le niveau de l'herbe
+	local nbMottes = math.max(8, math.floor(r / 3))
+	for k = 1, nbMottes do
+		local angle = (k / nbMottes) * math.pi * 2 + jitter(0.2)
+		terrainBoule(
+			Vector3.new(c.X + math.cos(angle) * r * 0.96, c.Y - 3.6 - rng:NextNumber(0, 1.5), c.Z + math.sin(angle) * r * 0.96),
+			rng:NextNumber(2.6, 3.4),
+			if rng:NextNumber() < 0.6 then Enum.Material.Ground else Enum.Material.Rock
+		)
+	end
 
 	-- éclats de roche en lévitation sous l'île (magie des îles volantes)
 	for _ = 1, quantite(6) do
@@ -599,14 +700,14 @@ local function creerIle(def)
 		local eclat = creerPart({
 			Size = Vector3.new(taille, taille * 0.8, taille * 1.15),
 			CFrame = CFrame.new(pos) * CFrame.Angles(rng:NextNumber(0, math.pi), rng:NextNumber(0, math.pi), rng:NextNumber(0, math.pi)),
-			Material = Enum.Material.Slate, Color = PALETTE.Roche,
+			Material = Enum.Material.Rock, Color = PALETTE.Roche,
 			CanCollide = false, Parent = dossier, Name = "EclatFlottant",
 		})
 		if rng:NextNumber() < 0.35 then -- certains portent un petit cristal
 			creerPart({
 				Size = Vector3.new(0.8, 1.8, 0.8),
 				CFrame = eclat.CFrame * CFrame.new(0, taille * 0.6, 0) * CFrame.Angles(0, math.rad(45), 0),
-				Material = Enum.Material.Neon, Color = PALETTE.Cristal,
+				Material = Enum.Material.Glass, Color = PALETTE.Cristal, Transparency = 0.15,
 				CanCollide = false, CastShadow = false, Parent = dossier, Name = "EclatCristal",
 			})
 		end
@@ -658,12 +759,12 @@ local function creerCristalCollectible(position, valeur)
 	local cristal = creerPart({
 		Size = info.taille,
 		CFrame = CFrame.new(position) * CFrame.Angles(math.rad(8), math.rad(45), 0),
-		Material = Enum.Material.Neon, Color = info.couleur,
+		Material = Enum.Material.Glass, Color = info.couleur, Transparency = 0.12, Reflectance = 0.15,
 		CanCollide = false, CastShadow = false,
 		Parent = dossierCollectibles, Name = "Cristal",
 	})
 	cristal:SetAttribute("Valeur", valeur)
-	creerLumiere(cristal, info.couleur, 9, 1.4)
+	creerLumiere(cristal, info.couleur, 10, 1.8) -- la lueur vient de la lumière, pas d'un matériau néon
 
 	local son = Instance.new("Sound")
 	son.SoundId = SON_COLLECTE
@@ -733,7 +834,7 @@ do
 			Size = Vector3.new(2.2, hauteur, 2.2),
 			CFrame = CFrame.new(sommetSocle + Vector3.new(math.cos(angle) * dist, hauteur / 2 - 1, math.sin(angle) * dist))
 				* CFrame.Angles(math.rad(jitter(14)), angle + math.rad(45), math.rad(jitter(14))),
-			Material = Enum.Material.Neon,
+			Material = Enum.Material.Glass, Transparency = 0.1, Reflectance = 0.15,
 			Color = (i % 2 == 0) and PALETTE.Cristal or PALETTE.Turquoise,
 			Parent = d, Name = "CristalSatellite",
 		})
@@ -741,7 +842,7 @@ do
 
 	-- pilier de lumière qui monte vers le ciel
 	cylindreVertical(sommetSocle + Vector3.new(0, 120, 0), 240, 2.6, {
-		Material = Enum.Material.Neon, Color = PALETTE.CristalClair, Transparency = 0.68,
+		Material = Enum.Material.Neon, Color = PALETTE.CristalClair, Transparency = 0.88,
 		CanCollide = false, CastShadow = false, Parent = d, Name = "PilierDeLumiere",
 	})
 
@@ -751,7 +852,7 @@ do
 			Shape = Enum.PartType.Cylinder,
 			Size = Vector3.new(0.6, info[1], info[1]),
 			CFrame = CFrame.new(sommetSocle + Vector3.new(0, info[2], 0)) * CFrame.Angles(math.rad(12), 0, math.rad(90)),
-			Material = Enum.Material.Neon, Color = PALETTE.CristalClair, Transparency = 0.55,
+			Material = Enum.Material.Glass, Color = PALETTE.CristalClair, Transparency = 0.55, Reflectance = 0.2,
 			CanCollide = false, CastShadow = false, Parent = dossierRotors, Name = "Anneau",
 		})
 		anneau:SetAttribute("VitesseRotation", info[3])
@@ -762,7 +863,7 @@ do
 		local eclat = creerPart({
 			Size = Vector3.new(1.1, 2.6, 1.1),
 			Position = sommetSocle + Vector3.new(0, 18, 0),
-			Material = Enum.Material.Neon, Color = PALETTE.Turquoise,
+			Material = Enum.Material.Glass, Color = PALETTE.Turquoise, Transparency = 0.12,
 			CanCollide = false, CastShadow = false, Parent = dossierOrbites, Name = "EclatOrbital",
 		})
 		eclat:SetAttribute("CentreOrbite", sommetSocle + Vector3.new(0, 18, 0))
@@ -794,7 +895,7 @@ do
 		creerPart({
 			Size = Vector3.new(2.2, 0.35, 1.3),
 			CFrame = CFrame.lookAt(pos, Vector3.new(base.X, pos.Y, base.Z)),
-			Material = Enum.Material.Neon, Color = PALETTE.Turquoise, Transparency = 0.25,
+			Material = Enum.Material.Neon, Color = PALETTE.Turquoise, Transparency = 0.55,
 			CanCollide = false, Parent = d, Name = "Rune",
 		})
 	end
@@ -805,7 +906,7 @@ do
 			Size = Vector3.new(2.8, rng:NextNumber(5.5, 7.5), 1.9),
 			CFrame = CFrame.lookAt(pos + Vector3.new(0, 3.2, 0), Vector3.new(base.X, pos.Y + 3.2, base.Z))
 				* CFrame.Angles(math.rad(-8), 0, math.rad(jitter(5))),
-			Material = Enum.Material.Slate, Color = PALETTE.Roche,
+			Material = Enum.Material.Rock, Color = PALETTE.Roche,
 			Parent = d, Name = "Menhir",
 		})
 	end
@@ -946,13 +1047,12 @@ do
 	local r = def.rayon
 	local dirChute = Vector3.new(1, 0, 0.22).Unit -- direction de la grande cascade
 
-	-- le bassin central bordé de rochers
+	-- le bassin central bordé de rochers : un creux rempli de vraie eau (Terrain)
 	local centreBassin = c + Vector3.new(-8, 0, -4)
-	cylindreVertical(centreBassin + Vector3.new(0, 0.45, 0), 0.9, 24, {
-		Material = Enum.Material.Glass, Color = PALETTE.Eau, Transparency = 0.35,
-		Parent = d, Name = "Bassin",
-	})
-	local eauBassin = blocInvisible(centreBassin + Vector3.new(0, 1, 0), Vector3.new(18, 0.5, 18), d)
+	-- (étang au ras du sol, comme dans la nature : la couche d'herbe devient de l'eau)
+	terrainCylindre(centreBassin, 8, 11, Enum.Material.Air, false)
+	terrainCylindre(centreBassin - Vector3.new(0, 2, 0), 4, 11, Enum.Material.Water, false)
+	local eauBassin = blocInvisible(centreBassin + Vector3.new(0, 0.3, 0), Vector3.new(18, 0.5, 18), d)
 	creerEmetteur(eauBassin, { -- reflets scintillants sur l'eau
 		Color = ColorSequence.new(Color3.fromRGB(240, 252, 255)),
 		Size = NumberSequence.new(0.35, 0.1),
@@ -986,12 +1086,10 @@ do
 		local p1 = departRiviere:Lerp(bordChute, t1)
 		local p2 = departRiviere:Lerp(bordChute, t2)
 		local milieu = (p1 + p2) / 2
-		creerPart({
-			Size = Vector3.new(6.5, 0.45, (p2 - p1).Magnitude + 1.2),
-			CFrame = CFrame.lookAt(Vector3.new(milieu.X, c.Y + 0.18, milieu.Z), Vector3.new(p2.X, c.Y + 0.18, p2.Z)),
-			Material = Enum.Material.Glass, Color = PALETTE.Eau, Transparency = 0.4,
-			CanCollide = false, Parent = d, Name = "Riviere",
-		})
+		local lit = CFrame.lookAt(Vector3.new(milieu.X, c.Y, milieu.Z), Vector3.new(p2.X, c.Y, p2.Z))
+		local longueur = (p2 - p1).Magnitude + 1.2
+		terrainBloc(lit, Vector3.new(6.5, 8, longueur), Enum.Material.Air)
+		terrainBloc(lit * CFrame.new(0, -2, 0), Vector3.new(6.5, 4, longueur), Enum.Material.Water)
 	end
 
 	-- LA grande cascade qui plonge dans le vide + deux petites décoratives
@@ -1010,7 +1108,7 @@ do
 		local marche = creerPart({
 			Size = Vector3.new(4.8, 0.8, 3.6),
 			CFrame = CFrame.lookAt(posMarche, Vector3.new(c.X, posMarche.Y, c.Z)),
-			Material = Enum.Material.Slate, Color = PALETTE.RochePale,
+			Material = Enum.Material.Rock, Color = PALETTE.RochePale,
 			Parent = d, Name = "Corniche",
 		})
 		if i == 2 or i == 4 then -- des étincelles discrètes guident les curieux
@@ -1044,13 +1142,17 @@ do
 	for _, mur in ipairs(murs) do
 		creerPart({
 			Size = mur[1], CFrame = repere * mur[2],
-			Material = Enum.Material.Slate, Color = PALETTE.Roche,
+			Material = Enum.Material.Rock, Color = PALETTE.Roche,
 			Parent = d, Name = "Grotte",
 		})
 	end
+	-- le Terrain de l'île ne doit boucher ni l'intérieur de la grotte, ni le
+	-- passage pour y descendre depuis le bord (on se laisse tomber sur le palier)
+	terrainBloc(repere * CFrame.new(0, 3.8, 0), Vector3.new(12, 7, 10), Enum.Material.Air)
+	terrainBloc(repere * CFrame.new(0, 6, -8), Vector3.new(8, 14, 8), Enum.Material.Air)
 	creerPart({ -- palier devant la porte
 		Size = Vector3.new(5.5, 0.8, 4.5), CFrame = repere * CFrame.new(0, 0.1, -7),
-		Material = Enum.Material.Slate, Color = PALETTE.RochePale,
+		Material = Enum.Material.Rock, Color = PALETTE.RochePale,
 		Parent = d, Name = "Grotte",
 	})
 	for _ = 1, 8 do -- camouflage : la grotte ressemble à un éperon rocheux
@@ -1058,7 +1160,7 @@ do
 		creerPart({
 			Size = Vector3.new(rng:NextNumber(3, 6.5), rng:NextNumber(3, 6.5), rng:NextNumber(3, 6.5)),
 			CFrame = repere * decalage * CFrame.Angles(jitter(0.5), jitter(3), jitter(0.5)),
-			Material = Enum.Material.Slate, Color = PALETTE.Roche,
+			Material = Enum.Material.Rock, Color = PALETTE.Roche,
 			Parent = d, Name = "Grotte",
 		})
 	end
@@ -1163,13 +1265,13 @@ do
 		local angle = (i / 4) * math.pi * 2 + math.pi / 4
 		local pos = c + Vector3.new(math.cos(angle) * 9.5, 0, math.sin(angle) * 9.5)
 		cylindreVertical(pos + Vector3.new(0, 2.2, 0), 4.4, 1.6, {
-			Material = Enum.Material.Sandstone, Color = PALETTE.PierreClaire,
+			Material = Enum.Material.Limestone, Color = PALETTE.PierreClaire,
 			Parent = d, Name = "Pilier",
 		})
 		local coiffe = creerPart({
 			Size = Vector3.new(1.3, 1.3, 1.3),
 			CFrame = CFrame.new(pos + Vector3.new(0, 5.1, 0)) * CFrame.Angles(math.rad(45), 0, math.rad(45)),
-			Material = Enum.Material.Neon, Color = PALETTE.Or,
+			Material = Enum.Material.Foil, Color = PALETTE.Or, Reflectance = 0.3,
 			CanCollide = false, Parent = d, Name = "Pilier",
 		})
 		creerLumiere(coiffe, PALETTE.Or, 10, 0.8)
@@ -1190,16 +1292,23 @@ do
 	for i = 1, 4 do
 		local angle = (i / 4) * math.pi * 2 + 0.5
 		local centreNuage = c + Vector3.new(math.cos(angle) * 24, -2.5, math.sin(angle) * 24)
-		for _ = 1, 3 do
-			local taille = rng:NextNumber(6, 11)
-			creerPart({
-				Shape = Enum.PartType.Ball, Size = Vector3.new(taille, taille, taille),
-				Position = centreNuage + Vector3.new(jitter(5), jitter(1.5), jitter(5)),
-				Material = Enum.Material.SmoothPlastic, Color = Color3.fromRGB(255, 244, 234),
-				Transparency = 0.35, CanCollide = false, CastShadow = false,
-				Parent = d, Name = "Nuage",
-			})
-		end
+		local nuage = blocInvisible(centreNuage, Vector3.new(14, 3, 14), d)
+		nuage.Name = "Nuage"
+		creerEmetteur(nuage, { -- nuage vaporeux qui se renouvelle lentement
+			Texture = TEXTURE_FUMEE,
+			Color = ColorSequence.new(Color3.fromRGB(255, 250, 244)),
+			Size = NumberSequence.new(9, 15),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.3, 0.55),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Lifetime = NumberRange.new(8, 12),
+			Rate = 1.2,
+			Speed = NumberRange.new(0.1, 0.4),
+			SpreadAngle = Vector2.new(180, 30),
+			RotSpeed = NumberRange.new(-6, 6),
+		})
 	end
 
 	creerPanneau(c + Vector3.new(6, 0, -8), "★ Sanctuaire Celeste ★", d)
@@ -1313,11 +1422,11 @@ local function creerCheminPierres(defA, defB)
 			+ Vector3.new(0, math.sin(math.pi * t) * 7, 0)
 		local diametre = rng:NextNumber(5, 7)
 		cylindreVertical(pos, 1.7, diametre, {
-			Material = Enum.Material.Slate, Color = PALETTE.Roche,
+			Material = Enum.Material.Rock, Color = PALETTE.Roche,
 			Parent = dossier, Name = "PierreVolante",
 		})
 		cylindreVertical(pos + Vector3.new(0, 1, 0), 0.4, diametre - 0.9, {
-			Material = Enum.Material.Grass, Color = PALETTE.HerbeClaire,
+			Material = Enum.Material.LeafyGrass, Color = PALETTE.HerbeClaire,
 			Parent = dossier, Name = "PierreVolante",
 		})
 		table.insert(sommets, pos + Vector3.new(0, 1.4, 0))
@@ -1437,6 +1546,19 @@ local dossierPads = map:WaitForChild("JumpPads")
 local TEMPS_REAPPARITION = map:GetAttribute("TempsReapparition") or 25
 local MULTIPLICATEUR_PADS = map:GetAttribute("MultiplicateurPads") or 1
 
+-- ── Terrain réaliste (îles, eau) : rejoué s'il n'a pas été rempli dans Studio ─
+local planTerrain = game:GetService("ServerStorage"):FindFirstChild("PlanTerrain")
+if planTerrain then
+	task.spawn(function()
+		local ok, fait, raison = pcall(function()
+			return require(planTerrain).appliquer(workspace.Terrain)
+		end)
+		if not ok or not fait then
+			warn("[IlesCelestes] Terrain non généré : " .. tostring(if ok then raison else fait))
+		end
+	end)
+end
+
 -- ── Noyau commun (sauvegarde, boutique, récompenses) s'il est installé ──────
 -- Avec le noyau (build du pipeline avec --src src), les cristaux sont crédités
 -- dans le profil sauvegardé du joueur. Sans lui (script collé seul dans
@@ -1462,6 +1584,7 @@ end
 
 -- ── Collecte des cristaux ────────────────────────────────────────────────────
 local function brancherCristal(cristal)
+	local transparenceInitiale = cristal.Transparency
 	cristal.Touched:Connect(function(hit)
 		if cristal:GetAttribute("Pris") then return end
 		local joueur = Players:GetPlayerFromCharacter(hit.Parent)
@@ -1490,7 +1613,7 @@ local function brancherCristal(cristal)
 
 		task.delay(TEMPS_REAPPARITION, function()
 			if not cristal.Parent then return end
-			cristal.Transparency = 0
+			cristal.Transparency = transparenceInitiale
 			cristal.CanTouch = true
 			if lumiere then lumiere.Enabled = true end
 			cristal:SetAttribute("Pris", false)
@@ -1591,6 +1714,75 @@ scriptJeu.Name = "IlesCelestes_Script"
 scriptJeu.Source = sourceJeu
 scriptJeu.Parent = ServerScriptService
 
+-- Plan du Terrain : ModuleScript rejoué au démarrage du serveur (voir 2 bis).
+local SOURCE_PLAN = [==[
+-- Plan du Terrain des Îles Célestes d'Aurora (généré par maps/iles-celestes.lua).
+-- Rejoué au démarrage du serveur par IlesCelestes_Script si le Terrain n'a pas
+-- déjà été rempli (dans Studio, il l'est directement par le script de la map).
+-- Chaque opération : { forme, matériau, marchable, composantes du CFrame, paramètres }.
+local Plan = {}
+
+Plan.OPERATIONS = {
+@@OPERATIONS@@
+}
+
+-- Remplit le Terrain. Renvoie true si c'est fait (ou déjà fait), sinon false et la raison.
+function Plan.appliquer(terrain)
+	if terrain:GetAttribute("PlanApplique") then
+		return true, "déjà appliqué"
+	end
+	local disponible = pcall(function()
+		return terrain.FillBlock
+	end)
+	if not disponible then
+		return false, "Terrain indisponible dans cet environnement"
+	end
+	for i, op in Plan.OPERATIONS do
+		local forme, materiau, c, p = op[1], Enum.Material[op[2]], op[4], op[5]
+		local cf = CFrame.new(c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11], c[12])
+		if forme == "Cylindre" then
+			terrain:FillCylinder(cf, p[1], p[2], materiau)
+		elseif forme == "Boule" then
+			terrain:FillBall(cf.Position, p[1], materiau)
+		elseif forme == "Bloc" then
+			terrain:FillBlock(cf, Vector3.new(p[1], p[2], p[3]), materiau)
+		end
+		if i % 40 == 0 then
+			task.wait()
+		end
+	end
+	pcall(function()
+		terrain.Decoration = true
+	end)
+	terrain:SetAttribute("PlanApplique", true)
+	return true, nil
+end
+
+return Plan
+]==]
+
+local function nombres(liste)
+	local textes = {}
+	for i, x in ipairs(liste) do
+		textes[i] = string.format("%.3f", x):gsub("0+$", ""):gsub("%.$", "")
+	end
+	return table.concat(textes, ", ")
+end
+local lignesPlan = {}
+for _, op in ipairs(planTerrain) do
+	table.insert(lignesPlan, string.format('\t{ "%s", "%s", %s, { %s }, { %s } },',
+		op.forme, op.materiau, tostring(op.marchable), nombres(op.cf), nombres(op.parametres)))
+end
+local modulePlan = Instance.new("ModuleScript")
+modulePlan.Name = "PlanTerrain"
+modulePlan.Source = (SOURCE_PLAN:gsub("@@OPERATIONS@@", function()
+	return table.concat(lignesPlan, "\n")
+end))
+modulePlan.Parent = game:GetService("ServerStorage")
+if terrainDirect then
+	terrain:SetAttribute("PlanApplique", true) -- déjà rempli ici : inutile de le rejouer
+end
+
 --------------------------------------------------------------------------------
 -- 15. RÉCAPITULATIF
 --------------------------------------------------------------------------------
@@ -1600,6 +1792,7 @@ print("✦ LES ÎLES CÉLESTES D'AURORA — map construite ! ✦")
 print("• Parts créées : " .. #map:GetDescendants())
 print("• Cristaux à collecter : " .. #dossierCollectibles:GetChildren())
 print("• Script de jeu installé : ServerScriptService.IlesCelestes_Script")
+print("• Terrain : " .. #planTerrain .. " opérations" .. (if terrainDirect then " (rempli)" else " (rejouées au démarrage)"))
 print("• Lance Play : tu apparais sur le Belvédère, face au Grand Cristal.")
 print("• 2 secrets à trouver : derrière la grande cascade... et au-dessus des nuages.")
 print("=====================================================")

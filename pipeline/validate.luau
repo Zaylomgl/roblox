@@ -65,6 +65,9 @@ ajouter(`| Particules / s | {math.floor(stats.particulesParSeconde)} |`)
 ajouter(`| Scripts | {stats.scripts} |`)
 ajouter(`| Spawns | {stats.spawns} |`)
 ajouter(`| Pads de saut | {stats.padsDeSaut} |`)
+if rapport.terrain and rapport.terrain.operations > 0 then
+	ajouter(`| Terrain (plan rejoué au démarrage) | {rapport.terrain.operations} opérations, {rapport.terrain.surfacesMarchables} sols marchables |`)
+end
 local acc = rapport.accessibilite
 local services = rapport.systemes
 local function ouiNon(b: boolean): string

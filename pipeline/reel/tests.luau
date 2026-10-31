@@ -259,6 +259,205 @@ lancer("Place", "point d'apparition : sol réel juste dessous, au-dessus de la z
 end)
 
 --------------------------------------------------------------------------------
+-- 1 bis. Terrain réaliste : le plan (ServerStorage.PlanTerrain) rejoué pour de vrai
+--------------------------------------------------------------------------------
+
+local ServerStorage = game:GetService("ServerStorage")
+local Lighting = game:GetService("Lighting")
+local modulePlan = ServerStorage:FindFirstChild("PlanTerrain")
+local plan = nil
+local terrainGenere = false
+
+lancer("Terrain", "le plan du Terrain se rejoue sans erreur dans le vrai moteur", function(t)
+	if not modulePlan then
+		ignorer("pas de ServerStorage.PlanTerrain dans cette place")
+	end
+	plan = require(modulePlan)
+	local debut = os.clock()
+	local fait, raison = plan.appliquer(workspace.Terrain)
+	if not fait then
+		error(`appliquer() a échoué : {raison}`)
+	end
+	terrainGenere = true
+	t.vrai(workspace.Terrain:GetAttribute("PlanApplique") == true)
+	mesures.terrainOperations = #plan.OPERATIONS
+	mesures.terrainSecondes = arrondi(os.clock() - debut, 2)
+	return `{#plan.OPERATIONS} opérations en {arrondi(os.clock() - debut, 2)} s`
+end)
+
+-- Dans Luau Execution, la physique ne tourne pas : le Terrain n'a pas de
+-- collisions et les rayons le traversent (constaté). On lit donc ses voxels
+-- (cubes de 4 studs) : matériau et taux de remplissage (0 à 1).
+local VOXEL = 4
+
+-- Dessus du Terrain solide (ni air ni eau, sauf `avecEau`) dans la colonne de voxels contenant (x, z).
+local function dessusTerrain(x: number, z: number, yMin: number, yMax: number, avecEau: boolean?)
+	local x0, z0 = math.floor(x / VOXEL) * VOXEL, math.floor(z / VOXEL) * VOXEL
+	local y0, y1 = math.floor(yMin / VOXEL) * VOXEL, math.ceil(yMax / VOXEL) * VOXEL
+	local region = Region3.new(Vector3.new(x0, y0, z0), Vector3.new(x0 + VOXEL, y1, z0 + VOXEL))
+	local materiaux, occupations = workspace.Terrain:ReadVoxels(region, VOXEL)
+	for iy = occupations.Size.Y, 1, -1 do
+		local o, m = occupations[1][iy][1], materiaux[1][iy][1]
+		if o > 0.5 and m ~= Enum.Material.Air and (avecEau or m ~= Enum.Material.Water) then
+			return y0 + iy * VOXEL, m
+		end
+	end
+	return nil, nil
+end
+
+-- Remplissage moyen du Terrain (hors eau) dans une boîte orientée, en voxels.
+local function remplissage(cf: CFrame, taille: Vector3): number
+	local demi = taille / 2
+	local mini, maxi = Vector3.new(math.huge, math.huge, math.huge), Vector3.new(-math.huge, -math.huge, -math.huge)
+	for _, sx in { -1, 1 } do
+		for _, sy in { -1, 1 } do
+			for _, sz in { -1, 1 } do
+				local p = (cf * CFrame.new(demi.X * sx, demi.Y * sy, demi.Z * sz)).Position
+				mini, maxi = mini:Min(p), maxi:Max(p)
+			end
+		end
+	end
+	local region = Region3.new(mini, maxi):ExpandToGrid(VOXEL)
+	local materiaux, occupations = workspace.Terrain:ReadVoxels(region, VOXEL)
+	local total, n = 0, 0
+	for ix = 1, occupations.Size.X do
+		for iy = 1, occupations.Size.Y do
+			for iz = 1, occupations.Size.Z do
+				local centre = region.CFrame.Position - region.Size / 2 + Vector3.new(ix - 0.5, iy - 0.5, iz - 0.5) * VOXEL
+				local l = cf:PointToObjectSpace(centre)
+				-- seulement les voxels dont le centre est dans la boîte orientée
+				if math.abs(l.X) <= demi.X and math.abs(l.Y) <= demi.Y and math.abs(l.Z) <= demi.Z then
+					n += 1
+					if materiaux[ix][iy][iz] ~= Enum.Material.Water then
+						total += occupations[ix][iy][iz]
+					end
+				end
+			end
+		end
+	end
+	return if n > 0 then total / n else 0
+end
+
+lancer("Terrain", "chaque île a un sol d'herbe au niveau prévu (lecture des voxels)", function(t)
+	if not terrainGenere then
+		ignorer("Terrain non généré (test précédent)")
+	end
+	local MATERIAUX_SOL = { [Enum.Material.Grass] = true, [Enum.Material.LeafyGrass] = true, [Enum.Material.Water] = true }
+	local iles, bilanIles = 0, {}
+	for _, op in plan.OPERATIONS do
+		if op[1] == "Cylindre" and op[3] == true then
+			iles += 1
+			local c, hauteur, rayon = op[4], op[5][1], op[5][2]
+			local dessus = c[2] + hauteur / 2
+			local bons = 0
+			for k = 1, 12 do
+				local angle = (k / 12) * math.pi * 2
+				local x, z = c[1] + math.cos(angle) * rayon * 0.55, c[3] + math.sin(angle) * rayon * 0.55
+				local haut, materiau = dessusTerrain(x, z, dessus - 30, dessus + 20, true)
+				if haut and MATERIAUX_SOL[materiau] and math.abs(haut - dessus) <= 0.5 then
+					bons += 1
+				end
+			end
+			table.insert(bilanIles, `{bons}/12`)
+			if bons < 11 then
+				error(`île centrée en ({math.floor(c[1])}, {math.floor(c[3])}) : seulement {bons}/12 points d'herbe (ou d'eau) à Y = {dessus}`)
+			end
+		end
+	end
+	t.vrai(iles > 0)
+	return `{iles} îles, points d'herbe au bon niveau : {table.concat(bilanIles, ", ")}`
+end)
+
+lancer("Terrain", "les 50 cristaux ont un sol réel juste dessous (pièces ou Terrain)", function(t)
+	if not terrainGenere then
+		ignorer("Terrain non généré (test précédent)")
+	end
+	local dossier = workspace:FindFirstChild("MapIlesCelestes") and workspace.MapIlesCelestes:FindFirstChild("Collectibles")
+	t.vrai(dossier ~= nil)
+	local parametres = RaycastParams.new()
+	parametres.FilterType = Enum.RaycastFilterType.Exclude
+	parametres.FilterDescendantsInstances = { dossier }
+	parametres.RespectCanCollide = true
+	local sansSol, surTerrain, surPieces = {}, 0, 0
+	for _, cristal in dossier:GetChildren() do
+		-- une sphère de 1 stud de rayon ≈ les pieds d'un personnage (un rayon fin passerait entre deux planches)
+		local r = workspace:Spherecast(cristal.Position, 1, Vector3.new(0, -12, 0), parametres)
+		local hautTerrain = dessusTerrain(cristal.Position.X, cristal.Position.Z, cristal.Position.Y - 12, cristal.Position.Y, false)
+		if r then
+			surPieces += 1
+		elseif hautTerrain and hautTerrain <= cristal.Position.Y then
+			surTerrain += 1
+		else
+			local p = cristal.Position
+			table.insert(sansSol, `({math.floor(p.X)}, {math.floor(p.Y)}, {math.floor(p.Z)})`)
+		end
+	end
+	if #sansSol > 0 then
+		error(`{#sansSol} cristal(aux) sans sol à moins de 12 studs : {table.concat(sansSol, " ")}`)
+	end
+	t.egal(surPieces + surTerrain, #dossier:GetChildren())
+	return `{surTerrain} au-dessus du Terrain, {surPieces} au-dessus de pièces (ponts, pierres, grotte…)`
+end)
+
+lancer("Terrain", "la grotte secrète et son passage ne sont pas bouchés par le Terrain", function(t)
+	if not terrainGenere then
+		ignorer("Terrain non généré (test précédent)")
+	end
+	local ile = workspace.MapIlesCelestes.Iles:FindFirstChild("Ile des Cascades")
+	t.vrai(ile ~= nil)
+	local sol, palier = nil, nil
+	for _, p in ile:GetChildren() do
+		if p.Name == "Grotte" and p:IsA("BasePart") then
+			if (p.Size - Vector3.new(13, 1, 11)).Magnitude < 0.01 and (not sol or p.Position.Y < sol.Position.Y) then
+				sol = p
+			elseif (p.Size - Vector3.new(5.5, 0.8, 4.5)).Magnitude < 0.01 then
+				palier = p
+			end
+		end
+	end
+	t.vrai(sol ~= nil and palier ~= nil)
+	local interieur = remplissage(sol.CFrame * CFrame.new(0, 3.8, 0), Vector3.new(11, 6, 9))
+	local passage = remplissage(palier.CFrame * CFrame.new(0, 7, 0), Vector3.new(5, 12, 4))
+	mesures.grotteRemplissageTerrain = arrondi(interieur, 2)
+	mesures.passageRemplissageTerrain = arrondi(passage, 2)
+	if interieur > 0.2 then
+		error(`intérieur de la grotte rempli à {math.floor(interieur * 100)} % par le Terrain`)
+	end
+	if passage > 0.2 then
+		error(`passage vers le palier rempli à {math.floor(passage * 100)} % par le Terrain`)
+	end
+	-- et aucune pièce ne bloque la chute vers le palier
+	local parametres = RaycastParams.new()
+	parametres.RespectCanCollide = true
+	local r = workspace:Raycast(palier.Position + Vector3.new(0, 20, 0), Vector3.new(0, -25, 0), parametres)
+	if not r or r.Instance ~= palier then
+		error(`la chute vers le palier est bloquée par {if r then r.Instance:GetFullName() else "rien ?"}`)
+	end
+	return `Terrain : grotte remplie à {math.floor(interieur * 100)} %, passage à {math.floor(passage * 100)} % ; chute libre jusqu'au palier`
+end)
+
+lancer("Terrain", "éclairage réaliste actif (lumière tirée du ciel, herbe animée)", function(t)
+	mesures.environmentDiffuseScale = Lighting.EnvironmentDiffuseScale
+	mesures.environmentSpecularScale = Lighting.EnvironmentSpecularScale
+	t.egal(Lighting.EnvironmentDiffuseScale, 1)
+	t.egal(Lighting.EnvironmentSpecularScale, 1)
+	local okTech, technologie = pcall(function()
+		return Lighting.Technology
+	end)
+	mesures.technologie = if okTech then technologie.Name else "illisible ici"
+	if okTech then
+		t.egal(technologie, Enum.Technology.Future)
+	end
+	local okDeco, decoration = pcall(function()
+		return workspace.Terrain.Decoration
+	end)
+	if okDeco then
+		t.egal(decoration, true)
+	end
+	return `Technology {mesures.technologie}, EnvironmentDiffuse/Specular 1/1, herbe animée {if okDeco then tostring(decoration) else "illisible ici"}`
+end)
+
+--------------------------------------------------------------------------------
 -- 2. Les tests du noyau (pipeline/tests/noyau.test.luau) dans le vrai Luau
 --------------------------------------------------------------------------------
 

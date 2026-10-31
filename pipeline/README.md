@@ -54,9 +54,11 @@ repo ; les identifiants de l'expérience sont dans `pipeline/experience.json`.
 | `python3 pipeline/opencloud.py cle` | Vérifie la clé (active, non expirée) et ses 4 droits : `game-pass`, `developer-product`, `universe-places`, `universe.place.luau-execution-session` |
 | `python3 pipeline/opencloud.py boutique` | Crée sur Roblox chaque pass/produit de `Configuration.luau` dont l'`id` vaut 0 (nom, description, `prix`, mis en vente) et écrit son ID dans `Configuration.luau`. Relançable : un objet du même nom déjà sur Roblox est réutilisé, jamais dupliqué |
 | `python3 pipeline/opencloud.py publier build/iles-celestes.rbxl` | Publie la place (version « Published », **visible des joueurs**) et note le numéro de version dans `build/derniere-publication.json` |
+| `python3 pipeline/opencloud.py publier build/iles-celestes.rbxl --brouillon` | Envoie la place en version « Saved » : enregistrée mais **pas publiée**, pour la tester dans le vrai moteur avant les joueurs |
 | `python3 pipeline/opencloud.py tester` | Lance `pipeline/reel/tests.luau` dans le vrai moteur sur la version publiée, affiche le journal du serveur Roblox, écrit `reports/<map>-moteur-reel.md` et `.json`. Code de sortie 1 si un test échoue |
 
-Ordre habituel : `boutique` → `./pipeline/run.sh` → `publier` → `tester`.
+Ordre habituel : `boutique` → `./pipeline/run.sh` → `publier --brouillon` →
+`tester` → si tout est vert, `publier` (puis `tester` à nouveau).
 
 **Ce qui est testé dans le vrai moteur** (dernier rapport :
 [`reports/iles-celestes-moteur-reel.md`](../reports/iles-celestes-moteur-reel.md)) :
@@ -72,7 +74,14 @@ Ordre habituel : `boutique` → `./pipeline/run.sh` → `publier` → `tester`.
   « serveurs », libération, refus d'écraser). Il utilise un DataStore séparé,
   `Tests_Pipeline`, et supprime sa clé de test à la fin ;
 - la boutique : chaque ID de `Configuration.luau` est un vrai objet Roblox, en
-  vente, au prix prévu (`MarketplaceService:GetProductInfo`).
+  vente, au prix prévu (`MarketplaceService:GetProductInfo`) ;
+- le **Terrain** : le plan `ServerStorage.PlanTerrain` se rejoue sans erreur,
+  chaque île a de l'herbe exactement au niveau prévu, chaque cristal a un sol
+  dessous (pièce ou Terrain), la grotte secrète et le passage pour y descendre
+  ne sont pas bouchés, et l'éclairage réaliste est actif. Dans cet
+  environnement la physique ne tourne pas : le Terrain n'a pas de collisions et
+  les rayons le traversent, donc ces tests lisent directement ses voxels
+  (`Terrain:ReadVoxels`).
 
 **Limites de cet environnement** (documentation officielle :
 <https://create.roblox.com/docs/cloud/reference/features/luau-execution.md>) :
@@ -81,6 +90,25 @@ et il n'y a pas de vrai joueur. Les deux tests qui tentent de démarrer
 `Principal` et le script de la map sont donc marqués « non vérifiables », pas
 « réussis ». Le parcours joueur complet reste couvert par
 `tests/integration.test.luau` (moteur simulé).
+
+## Rendu réaliste et Terrain
+
+La map `iles-celestes` est rendue de façon réaliste sans aucun asset externe :
+
+- **îles en Terrain voxel** (herbe 3D animée, roche, basalte, terre) et **vraie
+  eau** (étang et rivière de l'Île des Cascades) ;
+- éclairage `Future` avec lumière et reflets tirés du ciel
+  (`EnvironmentDiffuseScale` / `EnvironmentSpecularScale` = 1), atmosphère,
+  nuages volumétriques, étalonnage neutre ;
+- matériaux texturés de Roblox (roche, calcaire, bois, métal, feuille d'or),
+  cristaux en verre éclairés de l'intérieur plutôt qu'en néon.
+
+Le Terrain ne peut pas être rempli hors de Roblox. La map enregistre donc chaque
+opération dans `ServerStorage.PlanTerrain`, que son script de jeu rejoue au
+démarrage du serveur (dans Studio, la map remplit le Terrain directement). Le
+Terrain est fait de **voxels de 4 studs** : les dessus des îles sont à des
+hauteurs multiples de 4, sinon la surface est arrondie (défaut trouvé dans le
+vrai moteur : sol 2 studs trop bas, herbe perdue).
 
 ## Noyau commun (`src/`)
 
@@ -162,7 +190,11 @@ modifie `StarterPlayer` ou `Workspace.Gravity`, ce sont ses valeurs qui comptent
 - **Approximation géométrique**, pas une simulation physique : les murs ne
   bloquent pas les trajectoires (on peut surestimer l'accès), les pièces sont
   réduites à leur boîte englobante. Un « inaccessible » doit être confirmé en jeu.
-- Le **Terrain voxel** n'est pas analysé (seulement les pièces).
+- Le **Terrain voxel** n'existe pas hors de Roblox : le validateur lit le plan
+  `ServerStorage.PlanTerrain` écrit par la map et transforme ses sols
+  « marchables » (dessus des îles) en pièces virtuelles. Le reste du Terrain
+  (roche, eau, creusements) n'est pas modélisé ; il est vérifié dans le vrai
+  moteur (voir plus haut).
 - `Random` est simulé par un générateur maison : les détails aléatoires
   (position exacte d'une fleur…) diffèrent de ceux de Roblox. La structure de
   la map, elle, est identique.

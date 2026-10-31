@@ -14,8 +14,10 @@ Usage :
         vaut 0 (nom, description, prix, mis en vente), puis écrit leur id dans
         Configuration.luau. Ne crée jamais de doublon : un objet du même nom
         déjà présent sur Roblox est réutilisé.
-    python3 pipeline/opencloud.py publier build/iles-celestes.rbxl
-        Publie la place (version « Published », visible des joueurs).
+    python3 pipeline/opencloud.py publier build/iles-celestes.rbxl [--brouillon]
+        Publie la place (version « Published », visible des joueurs). Avec
+        --brouillon : version « Saved », enregistrée mais PAS publiée, pour la
+        tester dans le vrai moteur avant de la rendre visible.
     python3 pipeline/opencloud.py tester [--version N] [--map iles-celestes]
         Lance pipeline/reel/tests.luau dans le vrai moteur Roblox (API « Luau
         Execution ») sur la version publiée, affiche les journaux et écrit
@@ -237,8 +239,10 @@ def commande_publier(args) -> int:
     if fichier.suffix not in (".rbxl", ".rbxlx"):
         sys.exit("✖ Fichier .rbxl ou .rbxlx attendu.")
     type_contenu = "application/octet-stream" if fichier.suffix == ".rbxl" else "application/xml"
-    url = f"{API}/universes/v1/{exp['universeId']}/places/{exp['placeId']}/versions?versionType=Published"
-    print(f"▶ Publication de {fichier} ({fichier.stat().st_size / 1024:.0f} Ko) sur la place {exp['placeId']}")
+    type_version = "Saved" if args.brouillon else "Published"
+    url = f"{API}/universes/v1/{exp['universeId']}/places/{exp['placeId']}/versions?versionType={type_version}"
+    action = "Envoi en brouillon (non publié)" if args.brouillon else "Publication"
+    print(f"▶ {action} de {fichier} ({fichier.stat().st_size / 1024:.0f} Ko) sur la place {exp['placeId']}")
     reponse = requete("POST", url, corps=fichier.read_bytes(), type_contenu=type_contenu)
     version = reponse.get("versionNumber") if isinstance(reponse, dict) else reponse
     if version is None:
@@ -251,12 +255,16 @@ def commande_publier(args) -> int:
                 "versionNumber": int(version),
                 "fichier": str(fichier),
                 "map": fichier.stem,
+                "publiee": not args.brouillon,
                 "date": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             },
             indent=2,
         )
     )
-    print(f"✔ Publiée : version {version} — https://www.roblox.com/games/{exp['placeId']}")
+    if args.brouillon:
+        print(f"✔ Brouillon enregistré : version {version} (invisible des joueurs) — à tester avec `tester`")
+    else:
+        print(f"✔ Publiée : version {version} — https://www.roblox.com/games/{exp['placeId']}")
     return 0
 
 
@@ -403,6 +411,7 @@ def main() -> int:
     sous.add_parser("boutique").set_defaults(fonction=commande_boutique)
     p = sous.add_parser("publier")
     p.add_argument("fichier")
+    p.add_argument("--brouillon", action="store_true", help="version Saved (non publiée)")
     p.set_defaults(fonction=commande_publier)
     t = sous.add_parser("tester")
     t.add_argument("--version", type=int)
