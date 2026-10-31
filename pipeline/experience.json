@@ -1,0 +1,5 @@
+{
+  "_commentaire": "Identifiants publics de l'expérience Roblox (pas des secrets). La clé API, elle, est lue dans la variable d'environnement ROBLOX_API_KEY et ne doit jamais être écrite dans le repo. Lien place → univers vérifié via apis.roblox.com/universes/v1/places/{placeId}/universe.",
+  "universeId": 10774067194,
+  "placeId": 116414227319701
+}

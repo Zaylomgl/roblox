@@ -1,0 +1,44 @@
+name: Pipeline maps Roblox
+
+# À chaque push ou pull request : tests du validateur, lint, construction et
+# validation de toutes les maps. Les rapports sont publiés en artefact.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  valider:
+    runs-on: ubuntu-latest
+    env:
+      LUNE_VERSION: 0.11.1
+      SELENE_VERSION: 0.31.0
+      STYLUA_VERSION: 2.6.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache des outils (lune, selene, stylua)
+        id: cache-outils
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: outils-${{ runner.os }}-lune${{ env.LUNE_VERSION }}-selene${{ env.SELENE_VERSION }}-stylua${{ env.STYLUA_VERSION }}
+
+      - name: Installation des outils
+        if: steps.cache-outils.outputs.cache-hit != 'true'
+        run: |
+          cargo install --locked lune@${LUNE_VERSION}
+          cargo install --locked selene@${SELENE_VERSION}
+          cargo install --locked stylua@${STYLUA_VERSION}
+
+      - name: Lancer le pipeline
+        run: ./pipeline/run.sh
+
+      - name: Publier les rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports
+          path: |
+            reports/
+            build/*.rbxl

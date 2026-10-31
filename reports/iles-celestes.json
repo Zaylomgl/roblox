@@ -1,0 +1,73 @@
+{
+  "accessibilite": {
+    "collectiblesAccessibles": 50,
+    "collectiblesTotal": 50,
+    "profondeurMaxCollectibles": 24,
+    "profondeurMedianeCollectibles": 17,
+    "surfacesAtteintes": 434,
+    "surfacesMarchables": 460
+  },
+  "ambiance": {
+    "Atmosphere": true,
+    "BloomEffect": true,
+    "ColorCorrectionEffect": true,
+    "Sky": true,
+    "SunRaysEffect": true
+  },
+  "fichier": "build/iles-celestes.rbxl",
+  "map": "iles-celestes",
+  "monde": {
+    "fallenPartsDestroyHeight": 60,
+    "gravite": 196.1999969482422,
+    "hauteurSautTheorique": 6.37,
+    "porteeSautAPlat": 8.15,
+    "vitesseMarche": 16
+  },
+  "problemes": [
+    {
+      "categorie": "Revenus",
+      "code": "PAS_DE_MONETISATION",
+      "gravite": "avertissement",
+      "message": "Aucun script n'utilise MarketplaceService : aucun pass ni produit n'est vendu, le jeu ne peut pas rapporter de Robux par achats."
+    },
+    {
+      "categorie": "Rétention",
+      "code": "PAS_DE_SAUVEGARDE",
+      "gravite": "avertissement",
+      "message": "Aucun script n'utilise DataStoreService : la progression des joueurs est perdue à chaque départ, ce qui retire une grosse raison de revenir."
+    },
+    {
+      "categorie": "Rétention",
+      "code": "PAS_DE_BADGES",
+      "gravite": "info",
+      "message": "Aucun badge : les badges donnent des objectifs à long terme aux joueurs."
+    }
+  ],
+  "resume": {
+    "avertissement": 2,
+    "erreur": 0,
+    "info": 1
+  },
+  "statistiques": {
+    "collectibles": 50,
+    "emetteursParticules": 106,
+    "lumieres": 100,
+    "lumieresAvecOmbres": 0,
+    "meshParts": 0,
+    "objets": 1350,
+    "padsDeSaut": 5,
+    "particulesParSeconde": 224.10000085830688,
+    "pieces": 1047,
+    "piecesNonAncrees": 0,
+    "scripts": 1,
+    "sons": 50,
+    "spawns": 1
+  },
+  "statut": "OK",
+  "systemes": {
+    "AdService": false,
+    "BadgeService": false,
+    "DataStoreService": false,
+    "MarketplaceService": false
+  }
+}

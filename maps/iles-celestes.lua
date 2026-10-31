@@ -1284,17 +1284,33 @@ for _, milieu in ipairs(milieuxPonts) do
 end
 
 -- Chemins de pierres volantes entre les îles extérieures (routes alternatives)
-local function creerCheminPierres(defA, defB, nb)
+--
+-- Le nombre de pierres dépend de la distance entre les îles : avec un saut
+-- Roblox par défaut (≈ 8 studs de portée à plat, moins en montée), un écart
+-- fixe de 7 pierres laissait des vides de 9 à 15 studs, donc des chemins
+-- impossibles (détecté par pipeline/validate). On vise ~7,5 studs entre deux
+-- centres, soit ~2,5 à 4 studs de vide : facile, y compris sur mobile.
+local ESPACEMENT_PIERRES = 7.5
+local DECALAGE_LATERAL_MAX = 1.2
+
+local function creerCheminPierres(defA, defB)
 	local dossier = Instance.new("Folder")
 	dossier.Name = "CheminPierres"
 	dossier.Parent = dossierPonts
 
 	local a = pointBord(defA, defB.centre)
 	local b = pointBord(defB, defA.centre)
+	local distance = ((b - a) * Vector3.new(1, 0, 1)).Magnitude
+	local nb = math.max(3, math.ceil(distance / ESPACEMENT_PIERRES) - 1)
+	-- Décalage latéral (perpendiculaire au chemin) : garde un tracé vivant sans
+	-- jamais allonger les sauts de plus de quelques dixièmes de stud.
+	local lateral = tourner((b - a) * Vector3.new(1, 0, 1), math.pi / 2).Unit
 	local sommets = {}
 	for i = 1, nb do
 		local t = i / (nb + 1)
-		local pos = a:Lerp(b, t) + Vector3.new(jitter(3), math.sin(math.pi * t) * 7, jitter(3))
+		local pos = a:Lerp(b, t)
+			+ lateral * jitter(DECALAGE_LATERAL_MAX)
+			+ Vector3.new(0, math.sin(math.pi * t) * 7, 0)
 		local diametre = rng:NextNumber(5, 7)
 		cylindreVertical(pos, 1.7, diametre, {
 			Material = Enum.Material.Slate, Color = PALETTE.Roche,
@@ -1310,9 +1326,9 @@ local function creerCheminPierres(defA, defB, nb)
 end
 
 for _, route in ipairs({ { "Foret", "Cascades" }, { "Cascades", "Ruines" } }) do
-	local sommets = creerCheminPierres(ILES[route[1]], ILES[route[2]], 7)
-	creerCristalCollectible(sommets[3] + Vector3.new(0, 2.2, 0), 1)
-	creerCristalCollectible(sommets[5] + Vector3.new(0, 2.2, 0), 1)
+	local sommets = creerCheminPierres(ILES[route[1]], ILES[route[2]])
+	creerCristalCollectible(sommets[math.max(1, math.floor(#sommets / 3))] + Vector3.new(0, 2.2, 0), 1)
+	creerCristalCollectible(sommets[math.max(1, math.floor(#sommets * 2 / 3))] + Vector3.new(0, 2.2, 0), 1)
 end
 
 -- Pads de saut : l'escalier céleste des Ruines jusqu'au Sanctuaire
@@ -1370,7 +1386,7 @@ do
 	table.insert(positions, arriveeEscalier + Vector3.new(0, 1, 0))
 
 	for i = 1, nbPads do
-		local pad = creerPadSaut(positions[i], positions[i + 1])
+		creerPadSaut(positions[i], positions[i + 1])
 		if i > 1 then -- un rocher porte chaque pad flottant
 			creerPart({
 				Shape = Enum.PartType.Ball, Size = Vector3.new(4.5, 4.5, 4.5),
