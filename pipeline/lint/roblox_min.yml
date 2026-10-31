@@ -51,3 +51,4 @@ globals:
   delay: { any: true, deprecated: { message: "utiliser task.delay" } }
   warn: { any: true }
   typeof: { any: true }
+  version: { any: true }
