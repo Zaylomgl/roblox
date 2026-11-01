@@ -16,8 +16,9 @@ lune run pipeline/test
 
 echo "═══ 2/4 Lint et formatage (pipeline + scripts du jeu)"
 selene pipeline/
-(cd pipeline/lint && selene ../../src ../reel)
-stylua --check pipeline/ src/
+(cd pipeline/lint && selene ../../src ../reel ../../rpg/src ../../rpg/outils)
+stylua --check pipeline/ src/ rpg/src/ rpg/outils/
+lune run rpg/outils/construire-installateur
 
 if [ "$#" -gt 0 ]; then maps=("$@"); else maps=(maps/*.lua); fi
 

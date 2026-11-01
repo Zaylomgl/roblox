@@ -250,3 +250,31 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 ]==]
+
+-- ===== 7. Petites corrections (épée, SpawnLocation, Échelle) — exécuté le 01/11/2026 =====
+-- (exporté dans ExportArene_Code.lua avant ces corrections : la version actuelle de la scène a l'épée en X=-9,
+--  le SpawnLocation invisible et plus d'Échelle)
+local G = workspace.Givrecendre
+-- épée la plus proche de (-1, 4, 29) dans Details -> X = -9
+local target = Vector3.new(-1, 4, 29)
+local best, bd
+for _, c in ipairs(G.ArenaOgre.Details:GetChildren()) do
+	local pos
+	if c:IsA("Model") then pos = c:GetPivot().Position elseif c:IsA("BasePart") then pos = c.Position end
+	if pos then
+		local d = (pos - target).Magnitude
+		if not bd or d < bd then best, bd = c, d end
+	end
+end
+if best and bd < 6 then
+	local before = (best:IsA("Model") and best:GetPivot().Position or best.Position)
+	if best:IsA("Model") then best:PivotTo(best:GetPivot() + Vector3.new(-9 - before.X, 0, 0)) else best.Position += Vector3.new(-9 - before.X, 0, 0) end
+end
+-- SpawnLocation : invisible, collision conservée, decals supprimés (il n'y en avait aucun)
+local sp = G.ArenaOgre.SpawnLocation
+for _, d in ipairs(sp:GetDescendants()) do if d:IsA("Decal") or d:IsA("Texture") then d:Destroy() end end
+sp.Transparency = 1
+-- Échelle supprimée
+local e = G:FindFirstChild("Echelle")
+if e then e:Destroy() end
+game:GetService("Selection"):Set({})

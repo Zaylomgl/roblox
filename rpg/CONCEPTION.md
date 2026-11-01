@@ -86,12 +86,29 @@ Les boss servent à **l'avancement** : chacun ouvre la zone suivante.
 - 💡 Quatre branches : **Guerrier** (mêlée), **Chasseur** (distance),
   **Arcaniste** (magie), **Survie** (vie, endurance, roulade).
 
-## 6. Combat (💡)
+## 6. Combat
 
 Endurance, attaque légère et lourde, roulade avec invulnérabilité,
 verrouillage de cible, fioles de soin, points de repos qui font
 réapparaître les ennemis. Calculs de dégâts côté serveur (anti-triche).
 Commandes tactiles pour le mobile.
+
+Prototype codé (`rpg/src/`, chiffres dans `Regles.luau`, 💡 à équilibrer en
+jouant) :
+- Joueur : 100 PV, 100 d'endurance (+30/s après 0,8 s sans agir) ; coup
+  léger 14 dégâts / 15 d'endurance, coup lourd 34 / 35, roulade 25
+  (invulnérable 0,35 s), 3 fioles de +45 PV, pas de régénération auto.
+- Commandes : clic gauche (coup), F (lourd), Q (roulade), R (fiole) ;
+  manette R1 / R2 / B / X ; boutons à l'écran sur mobile.
+- Grimmulf : 1 600 PV ; balayage, onde de choc (on l'évite aussi en
+  sautant), charge à distance ; à 50 % : rugissement, attaques 25 % plus
+  rapides, lancer de rochers. Chaque attaque est annoncée par une zone
+  rouge au sol. Il se régénère si tout le monde meurt ou quitte la cour, et
+  réapparaît 45 s après sa mort.
+- 💡 Revaincre un boss ne redonne que 100 XP (les récompenses permanentes
+  ne se gagnent qu'une fois).
+- Pas encore : armes visibles, animations, verrouillage de cible, points de
+  repos, les 15 armes.
 
 ## 7. Monétisation (✅ / 💡)
 
