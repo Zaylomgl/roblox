@@ -220,6 +220,34 @@ end
 --------------------------------------------------------------------------------
 
 local pivotDepart = ogre:GetPivot()
+
+-- La massue est une pièce séparée du corps (vérifié dans la place le 01/11/2026) :
+-- on la fait tourner autour de la poignée (extrémité basse de son axe le plus long).
+local massue = ogre:FindFirstChild("Massue")
+local massueRel: CFrame? = nil -- position de la massue dans le repère de l'Ogre
+local repereMain: CFrame? = nil -- repère de la main : -Z = avant de l'Ogre, Y = haut
+if massue and massue:IsA("Model") then
+	local cf, taille = massue:GetBoundingBox()
+	local axe = cf.UpVector * taille.Y / 2
+	if taille.X > taille.Y and taille.X >= taille.Z then
+		axe = cf.RightVector * taille.X / 2
+	elseif taille.Z > taille.Y then
+		axe = cf.LookVector * taille.Z / 2
+	end
+	if axe.Y > 0 then
+		axe = -axe -- vers l'extrémité basse = la poignée
+	end
+	local poignee = cf.Position + axe - axe.Unit * 3
+	massueRel = pivotDepart:Inverse() * massue:GetPivot()
+	local mainLocale = pivotDepart:PointToObjectSpace(poignee)
+	repereMain = CFrame.lookAt(
+		mainLocale,
+		mainLocale + pivotDepart:VectorToObjectSpace(Vector3.new(0, 0, 1)),
+		pivotDepart:VectorToObjectSpace(Vector3.new(0, 1, 0))
+	)
+else
+	massue = nil
+end
 -- Au départ, le modèle regarde le portail (+Z) : on tourne autour de l'axe vertical
 -- de l'écart entre la direction voulue et +Z, en gardant sa rotation d'origine.
 local function lacet(v: Vector3): number
@@ -236,18 +264,26 @@ local position = pivotDepart.Position
 local direction = Vector3.new(0, 0, 1)
 -- Pose du corps (animation procédurale : le modèle est d'un seul bloc) :
 -- lacet = torsion, hauteur = saut / écrasement, inclinaison = avant / arrière.
-local pose = { lacet = 0, hauteur = 0, inclinaison = 0 }
+local pose = { lacet = 0, hauteur = 0, inclinaison = 0, massueP = 0, massueY = 0 }
 local coupDepuis = -math.huge -- instant du dernier coup (claquement rapide)
 local attaqueEnCours: string? = nil
 local enfoncement = 0 -- descente dans le sol à la mort
 
 local function placerOgre()
-	ogre:PivotTo(
-		CFrame.new(position + Vector3.new(0, pose.hauteur - enfoncement, 0))
-			* CFrame.Angles(0, lacet(direction) - lacet(Vector3.new(0, 0, 1)) + pose.lacet, 0)
-			* CFrame.Angles(pose.inclinaison, 0, 0)
-			* pivotDepart.Rotation
-	)
+	local corps = CFrame.new(position + Vector3.new(0, pose.hauteur - enfoncement, 0))
+		* CFrame.Angles(0, lacet(direction) - lacet(Vector3.new(0, 0, 1)) + pose.lacet, 0)
+		* CFrame.Angles(pose.inclinaison, 0, 0)
+		* pivotDepart.Rotation
+	ogre:PivotTo(corps)
+	if massue and massueRel and repereMain then
+		-- massueP > 0 : la tête part en arrière (armer) ; < 0 : vers l'avant (abattre).
+		-- massueY : rotation horizontale (balayage).
+		local rotation = repereMain
+			* CFrame.Angles(0, pose.massueY, 0)
+			* CFrame.Angles(pose.massueP, 0, 0)
+			* repereMain:Inverse()
+		massue:PivotTo(corps * rotation * massueRel)
+	end
 end
 
 local function telegraphe(forme: string, cf: CFrame, taille: Vector3, duree: number)
@@ -454,7 +490,9 @@ local function reapparaitre()
 	position = pivotDepart.Position
 	direction = Vector3.new(0, 0, 1)
 	enfoncement = 0
-	pose.lacet, pose.hauteur, pose.inclinaison = 0, 0, 0
+	for cle in pose do
+		pose[cle] = 0
+	end
 	attaqueEnCours = nil
 	charge, mortA, cible = nil, nil, nil
 	placerOgre()
@@ -505,20 +543,28 @@ evAction.OnServerEvent:Connect(function(joueur: Player, action: any)
 end)
 
 -- Pose visée selon l'attaque : préparation (lente, lisible) puis coup (claquement).
+local function P(lacet_, hauteur, inclinaison, massueP, massueY)
+	return { lacet = lacet_, hauteur = hauteur, inclinaison = inclinaison, massueP = massueP, massueY = massueY }
+end
+-- prep : position armée (lente, lisible) ; coup : fin du geste (rapide).
 local POSES = {
-	balayage = { prep = { lacet = -0.8, hauteur = 0, inclinaison = -0.06 }, coup = { lacet = 1.0, hauteur = 0, inclinaison = 0.08 } },
-	onde = { prep = { lacet = 0, hauteur = 6, inclinaison = -0.22 }, coup = { lacet = 0, hauteur = -1.2, inclinaison = 0.18 } },
-	charge = { prep = { lacet = 0, hauteur = -1, inclinaison = 0.12 }, coup = { lacet = 0, hauteur = 0, inclinaison = 0.3 } },
-	rocher = { prep = { lacet = -0.4, hauteur = 0, inclinaison = -0.35 }, coup = { lacet = 0.3, hauteur = 0, inclinaison = 0.28 } },
+	-- Massue tendue sur le côté droit, puis balayée d'un coup vers la gauche.
+	balayage = { prep = P(-0.5, 0, -0.04, -1.35, -1.4), coup = P(0.7, 0, 0.06, -1.35, 1.8) },
+	-- Massue levée loin derrière la tête, puis écrasée au sol devant lui.
+	onde = { prep = P(0, 1.2, -0.18, 1.3, 0), coup = P(0, -0.6, 0.2, -2.25, 0) },
+	-- Massue pointée vers l'avant comme un bélier.
+	charge = { prep = P(0, -0.6, 0.1, -0.6, 0.2), coup = P(0, 0, 0.25, -1.1, 0) },
+	-- Bras armé en arrière, puis lancer vers l'avant.
+	rocher = { prep = P(-0.35, 0, -0.3, 1.6, -0.3), coup = P(0.25, 0, 0.22, -0.7, 0.2) },
 }
-local REPOS = { lacet = 0, hauteur = 0, inclinaison = 0 }
+local REPOS = P(0, 0, 0, 0, 0)
 
 local function animer(dt: number, t: number)
 	local cibleP, vitesse = REPOS, 3
 	local p = attaqueEnCours and POSES[attaqueEnCours]
 	if ia.etat == "rage" then
 		-- Rugissement : se dresse et tremble.
-		cibleP = { lacet = math.sin(t * 40) * 0.04, hauteur = 2, inclinaison = -0.25 }
+		cibleP = P(math.sin(t * 40) * 0.04, 1, -0.2, 0.9 + math.sin(t * 25) * 0.15, 0)
 		vitesse = 8
 	elseif p and ia.etat == "preparation" then
 		cibleP, vitesse = p.prep, 2.5
@@ -526,7 +572,7 @@ local function animer(dt: number, t: number)
 		cibleP, vitesse = p.coup, 22
 	elseif ia.etat == "poursuite" then
 		-- Marche lourde : balancement.
-		cibleP = { lacet = math.sin(t * 3) * 0.06, hauteur = math.abs(math.sin(t * 3)) * 0.8, inclinaison = 0.04 }
+		cibleP = P(math.sin(t * 3) * 0.06, math.abs(math.sin(t * 3)) * 0.6, 0.04, 0.25 + math.sin(t * 3) * 0.15, 0)
 		vitesse = 6
 	end
 	local k = math.min(1, dt * vitesse)
