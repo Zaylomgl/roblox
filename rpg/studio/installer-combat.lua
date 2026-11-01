@@ -48,23 +48,25 @@ Regles.OGRE = {
 	vieMax = 1600,
 	rayonCorps = 9, -- studs : les coups du joueur touchent jusqu'à portée + rayonCorps
 	seuilPhase2 = 0.5,
-	vitesse = 13,
-	vitessePhase2 = 17,
+	vitesse = 8,
+	vitessePhase2 = 10.5,
+	rotation = 1.6, -- radians par seconde (il ne se retourne pas instantanément)
+	rotationPhase2 = 2.1,
 	rage = 2.2, -- secondes de rugissement au passage en phase 2 (pas d'attaque)
-	accelerationPhase2 = 0.75, -- préparations raccourcies en phase 2
+	accelerationPhase2 = 0.85, -- préparations raccourcies en phase 2
 	attaques = {
-		balayage = { portee = 24, angle = 150, degats = 28, preparation = 0.9, recuperation = 1.2 },
-		onde = { portee = 20, rayon = 26, degats = 34, preparation = 1.3, recuperation = 1.7 },
+		balayage = { portee = 24, angle = 150, degats = 28, preparation = 1.25, recuperation = 1.5 },
+		onde = { portee = 20, rayon = 26, degats = 34, preparation = 1.7, recuperation = 2.0 },
 		charge = {
 			porteeMin = 26,
 			porteeMax = 80,
 			largeur = 12,
-			vitesse = 70,
+			vitesse = 46,
 			degats = 38,
-			preparation = 1.0,
-			recuperation = 1.9,
+			preparation = 1.4,
+			recuperation = 2.2,
 		},
-		rocher = { porteeMin = 30, porteeMax = 90, rayon = 9, degats = 30, preparation = 1.1, recuperation = 1.3 },
+		rocher = { porteeMin = 30, porteeMax = 90, rayon = 9, degats = 30, preparation = 1.5, recuperation = 1.6 },
 	},
 }
 
@@ -404,7 +406,9 @@ function IA.subirDegats(ia: IA, montant: number): number
 end
 
 -- Un pas de simulation. `distance` = nil si aucune cible (personne dans l'arène).
-function IA.mettreAJour(ia: IA, t: number, distance: number?): { any }
+-- `deFace` = false si l'Ogre ne regarde pas encore sa cible : il se tourne d'abord
+-- (sauf pour l'onde de choc et la charge, qui n'en ont pas besoin).
+function IA.mettreAJour(ia: IA, t: number, distance: number?, deFace: boolean?): { any }
 	local ordres = {}
 	local O = Regles.OGRE
 
@@ -456,6 +460,9 @@ function IA.mettreAJour(ia: IA, t: number, distance: number?): { any }
 
 	-- Poursuite : attaquer si possible, sinon avancer.
 	local nom = IA.choisir(ia, distance)
+	if (nom == "balayage" or nom == "rocher") and deFace == false then
+		nom = nil -- se tourner d'abord
+	end
 	if nom then
 		if nom == ia.derniere then
 			ia.repetitions += 1
@@ -582,8 +589,56 @@ local function appliquerVie(joueur: Player)
 	end
 end
 
+-- Épée de chevalier (en attendant les vrais modèles d'armes), soudée à la main droite.
+local function donnerEpee(perso: Model)
+	local main = perso:WaitForChild("RightHand", 3) or perso:FindFirstChild("Right Arm")
+	if not (main and main:IsA("BasePart")) then
+		return
+	end
+	local r6 = main.Name == "Right Arm"
+	local epee = Instance.new("Model")
+	epee.Name = "EpeeChevalier"
+	local function piece(nom, taille, decalageY, couleur, matiere, forme)
+		local p = Instance.new("Part")
+		p.Name = nom
+		p.Size = taille
+		p.Color = couleur
+		p.Material = matiere
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.Massless = true
+		if forme then
+			p.Shape = forme
+		end
+		p:SetAttribute("Y", decalageY)
+		p.Parent = epee
+		return p
+	end
+	local poignee = piece("Poignee", Vector3.new(0.28, 1.2, 0.28), 0, Color3.fromRGB(52, 36, 28), Enum.Material.Wood)
+	piece("Pommeau", Vector3.new(0.45, 0.45, 0.45), -0.7, Color3.fromRGB(120, 112, 100), Enum.Material.Metal, Enum.PartType.Ball)
+	piece("Garde", Vector3.new(1.5, 0.22, 0.32), 0.7, Color3.fromRGB(110, 104, 95), Enum.Material.Metal)
+	piece("Lame", Vector3.new(0.32, 4.2, 0.08), 2.9, Color3.fromRGB(170, 175, 182), Enum.Material.Metal)
+	-- La lame part vers l'avant de la main (axe -Z de la main).
+	local prise = main.CFrame * CFrame.new(0, r6 and -1 or -0.3, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+	for _, p in epee:GetChildren() do
+		p.CFrame = prise * CFrame.new(0, p:GetAttribute("Y"), 0)
+		if p ~= poignee then
+			local w = Instance.new("WeldConstraint")
+			w.Part0, w.Part1 = poignee, p
+			w.Parent = p
+		end
+	end
+	local soudure = Instance.new("Weld")
+	soudure.Part0, soudure.Part1 = main, poignee
+	soudure.C0 = main.CFrame:Inverse() * prise
+	soudure.Parent = poignee
+	epee.Parent = perso
+end
+
 local function personnageArrive(joueur: Player, perso: Model)
 	etats[joueur] = Regles.nouvelEtatJoueur(os.clock())
+	task.spawn(donnerEpee, perso)
 	local h = perso:WaitForChild("Humanoid", 10) :: Humanoid?
 	if h then
 		h.MaxHealth = Regles.JOUEUR.vieMax
@@ -649,14 +704,18 @@ local function lacet(v: Vector3): number
 end
 local position = pivotDepart.Position
 local direction = Vector3.new(0, 0, 1)
-local inclinaison = 0 -- recul pendant la préparation d'une attaque
+-- Pose du corps (animation procédurale : le modèle est d'un seul bloc) :
+-- lacet = torsion, hauteur = saut / écrasement, inclinaison = avant / arrière.
+local pose = { lacet = 0, hauteur = 0, inclinaison = 0 }
+local coupDepuis = -math.huge -- instant du dernier coup (claquement rapide)
+local attaqueEnCours: string? = nil
 local enfoncement = 0 -- descente dans le sol à la mort
 
 local function placerOgre()
 	ogre:PivotTo(
-		CFrame.new(position - Vector3.new(0, enfoncement, 0))
-			* CFrame.Angles(0, lacet(direction) - lacet(Vector3.new(0, 0, 1)), 0)
-			* CFrame.Angles(inclinaison, 0, 0)
+		CFrame.new(position + Vector3.new(0, pose.hauteur - enfoncement, 0))
+			* CFrame.Angles(0, lacet(direction) - lacet(Vector3.new(0, 0, 1)) + pose.lacet, 0)
+			* CFrame.Angles(pose.inclinaison, 0, 0)
 			* pivotDepart.Rotation
 	)
 end
@@ -747,7 +806,9 @@ local function preparer(nom: string, duree: number)
 	local c = cible and racine(cible)
 	if c then
 		local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
-		if v.Magnitude > 0.1 then
+		-- Seule la charge se verrouille droit sur la cible ; le reste garde
+		-- l'orientation (il se tourne lentement en marchant).
+		if nom == "charge" and v.Magnitude > 0.1 then
 			direction = v.Unit
 		end
 		attaqueVisee = Vector3.new(c.Position.X, CENTRE.Y, c.Position.Z)
@@ -778,7 +839,7 @@ end
 
 local function frapper(nom: string)
 	local A = Regles.OGRE.attaques
-	inclinaison = 0
+	coupDepuis = os.clock()
 	if nom == "balayage" then
 		local a = A.balayage
 		for _, j in Players:GetPlayers() do
@@ -862,7 +923,9 @@ local function reapparaitre()
 	IA.reinitialiser(ia)
 	position = pivotDepart.Position
 	direction = Vector3.new(0, 0, 1)
-	inclinaison, enfoncement = 0, 0
+	enfoncement = 0
+	pose.lacet, pose.hauteur, pose.inclinaison = 0, 0, 0
+	attaqueEnCours = nil
 	charge, mortA, cible = nil, nil, nil
 	placerOgre()
 end
@@ -910,6 +973,48 @@ evAction.OnServerEvent:Connect(function(joueur: Player, action: any)
 		end
 	end)
 end)
+
+-- Pose visée selon l'attaque : préparation (lente, lisible) puis coup (claquement).
+local POSES = {
+	balayage = { prep = { lacet = -0.8, hauteur = 0, inclinaison = -0.06 }, coup = { lacet = 1.0, hauteur = 0, inclinaison = 0.08 } },
+	onde = { prep = { lacet = 0, hauteur = 6, inclinaison = -0.22 }, coup = { lacet = 0, hauteur = -1.2, inclinaison = 0.18 } },
+	charge = { prep = { lacet = 0, hauteur = -1, inclinaison = 0.12 }, coup = { lacet = 0, hauteur = 0, inclinaison = 0.3 } },
+	rocher = { prep = { lacet = -0.4, hauteur = 0, inclinaison = -0.35 }, coup = { lacet = 0.3, hauteur = 0, inclinaison = 0.28 } },
+}
+local REPOS = { lacet = 0, hauteur = 0, inclinaison = 0 }
+
+local function animer(dt: number, t: number)
+	local cibleP, vitesse = REPOS, 3
+	local p = attaqueEnCours and POSES[attaqueEnCours]
+	if ia.etat == "rage" then
+		-- Rugissement : se dresse et tremble.
+		cibleP = { lacet = math.sin(t * 40) * 0.04, hauteur = 2, inclinaison = -0.25 }
+		vitesse = 8
+	elseif p and ia.etat == "preparation" then
+		cibleP, vitesse = p.prep, 2.5
+	elseif p and (charge or t - coupDepuis < 0.3) then
+		cibleP, vitesse = p.coup, 22
+	elseif ia.etat == "poursuite" then
+		-- Marche lourde : balancement.
+		cibleP = { lacet = math.sin(t * 3) * 0.06, hauteur = math.abs(math.sin(t * 3)) * 0.8, inclinaison = 0.04 }
+		vitesse = 6
+	end
+	local k = math.min(1, dt * vitesse)
+	for cle, v in cibleP do
+		pose[cle] += (v - pose[cle]) * k
+	end
+end
+
+-- Tourne progressivement `direction` vers `voulu` (vitesse limitée).
+local function tourner(voulu: Vector3, dt: number)
+	local O = Regles.OGRE
+	local maxi = (ia.phase == 2 and O.rotationPhase2 or O.rotation) * dt
+	local ecart = lacet(voulu) - lacet(direction)
+	ecart = (ecart + math.pi) % (2 * math.pi) - math.pi
+	local a = lacet(direction) + math.clamp(ecart, -maxi, maxi)
+	direction = Vector3.new(-math.sin(a), 0, -math.cos(a))
+	return math.abs(ecart) <= maxi
+end
 
 -- Boucle principale
 local dernierEnvoi = 0
@@ -959,17 +1064,27 @@ RunService.Heartbeat:Connect(function(dt)
 			end
 		end
 
-		for _, ordre in IA.mettreAJour(ia, t, distance) do
+		-- Se tourner vers la cible (vitesse limitée) hors préparation et charge.
+		local deFace = true
+		if c and not charge and ia.etat ~= "preparation" and ia.etat ~= "attente" then
+			local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
+			if v.Magnitude > 0.1 then
+				local vitesseTour = ia.etat == "recuperation" and 0.35 or 1 -- lent à se retourner après un coup
+				deFace = tourner(v.Unit, dt * vitesseTour) or direction:Dot(v.Unit) > math.cos(math.rad(30))
+			end
+		end
+
+		for _, ordre in IA.mettreAJour(ia, t, distance, deFace) do
 			if ordre.type == "avancer" and c and not charge then
 				local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
-				if v.Magnitude > 0.1 then
-					direction = v.Unit
+				if v.Magnitude > Regles.OGRE.attaques.balayage.portee * 0.7 then
 					local suivant = position + direction * ordre.vitesse * dt
 					if (Vector3.new(suivant.X, 0, suivant.Z) - CENTRE).Magnitude <= RAYON_OGRE_MAX then
 						position = suivant
 					end
 				end
 			elseif ordre.type == "preparer" then
+				attaqueEnCours = ordre.attaque
 				preparer(ordre.attaque, ordre.duree)
 			elseif ordre.type == "frapper" then
 				frapper(ordre.attaque)
@@ -984,12 +1099,7 @@ RunService.Heartbeat:Connect(function(dt)
 			end
 		end
 
-		-- Recul pendant la préparation (lisibilité du télégraphe).
-		if ia.etat == "preparation" then
-			inclinaison = math.max(-0.18, inclinaison - dt * 0.25)
-		else
-			inclinaison = math.min(0, inclinaison + dt * 1.5)
-		end
+		animer(dt, t)
 		placerOgre()
 	end
 
@@ -1018,7 +1128,7 @@ print("[Combat] Grimmulf est prêt")
 installer("StarterPlayer", {"StarterPlayerScripts", "Givrecendre"}, "Combat", "LocalScript", [=[
 --[[
 	Combat de Givrecendre, côté client : commandes (PC, manette, mobile),
-	roulade, barres de vie / endurance / boss, messages.
+	animations du chevalier, roulade, barres de vie / endurance / boss, messages.
 
 	Le serveur fait autorité ; ce script garde une copie locale des règles
 	pour ne pas envoyer d'actions impossibles et réagir sans attendre.
@@ -1047,8 +1157,12 @@ local joueur = Players.LocalPlayer
 local local_ = Regles.nouvelEtatJoueur(os.clock())
 
 --------------------------------------------------------------------------------
--- Interface
+-- Interface : barres façon « métal patiné », traînée qui montre les dégâts subis
 --------------------------------------------------------------------------------
+
+local OR = Color3.fromRGB(176, 150, 98)
+local POLICE = Font.fromEnum(Enum.Font.Merriweather)
+POLICE.Weight = Enum.FontWeight.Bold
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "GivrecendreCombat"
@@ -1056,81 +1170,194 @@ gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = joueur:WaitForChild("PlayerGui")
 
-local POLICE = Enum.Font.Garamond
+-- Taille adaptée à l'écran (téléphone → grand écran).
+local echelle = Instance.new("UIScale")
+echelle.Parent = gui
+local function adapter()
+	local camera = workspace.CurrentCamera
+	local h = camera and camera.ViewportSize.Y or 720
+	echelle.Scale = math.clamp(h / 900, 0.6, 1.4)
+end
+adapter()
+if workspace.CurrentCamera then
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(adapter)
+end
 
-local function barre(nom: string, position: UDim2, taille: UDim2, couleur: Color3)
-	local fond = Instance.new("Frame")
-	fond.Name = nom
-	fond.Position = position
-	fond.Size = taille
-	fond.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-	fond.BackgroundTransparency = 0.25
-	fond.BorderSizePixel = 0
-	fond.Parent = gui
-	local bord = Instance.new("UIStroke")
-	bord.Color = Color3.fromRGB(120, 110, 95)
-	bord.Thickness = 1
-	bord.Parent = fond
+local function coins(objet: GuiObject, rayon: number)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, rayon)
+	c.Parent = objet
+end
+
+local function degrade(objet: GuiObject, haut: Color3, bas: Color3)
+	local g = Instance.new("UIGradient")
+	g.Color = ColorSequence.new(haut, bas)
+	g.Rotation = 90
+	g.Parent = objet
+end
+
+-- Crée une barre ; renvoie une fonction de mise à jour (valeur, max).
+local function creerBarre(parent: Instance, nom: string, taille: UDim2, position: UDim2, haut: Color3, bas: Color3)
+	local cadre = Instance.new("Frame")
+	cadre.Name = nom
+	cadre.Size = taille
+	cadre.Position = position
+	cadre.BackgroundColor3 = Color3.fromRGB(12, 11, 13)
+	cadre.BackgroundTransparency = 0.15
+	cadre.BorderSizePixel = 0
+	cadre.Parent = parent
+	coins(cadre, 3)
+	local contour = Instance.new("UIStroke")
+	contour.Color = OR
+	contour.Thickness = 1.5
+	contour.Transparency = 0.25
+	contour.Parent = cadre
+
+	local trainee = Instance.new("Frame")
+	trainee.Name = "Trainee"
+	trainee.Size = UDim2.fromScale(1, 1)
+	trainee.BackgroundColor3 = Color3.fromRGB(220, 190, 120)
+	trainee.BorderSizePixel = 0
+	trainee.Parent = cadre
+	coins(trainee, 3)
+
 	local plein = Instance.new("Frame")
 	plein.Name = "Plein"
 	plein.Size = UDim2.fromScale(1, 1)
-	plein.BackgroundColor3 = couleur
+	plein.BackgroundColor3 = Color3.new(1, 1, 1)
 	plein.BorderSizePixel = 0
-	plein.Parent = fond
-	return fond, plein
+	plein.Parent = cadre
+	coins(plein, 3)
+	degrade(plein, haut, bas)
+
+	-- Reflet en haut de la barre.
+	local reflet = Instance.new("Frame")
+	reflet.Size = UDim2.new(1, 0, 0.35, 0)
+	reflet.BackgroundColor3 = Color3.new(1, 1, 1)
+	reflet.BackgroundTransparency = 0.85
+	reflet.BorderSizePixel = 0
+	reflet.Parent = plein
+	coins(reflet, 3)
+
+	local texte = Instance.new("TextLabel")
+	texte.Size = UDim2.fromScale(1, 1)
+	texte.BackgroundTransparency = 1
+	texte.FontFace = POLICE
+	texte.TextScaled = true
+	texte.TextColor3 = Color3.fromRGB(240, 232, 215)
+	texte.TextStrokeTransparency = 0.3
+	texte.ZIndex = 3
+	texte.Parent = cadre
+	local limite = Instance.new("UITextSizeConstraint")
+	limite.MaxTextSize = 14
+	limite.Parent = texte
+
+	local precedent = 1
+	return function(valeur: number, max: number, afficherNombre: boolean?)
+		local f = math.clamp(valeur / max, 0, 1)
+		plein.Size = UDim2.fromScale(f, 1)
+		if f < precedent then
+			-- La traînée dorée rattrape la barre après un court instant.
+			TweenService:Create(
+				trainee,
+				TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.35),
+				{ Size = UDim2.fromScale(f, 1) }
+			):Play()
+		else
+			trainee.Size = UDim2.fromScale(f, 1)
+		end
+		precedent = f
+		texte.Text = afficherNombre and ("%d / %d"):format(math.ceil(valeur), max) or ""
+	end,
+		cadre
 end
 
-local _, barreVie = barre("Vie", UDim2.new(0, 24, 0, 24), UDim2.new(0, 300, 0, 14), Color3.fromRGB(150, 28, 24))
-local _, barreEndurance =
-	barre("Endurance", UDim2.new(0, 24, 0, 44), UDim2.new(0, 240, 0, 10), Color3.fromRGB(70, 130, 60))
+-- Bloc du joueur, en haut à gauche.
+local blocJoueur = Instance.new("Frame")
+blocJoueur.Name = "Joueur"
+blocJoueur.Position = UDim2.new(0, 28, 0, 28)
+blocJoueur.Size = UDim2.new(0, 360, 0, 80)
+blocJoueur.BackgroundTransparency = 1
+blocJoueur.Parent = gui
 
-local texteFioles = Instance.new("TextLabel")
-texteFioles.Position = UDim2.new(0, 24, 0, 60)
-texteFioles.Size = UDim2.new(0, 200, 0, 22)
-texteFioles.BackgroundTransparency = 1
-texteFioles.Font = POLICE
-texteFioles.TextSize = 20
-texteFioles.TextXAlignment = Enum.TextXAlignment.Left
-texteFioles.TextColor3 = Color3.fromRGB(225, 205, 160)
-texteFioles.TextStrokeTransparency = 0.4
-texteFioles.Parent = gui
-
-local cadreBoss, barreBoss = barre(
-	"Boss",
-	UDim2.new(0.5, -260, 1, -70),
-	UDim2.new(0, 520, 0, 12),
-	Color3.fromRGB(140, 24, 20)
+local majVie = creerBarre(
+	blocJoueur,
+	"Vie",
+	UDim2.new(0, 340, 0, 20),
+	UDim2.new(0, 0, 0, 0),
+	Color3.fromRGB(196, 44, 36),
+	Color3.fromRGB(110, 16, 14)
 )
+local majEndurance = creerBarre(
+	blocJoueur,
+	"Endurance",
+	UDim2.new(0, 260, 0, 12),
+	UDim2.new(0, 0, 0, 27),
+	Color3.fromRGB(120, 176, 92),
+	Color3.fromRGB(52, 98, 40)
+)
+
+-- Fioles : petites pastilles.
+local fioles = {}
+for i = 1, Regles.JOUEUR.fiole.nombre do
+	local f = Instance.new("Frame")
+	f.Size = UDim2.new(0, 14, 0, 20)
+	f.Position = UDim2.new(0, (i - 1) * 20, 0, 48)
+	f.BackgroundColor3 = Color3.fromRGB(214, 120, 44)
+	f.BorderSizePixel = 0
+	f.Parent = blocJoueur
+	coins(f, 5)
+	local c = Instance.new("UIStroke")
+	c.Color = OR
+	c.Parent = f
+	fioles[i] = f
+end
+
+-- Barre du boss, en bas au centre.
+local blocBoss = Instance.new("Frame")
+blocBoss.Name = "Boss"
+blocBoss.AnchorPoint = Vector2.new(0.5, 1)
+blocBoss.Position = UDim2.new(0.5, 0, 1, -48)
+blocBoss.Size = UDim2.new(0, 640, 0, 46)
+blocBoss.BackgroundTransparency = 1
+blocBoss.Visible = false
+blocBoss.Parent = gui
+
 local nomBoss = Instance.new("TextLabel")
-nomBoss.Position = UDim2.new(0, 0, 0, -26)
 nomBoss.Size = UDim2.new(1, 0, 0, 24)
 nomBoss.BackgroundTransparency = 1
-nomBoss.Font = POLICE
+nomBoss.FontFace = POLICE
 nomBoss.TextSize = 22
 nomBoss.TextXAlignment = Enum.TextXAlignment.Left
-nomBoss.TextColor3 = Color3.fromRGB(235, 225, 205)
-nomBoss.TextStrokeTransparency = 0.3
-nomBoss.Parent = cadreBoss
-cadreBoss.Visible = false
+nomBoss.TextColor3 = Color3.fromRGB(236, 226, 204)
+nomBoss.TextStrokeTransparency = 0.25
+nomBoss.Parent = blocBoss
 
-local grandTexte = Instance.new("TextLabel")
-grandTexte.AnchorPoint = Vector2.new(0.5, 0.5)
-grandTexte.Position = UDim2.fromScale(0.5, 0.42)
-grandTexte.Size = UDim2.new(1, 0, 0, 80)
-grandTexte.BackgroundTransparency = 1
-grandTexte.Font = POLICE
-grandTexte.TextSize = 56
-grandTexte.TextColor3 = Color3.fromRGB(230, 200, 120)
-grandTexte.TextStrokeTransparency = 0.2
-grandTexte.TextTransparency = 1
-grandTexte.TextStrokeColor3 = Color3.new(0, 0, 0)
-grandTexte.Parent = gui
+local majBoss = creerBarre(
+	blocBoss,
+	"Vie",
+	UDim2.new(1, 0, 0, 16),
+	UDim2.new(0, 0, 0, 28),
+	Color3.fromRGB(170, 30, 24),
+	Color3.fromRGB(86, 10, 8)
+)
 
-local petitTexte = grandTexte:Clone()
-petitTexte.Position = UDim2.fromScale(0.5, 0.5)
-petitTexte.TextSize = 26
-petitTexte.TextColor3 = Color3.fromRGB(225, 225, 225)
-petitTexte.Parent = gui
+local function texteCentral(taille: number, y: number)
+	local l = Instance.new("TextLabel")
+	l.AnchorPoint = Vector2.new(0.5, 0.5)
+	l.Position = UDim2.fromScale(0.5, y)
+	l.Size = UDim2.new(1, 0, 0, taille + 20)
+	l.BackgroundTransparency = 1
+	l.FontFace = POLICE
+	l.TextSize = taille
+	l.TextColor3 = Color3.fromRGB(230, 200, 120)
+	l.TextTransparency = 1
+	l.TextStrokeTransparency = 1
+	l.Parent = gui
+	return l
+end
+local grandTexte = texteCentral(56, 0.42)
+local petitTexte = texteCentral(26, 0.5)
 
 local function annoncer(grand: string, petit: string?, couleur: Color3?)
 	grandTexte.Text = grand
@@ -1147,27 +1374,28 @@ local function annoncer(grand: string, petit: string?, couleur: Color3?)
 end
 
 evEtat.OnClientEvent:Connect(function(e)
-	local t = os.clock()
 	-- Le serveur fait foi : on recale la copie locale.
 	local_.vie = e.vie
 	local_.endurance = e.endurance
-	local_.tEndurance = t
+	local_.tEndurance = os.clock()
 	local_.fioles = e.fioles
-	barreVie.Size = UDim2.fromScale(math.clamp(e.vie / Regles.JOUEUR.vieMax, 0, 1), 1)
-	barreEndurance.Size = UDim2.fromScale(math.clamp(e.endurance / Regles.JOUEUR.enduranceMax, 0, 1), 1)
-	texteFioles.Text = ("Fioles : %d"):format(e.fioles)
+	majVie(e.vie, Regles.JOUEUR.vieMax, true)
+	majEndurance(e.endurance, Regles.JOUEUR.enduranceMax)
+	for i, f in fioles do
+		f.BackgroundTransparency = i <= e.fioles and 0 or 0.8
+	end
 	if e.boss then
-		cadreBoss.Visible = true
+		blocBoss.Visible = true
 		nomBoss.Text = e.boss.nom
-		barreBoss.Size = UDim2.fromScale(math.clamp(e.boss.vie / e.boss.vieMax, 0, 1), 1)
+		majBoss(e.boss.vie, e.boss.vieMax)
 	else
-		cadreBoss.Visible = false
+		blocBoss.Visible = false
 	end
 end)
 
 evMessage.OnClientEvent:Connect(function(type_: string, donnees: any)
 	if type_ == "victoire" then
-		annoncer("LE COL EST LIBÉRÉ", donnees .. " est tombé")
+		annoncer("LE COL EST LIBÉRÉ", tostring(donnees) .. " est tombé")
 	elseif type_ == "rage" then
 		annoncer("", "Grimmulf entre dans une rage folle !", Color3.fromRGB(200, 60, 40))
 	elseif type_ == "recompense" and type(donnees) == "table" then
@@ -1178,6 +1406,79 @@ evMessage.OnClientEvent:Connect(function(type_: string, donnees: any)
 			)
 		end
 		task.delay(2, annoncer, "", texte)
+	end
+end)
+
+--------------------------------------------------------------------------------
+-- Animations procédurales du chevalier (épaule droite et bassin)
+--------------------------------------------------------------------------------
+
+-- Courbe d'une attaque : armer (lever l'épée), frapper (vers le bas), revenir.
+local COURBES = {
+	legere = { arme = 2.3, fin = 0.2 },
+	lourde = { arme = 3.0, fin = -0.3 },
+}
+local animation: { type: string, debut: number, impact: number, duree: number }? = nil
+
+local function lisse(x: number): number
+	x = math.clamp(x, 0, 1)
+	return x * x * (3 - 2 * x)
+end
+
+-- Angle d'épaule (radians, vers l'avant) à l'instant t de l'animation.
+local function angleEpaule(a, t: number): number
+	local c = COURBES[a.type]
+	local u = t - a.debut
+	local armer = a.impact * 0.7
+	if u < armer then
+		return c.arme * lisse(u / armer)
+	elseif u < a.impact + 0.08 then
+		return c.arme + (c.fin - c.arme) * lisse((u - armer) / (a.impact + 0.08 - armer))
+	end
+	return c.fin * (1 - lisse((u - a.impact - 0.08) / (a.duree - a.impact - 0.08)))
+end
+
+-- Les avatars R15 récents utilisent des AnimationConstraint (vérifié dans le moteur
+-- le 01/11/2026), les anciens des Motor6D : les deux ont une propriété Transform.
+local function articulable(j: Instance?): boolean
+	return j ~= nil and (j:IsA("Motor6D") or j:IsA("AnimationConstraint"))
+end
+
+local function articulations()
+	local perso = joueur.Character
+	if not perso then
+		return nil, nil, false
+	end
+	local brasR15 = perso:FindFirstChild("RightUpperArm")
+	if brasR15 then
+		local bassin = perso:FindFirstChild("LowerTorso")
+		return brasR15:FindFirstChild("RightShoulder"), bassin and bassin:FindFirstChild("Root"), false
+	end
+	local torse = perso:FindFirstChild("Torso")
+	local racine = perso:FindFirstChild("HumanoidRootPart")
+	return torse and torse:FindFirstChild("Right Shoulder"), racine and racine:FindFirstChild("RootJoint"), true
+end
+
+RunService.PreSimulation:Connect(function()
+	local a = animation
+	if not a then
+		return
+	end
+	local t = os.clock()
+	if t >= a.debut + a.duree then
+		animation = nil
+		return
+	end
+	local epaule, bassin, r6 = articulations()
+	if a.type == "roulade" then
+		if articulable(bassin) then
+			local tour = -2 * math.pi * lisse((t - a.debut) / a.duree)
+			bassin.Transform = bassin.Transform * CFrame.new(0, -1, 0) * CFrame.Angles(tour, 0, 0)
+		end
+	elseif articulable(epaule) then
+		local angle = angleEpaule(a, t)
+		-- R15 : lever le bras vers l'avant = rotation autour de X ; R6 : autour de Z.
+		epaule.Transform = epaule.Transform * (r6 and CFrame.Angles(0, 0, angle) or CFrame.Angles(angle, 0, 0))
 	end
 end)
 
@@ -1213,26 +1514,26 @@ local function rouler(fiche)
 	end)
 end
 
-local function trace(fiche)
-	-- Arc lumineux bref devant le joueur (en attendant les animations d'arme).
+local function sillage(fiche)
+	-- Sillage bref au moment de l'impact (lisibilité du coup).
 	local r = racine()
 	if not r then
 		return
 	end
-	local p = Instance.new("Part")
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanQuery = false
-	p.CanTouch = false
-	p.CastShadow = false
-	p.Material = Enum.Material.Neon
-	p.Color = Color3.fromRGB(235, 240, 255)
-	p.Transparency = 0.4
-	p.Size = Vector3.new(fiche.portee * 0.9, 0.2, 1.2)
-	p.CFrame = r.CFrame * CFrame.new(0, 0.5, -fiche.portee * 0.45) * CFrame.Angles(0, 0, math.rad(-20))
-	p.Parent = workspace
-	task.delay(fiche.impact, function()
-		TweenService:Create(p, TweenInfo.new(0.15), { Transparency = 1 }):Play()
+	task.delay(fiche.impact * 0.85, function()
+		local p = Instance.new("Part")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.CastShadow = false
+		p.Material = Enum.Material.Neon
+		p.Color = Color3.fromRGB(225, 232, 245)
+		p.Transparency = 0.55
+		p.Size = Vector3.new(0.15, fiche.portee * 0.7, 2.2)
+		p.CFrame = r.CFrame * CFrame.new(0.8, 0.6, -fiche.portee * 0.35) * CFrame.Angles(math.rad(-70), 0, 0)
+		p.Parent = workspace
+		TweenService:Create(p, TweenInfo.new(0.18), { Transparency = 1 }):Play()
 		task.delay(0.2, function()
 			p:Destroy()
 		end)
@@ -1247,9 +1548,11 @@ local function agir(action: string)
 	local fiche = Regles.agir(local_, action, t)
 	evAction:FireServer(action)
 	if action == "roulade" then
+		animation = { type = "roulade", debut = t, impact = 0, duree = fiche.duree }
 		rouler(fiche)
 	elseif action ~= "fiole" then
-		trace(fiche)
+		animation = { type = action, debut = t, impact = fiche.impact, duree = fiche.recuperation }
+		sillage(fiche)
 	end
 end
 
@@ -1271,6 +1574,7 @@ lier("fiole", "Fiole", UDim2.new(1, -95, 1, -250), Enum.KeyCode.R, Enum.KeyCode.
 
 joueur.CharacterAdded:Connect(function()
 	local_ = Regles.nouvelEtatJoueur(os.clock())
+	animation = nil
 end)
 ]=])
 -- src/ReplicatedStorage/Partage/Configuration.luau

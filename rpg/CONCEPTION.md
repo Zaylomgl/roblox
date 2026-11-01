@@ -100,14 +100,16 @@ jouant) :
   (invulnérable 0,35 s), 3 fioles de +45 PV, pas de régénération auto.
 - Commandes : clic gauche (coup), F (lourd), Q (roulade), R (fiole) ;
   manette R1 / R2 / B / X ; boutons à l'écran sur mobile.
-- Grimmulf : 1 600 PV ; balayage, onde de choc (on l'évite aussi en
-  sautant), charge à distance ; à 50 % : rugissement, attaques 25 % plus
+- Grimmulf : 1 600 PV, marche lente (8 studs/s), se retourne lentement ; balayage, onde de choc (on l'évite aussi en
+  sautant), charge à distance ; à 50 % : rugissement, attaques 15 % plus
   rapides, lancer de rochers. Chaque attaque est annoncée par une zone
   rouge au sol. Il se régénère si tout le monde meurt ou quitte la cour, et
   réapparaît 45 s après sa mort.
 - 💡 Revaincre un boss ne redonne que 100 XP (les récompenses permanentes
   ne se gagnent qu'une fois).
-- Pas encore : armes visibles, animations, verrouillage de cible, points de
+- Animations procédurales (sans fichiers d'animation) : épée en main, coups
+  armés puis abattus, roulade ; l'Ogre se penche, saute, pivote avant de frapper.
+- Pas encore : vrais modèles d'armes, animations faites à la main, verrouillage de cible, points de
   repos, les 15 armes.
 
 ## 7. Monétisation (✅ / 💡)

@@ -159,7 +159,7 @@ M["IA : avance quand la cible est entre portée de mêlée et de charge"] = func
 	local ia = IA.nouveau(rng({ 0.1 }))
 	local o = IA.mettreAJour(ia, 0, 25) -- > 24 (balayage) et < 26 (charge)
 	t.egal(o[1].type, "avancer")
-	t.egal(o[1].vitesse, 13)
+	t.egal(o[1].vitesse, Regles.OGRE.vitesse)
 end
 
 M["IA : télégraphie, frappe, puis récupère"] = function(t)
@@ -167,12 +167,13 @@ M["IA : télégraphie, frappe, puis récupère"] = function(t)
 	local o = IA.mettreAJour(ia, 0, 10)
 	t.egal(o[1].type, "preparer")
 	t.egal(o[1].attaque, "balayage")
-	t.egal(#IA.mettreAJour(ia, 0.5, 10), 0) -- encore en préparation
-	o = IA.mettreAJour(ia, 0.9, 10)
+	local B = Regles.OGRE.attaques.balayage
+	t.egal(#IA.mettreAJour(ia, B.preparation - 0.1, 10), 0) -- encore en préparation
+	o = IA.mettreAJour(ia, B.preparation, 10)
 	t.egal(o[1].type, "frapper")
 	t.egal(ia.etat, "recuperation")
-	t.egal(#IA.mettreAJour(ia, 1.5, 10), 0) -- fenêtre pour punir le boss
-	o = IA.mettreAJour(ia, 2.2, 10)
+	t.egal(#IA.mettreAJour(ia, B.preparation + B.recuperation - 0.1, 10), 0) -- fenêtre pour punir le boss
+	o = IA.mettreAJour(ia, B.preparation + B.recuperation, 10)
 	t.egal(o[1].type, "preparer")
 end
 
@@ -205,15 +206,15 @@ M["IA : phase 2 à 50 % : rage, puis attaques plus rapides et rochers"] = functi
 	local ia = IA.nouveau(rng({ 0.99 }))
 	IA.mettreAJour(ia, 0, 50) -- entre en combat (prépare une charge)
 	IA.subirDegats(ia, 800)
-	IA.mettreAJour(ia, 1, 50) -- frappe
-	local o = IA.mettreAJour(ia, 1.1, 50)
+	IA.mettreAJour(ia, 2, 50) -- frappe
+	local o = IA.mettreAJour(ia, 2.1, 50)
 	t.egal(o[1].type, "rage")
 	t.egal(ia.phase, 2)
-	t.egal(#IA.mettreAJour(ia, 2, 50), 0)
-	o = IA.mettreAJour(ia, 3.4, 50)
+	t.egal(#IA.mettreAJour(ia, 3, 50), 0)
+	o = IA.mettreAJour(ia, 2.1 + Regles.OGRE.rage, 50)
 	t.egal(o[1].type, "preparer")
 	t.egal(o[1].attaque, "rocher") -- 0,99 → dernière candidate
-	t.egal(o[1].duree, 1.1 * 0.75)
+	t.egal(o[1].duree, Regles.OGRE.attaques.rocher.preparation * Regles.OGRE.accelerationPhase2)
 end
 
 M["IA : meurt une seule fois"] = function(t)
@@ -233,6 +234,14 @@ M["IA : se régénère si tout le monde meurt ou part"] = function(t)
 	t.egal(o[1].type, "reinitialiser")
 	t.egal(ia.vie, 1600)
 	t.egal(ia.etat, "attente")
+end
+
+M["IA : se tourne vers la cible avant un balayage"] = function(t)
+	local ia = IA.nouveau(rng({ 0.01 })) -- tirerait le balayage
+	local o = IA.mettreAJour(ia, 0, 10, false)
+	t.egal(o[1].type, "avancer")
+	o = IA.mettreAJour(ia, 0.1, 10, true)
+	t.egal(o[1].attaque, "balayage")
 end
 
 return M

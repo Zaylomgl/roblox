@@ -114,7 +114,9 @@ function IA.subirDegats(ia: IA, montant: number): number
 end
 
 -- Un pas de simulation. `distance` = nil si aucune cible (personne dans l'arène).
-function IA.mettreAJour(ia: IA, t: number, distance: number?): { any }
+-- `deFace` = false si l'Ogre ne regarde pas encore sa cible : il se tourne d'abord
+-- (sauf pour l'onde de choc et la charge, qui n'en ont pas besoin).
+function IA.mettreAJour(ia: IA, t: number, distance: number?, deFace: boolean?): { any }
 	local ordres = {}
 	local O = Regles.OGRE
 
@@ -166,6 +168,9 @@ function IA.mettreAJour(ia: IA, t: number, distance: number?): { any }
 
 	-- Poursuite : attaquer si possible, sinon avancer.
 	local nom = IA.choisir(ia, distance)
+	if (nom == "balayage" or nom == "rocher") and deFace == false then
+		nom = nil -- se tourner d'abord
+	end
 	if nom then
 		if nom == ia.derniere then
 			ia.repetitions += 1

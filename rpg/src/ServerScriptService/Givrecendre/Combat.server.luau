@@ -102,8 +102,56 @@ local function appliquerVie(joueur: Player)
 	end
 end
 
+-- Épée de chevalier (en attendant les vrais modèles d'armes), soudée à la main droite.
+local function donnerEpee(perso: Model)
+	local main = perso:WaitForChild("RightHand", 3) or perso:FindFirstChild("Right Arm")
+	if not (main and main:IsA("BasePart")) then
+		return
+	end
+	local r6 = main.Name == "Right Arm"
+	local epee = Instance.new("Model")
+	epee.Name = "EpeeChevalier"
+	local function piece(nom, taille, decalageY, couleur, matiere, forme)
+		local p = Instance.new("Part")
+		p.Name = nom
+		p.Size = taille
+		p.Color = couleur
+		p.Material = matiere
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.Massless = true
+		if forme then
+			p.Shape = forme
+		end
+		p:SetAttribute("Y", decalageY)
+		p.Parent = epee
+		return p
+	end
+	local poignee = piece("Poignee", Vector3.new(0.28, 1.2, 0.28), 0, Color3.fromRGB(52, 36, 28), Enum.Material.Wood)
+	piece("Pommeau", Vector3.new(0.45, 0.45, 0.45), -0.7, Color3.fromRGB(120, 112, 100), Enum.Material.Metal, Enum.PartType.Ball)
+	piece("Garde", Vector3.new(1.5, 0.22, 0.32), 0.7, Color3.fromRGB(110, 104, 95), Enum.Material.Metal)
+	piece("Lame", Vector3.new(0.32, 4.2, 0.08), 2.9, Color3.fromRGB(170, 175, 182), Enum.Material.Metal)
+	-- La lame part vers l'avant de la main (axe -Z de la main).
+	local prise = main.CFrame * CFrame.new(0, r6 and -1 or -0.3, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+	for _, p in epee:GetChildren() do
+		p.CFrame = prise * CFrame.new(0, p:GetAttribute("Y"), 0)
+		if p ~= poignee then
+			local w = Instance.new("WeldConstraint")
+			w.Part0, w.Part1 = poignee, p
+			w.Parent = p
+		end
+	end
+	local soudure = Instance.new("Weld")
+	soudure.Part0, soudure.Part1 = main, poignee
+	soudure.C0 = main.CFrame:Inverse() * prise
+	soudure.Parent = poignee
+	epee.Parent = perso
+end
+
 local function personnageArrive(joueur: Player, perso: Model)
 	etats[joueur] = Regles.nouvelEtatJoueur(os.clock())
+	task.spawn(donnerEpee, perso)
 	local h = perso:WaitForChild("Humanoid", 10) :: Humanoid?
 	if h then
 		h.MaxHealth = Regles.JOUEUR.vieMax
@@ -169,14 +217,18 @@ local function lacet(v: Vector3): number
 end
 local position = pivotDepart.Position
 local direction = Vector3.new(0, 0, 1)
-local inclinaison = 0 -- recul pendant la préparation d'une attaque
+-- Pose du corps (animation procédurale : le modèle est d'un seul bloc) :
+-- lacet = torsion, hauteur = saut / écrasement, inclinaison = avant / arrière.
+local pose = { lacet = 0, hauteur = 0, inclinaison = 0 }
+local coupDepuis = -math.huge -- instant du dernier coup (claquement rapide)
+local attaqueEnCours: string? = nil
 local enfoncement = 0 -- descente dans le sol à la mort
 
 local function placerOgre()
 	ogre:PivotTo(
-		CFrame.new(position - Vector3.new(0, enfoncement, 0))
-			* CFrame.Angles(0, lacet(direction) - lacet(Vector3.new(0, 0, 1)), 0)
-			* CFrame.Angles(inclinaison, 0, 0)
+		CFrame.new(position + Vector3.new(0, pose.hauteur - enfoncement, 0))
+			* CFrame.Angles(0, lacet(direction) - lacet(Vector3.new(0, 0, 1)) + pose.lacet, 0)
+			* CFrame.Angles(pose.inclinaison, 0, 0)
 			* pivotDepart.Rotation
 	)
 end
@@ -267,7 +319,9 @@ local function preparer(nom: string, duree: number)
 	local c = cible and racine(cible)
 	if c then
 		local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
-		if v.Magnitude > 0.1 then
+		-- Seule la charge se verrouille droit sur la cible ; le reste garde
+		-- l'orientation (il se tourne lentement en marchant).
+		if nom == "charge" and v.Magnitude > 0.1 then
 			direction = v.Unit
 		end
 		attaqueVisee = Vector3.new(c.Position.X, CENTRE.Y, c.Position.Z)
@@ -298,7 +352,7 @@ end
 
 local function frapper(nom: string)
 	local A = Regles.OGRE.attaques
-	inclinaison = 0
+	coupDepuis = os.clock()
 	if nom == "balayage" then
 		local a = A.balayage
 		for _, j in Players:GetPlayers() do
@@ -382,7 +436,9 @@ local function reapparaitre()
 	IA.reinitialiser(ia)
 	position = pivotDepart.Position
 	direction = Vector3.new(0, 0, 1)
-	inclinaison, enfoncement = 0, 0
+	enfoncement = 0
+	pose.lacet, pose.hauteur, pose.inclinaison = 0, 0, 0
+	attaqueEnCours = nil
 	charge, mortA, cible = nil, nil, nil
 	placerOgre()
 end
@@ -430,6 +486,48 @@ evAction.OnServerEvent:Connect(function(joueur: Player, action: any)
 		end
 	end)
 end)
+
+-- Pose visée selon l'attaque : préparation (lente, lisible) puis coup (claquement).
+local POSES = {
+	balayage = { prep = { lacet = -0.8, hauteur = 0, inclinaison = -0.06 }, coup = { lacet = 1.0, hauteur = 0, inclinaison = 0.08 } },
+	onde = { prep = { lacet = 0, hauteur = 6, inclinaison = -0.22 }, coup = { lacet = 0, hauteur = -1.2, inclinaison = 0.18 } },
+	charge = { prep = { lacet = 0, hauteur = -1, inclinaison = 0.12 }, coup = { lacet = 0, hauteur = 0, inclinaison = 0.3 } },
+	rocher = { prep = { lacet = -0.4, hauteur = 0, inclinaison = -0.35 }, coup = { lacet = 0.3, hauteur = 0, inclinaison = 0.28 } },
+}
+local REPOS = { lacet = 0, hauteur = 0, inclinaison = 0 }
+
+local function animer(dt: number, t: number)
+	local cibleP, vitesse = REPOS, 3
+	local p = attaqueEnCours and POSES[attaqueEnCours]
+	if ia.etat == "rage" then
+		-- Rugissement : se dresse et tremble.
+		cibleP = { lacet = math.sin(t * 40) * 0.04, hauteur = 2, inclinaison = -0.25 }
+		vitesse = 8
+	elseif p and ia.etat == "preparation" then
+		cibleP, vitesse = p.prep, 2.5
+	elseif p and (charge or t - coupDepuis < 0.3) then
+		cibleP, vitesse = p.coup, 22
+	elseif ia.etat == "poursuite" then
+		-- Marche lourde : balancement.
+		cibleP = { lacet = math.sin(t * 3) * 0.06, hauteur = math.abs(math.sin(t * 3)) * 0.8, inclinaison = 0.04 }
+		vitesse = 6
+	end
+	local k = math.min(1, dt * vitesse)
+	for cle, v in cibleP do
+		pose[cle] += (v - pose[cle]) * k
+	end
+end
+
+-- Tourne progressivement `direction` vers `voulu` (vitesse limitée).
+local function tourner(voulu: Vector3, dt: number)
+	local O = Regles.OGRE
+	local maxi = (ia.phase == 2 and O.rotationPhase2 or O.rotation) * dt
+	local ecart = lacet(voulu) - lacet(direction)
+	ecart = (ecart + math.pi) % (2 * math.pi) - math.pi
+	local a = lacet(direction) + math.clamp(ecart, -maxi, maxi)
+	direction = Vector3.new(-math.sin(a), 0, -math.cos(a))
+	return math.abs(ecart) <= maxi
+end
 
 -- Boucle principale
 local dernierEnvoi = 0
@@ -479,17 +577,27 @@ RunService.Heartbeat:Connect(function(dt)
 			end
 		end
 
-		for _, ordre in IA.mettreAJour(ia, t, distance) do
+		-- Se tourner vers la cible (vitesse limitée) hors préparation et charge.
+		local deFace = true
+		if c and not charge and ia.etat ~= "preparation" and ia.etat ~= "attente" then
+			local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
+			if v.Magnitude > 0.1 then
+				local vitesseTour = ia.etat == "recuperation" and 0.35 or 1 -- lent à se retourner après un coup
+				deFace = tourner(v.Unit, dt * vitesseTour) or direction:Dot(v.Unit) > math.cos(math.rad(30))
+			end
+		end
+
+		for _, ordre in IA.mettreAJour(ia, t, distance, deFace) do
 			if ordre.type == "avancer" and c and not charge then
 				local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
-				if v.Magnitude > 0.1 then
-					direction = v.Unit
+				if v.Magnitude > Regles.OGRE.attaques.balayage.portee * 0.7 then
 					local suivant = position + direction * ordre.vitesse * dt
 					if (Vector3.new(suivant.X, 0, suivant.Z) - CENTRE).Magnitude <= RAYON_OGRE_MAX then
 						position = suivant
 					end
 				end
 			elseif ordre.type == "preparer" then
+				attaqueEnCours = ordre.attaque
 				preparer(ordre.attaque, ordre.duree)
 			elseif ordre.type == "frapper" then
 				frapper(ordre.attaque)
@@ -504,12 +612,7 @@ RunService.Heartbeat:Connect(function(dt)
 			end
 		end
 
-		-- Recul pendant la préparation (lisibilité du télégraphe).
-		if ia.etat == "preparation" then
-			inclinaison = math.max(-0.18, inclinaison - dt * 0.25)
-		else
-			inclinaison = math.min(0, inclinaison + dt * 1.5)
-		end
+		animer(dt, t)
 		placerOgre()
 	end
 

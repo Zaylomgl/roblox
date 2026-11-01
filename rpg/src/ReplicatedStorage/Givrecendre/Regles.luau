@@ -29,23 +29,25 @@ Regles.OGRE = {
 	vieMax = 1600,
 	rayonCorps = 9, -- studs : les coups du joueur touchent jusqu'à portée + rayonCorps
 	seuilPhase2 = 0.5,
-	vitesse = 13,
-	vitessePhase2 = 17,
+	vitesse = 8,
+	vitessePhase2 = 10.5,
+	rotation = 1.6, -- radians par seconde (il ne se retourne pas instantanément)
+	rotationPhase2 = 2.1,
 	rage = 2.2, -- secondes de rugissement au passage en phase 2 (pas d'attaque)
-	accelerationPhase2 = 0.75, -- préparations raccourcies en phase 2
+	accelerationPhase2 = 0.85, -- préparations raccourcies en phase 2
 	attaques = {
-		balayage = { portee = 24, angle = 150, degats = 28, preparation = 0.9, recuperation = 1.2 },
-		onde = { portee = 20, rayon = 26, degats = 34, preparation = 1.3, recuperation = 1.7 },
+		balayage = { portee = 24, angle = 150, degats = 28, preparation = 1.25, recuperation = 1.5 },
+		onde = { portee = 20, rayon = 26, degats = 34, preparation = 1.7, recuperation = 2.0 },
 		charge = {
 			porteeMin = 26,
 			porteeMax = 80,
 			largeur = 12,
-			vitesse = 70,
+			vitesse = 46,
 			degats = 38,
-			preparation = 1.0,
-			recuperation = 1.9,
+			preparation = 1.4,
+			recuperation = 2.2,
 		},
-		rocher = { porteeMin = 30, porteeMax = 90, rayon = 9, degats = 30, preparation = 1.1, recuperation = 1.3 },
+		rocher = { porteeMin = 30, porteeMax = 90, rayon = 9, degats = 30, preparation = 1.5, recuperation = 1.6 },
 	},
 }
 
