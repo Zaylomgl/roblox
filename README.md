@@ -2,6 +2,7 @@
 
 | Dossier / fichier | Contenu |
 |---|---|
+| [`rpg/`](rpg/) | **Le RPG en préparation** : [document de conception](rpg/CONCEPTION.md) (décisions, boss, armes, plan) et [guide d'installation de Claude Code + MCP de Roblox Studio](rpg/GUIDE-CLAUDE-CODE-STUDIO.md) |
 | [`src/`](src/) | Noyau commun à tous les jeux : sauvegarde (avec verrou de session), récompense quotidienne, achats, boutique, interface |
 | [`maps/`](maps/) | Scripts de construction des maps (à coller dans la barre de commande de Roblox Studio, ou à construire avec le pipeline) |
 | [`pipeline/`](pipeline/) | Chaîne automatique : construction hors Studio, tests, rapport de validation ([mode d'emploi](pipeline/README.md)) |
