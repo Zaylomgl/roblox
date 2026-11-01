@@ -114,8 +114,9 @@ Commandes tactiles pour le mobile.
   le code pour les pattes et les ailes).
 - **Vérification visuelle** : `screen_capture` du MCP de Studio, en plus
   des tests automatiques (`./pipeline/run.sh`, `pipeline/opencloud.py tester`).
-- ❓ **Nouvelle expérience Roblox** : en cours de création par le
-  propriétaire (les Îles Célestes restent à part).
+- ✅ **Expérience Roblox du RPG** : univers `10774188905`, place
+  `85466448220573` (privée, créée et publiée le 2026-11-01 ; les Îles
+  Célestes restent à part).
 
 ## 9. Étapes
 
