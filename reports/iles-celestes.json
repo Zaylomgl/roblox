@@ -4,8 +4,8 @@
     "collectiblesTotal": 50,
     "profondeurMaxCollectibles": 24,
     "profondeurMedianeCollectibles": 17,
-    "surfacesAtteintes": 434,
-    "surfacesMarchables": 460
+    "surfacesAtteintes": 468,
+    "surfacesMarchables": 480
   },
   "ambiance": {
     "Atmosphere": true,
@@ -38,16 +38,16 @@
   },
   "statistiques": {
     "collectibles": 50,
-    "emetteursParticules": 106,
+    "emetteursParticules": 110,
     "lumieres": 100,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 1361,
+    "objets": 1509,
     "padsDeSaut": 5,
-    "particulesParSeconde": 224.10000085830688,
-    "pieces": 1047,
+    "particulesParSeconde": 228.90000104904175,
+    "pieces": 1189,
     "piecesNonAncrees": 0,
-    "scripts": 9,
+    "scripts": 10,
     "sons": 50,
     "spawns": 1
   },
@@ -57,5 +57,9 @@
     "BadgeService": false,
     "DataStoreService": true,
     "MarketplaceService": true
+  },
+  "terrain": {
+    "operations": 372,
+    "surfacesMarchables": 6
   }
 }

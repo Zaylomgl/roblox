@@ -6,14 +6,15 @@
 
 | Mesure | Valeur |
 |---|---|
-| Pièces | 1047 (dont 0 non ancrées) |
+| Pièces | 1189 (dont 0 non ancrées) |
 | Lumières (dont avec ombres) | 100 (0) |
-| Particules / s | 224 |
-| Scripts | 9 |
+| Particules / s | 228 |
+| Scripts | 10 |
 | Spawns | 1 |
 | Pads de saut | 5 |
+| Terrain (plan rejoué au démarrage) | 372 opérations, 6 sols marchables |
 | Collectibles accessibles | 50 / 50 |
-| Surfaces atteintes depuis le spawn | 434 / 460 |
+| Surfaces atteintes depuis le spawn | 468 / 480 |
 | Déplacements pour atteindre un collectible (médiane / max) | 17 / 24 |
 | Saut théorique (hauteur / portée à plat) | 6.37 / 8.15 studs |
 | Sauvegarde (DataStore) / Monétisation (Marketplace) / Badges | oui / oui / non |

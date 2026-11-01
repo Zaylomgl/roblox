@@ -1,4 +1,7 @@
 std = "luau"
+# pipeline/reel/ contient du code exécuté dans le vrai moteur Roblox : il est
+# vérifié avec la bibliothèque Roblox (voir pipeline/run.sh).
+exclude = ["pipeline/reel/*"]
 
 [lints]
 multiple_statements = "allow"

@@ -1,0 +1,271 @@
+{
+ "date": "2026-10-31T22:02:36+00:00",
+ "placeId": 116414227319701,
+ "versionTestee": 8,
+ "map": "iles-celestes",
+ "tache": "universes/10774067194/places/116414227319701/versions/8/luau-execution-sessions/fa897051-d253-4bbf-a178-dcf3db0c411a/tasks/fa897051-d253-4bbf-a178-dcf3db0c411a",
+ "etat": "COMPLETE",
+ "erreur": null,
+ "resultats": {
+  "ignores": 2,
+  "tests": [
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "place 116414227319701, version 8",
+    "nom": "c'est la version qui vient d'être publiée"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "nom": "scripts du noyau, de la map et de l'interface présents"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "3 objet(s) avec un ID",
+    "nom": "Configuration : pass et produits ont leur vrai ID Roblox"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "1189 pièces, 50 cristaux, 100 lumières, 1 spawn",
+    "nom": "contenu identique au fichier construit (comptages du validateur)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "saut 6.37 studs (validateur 6.37), marche 16",
+    "nom": "saut et marche réels ≥ ceux supposés par le test d'accessibilité"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "sol à Y = 189.6, zone mortelle à Y = 60",
+    "nom": "point d'apparition : sol réel juste dessous, au-dessus de la zone mortelle"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Terrain",
+    "detail": "372 opérations en 0.13 s",
+    "nom": "le plan du Terrain se rejoue sans erreur dans le vrai moteur"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Terrain",
+    "detail": "6 îles, points d'herbe au bon niveau : 12/12, 12/12, 12/12, 12/12, 12/12, 12/12",
+    "nom": "chaque île a un sol d'herbe au niveau prévu (lecture des voxels)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Terrain",
+    "detail": "24 au-dessus du Terrain, 26 au-dessus de pièces (ponts, pierres, grotte…)",
+    "nom": "les 50 cristaux ont un sol réel juste dessous (pièces ou Terrain)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Terrain",
+    "detail": "Terrain : grotte remplie à 6 %, passage à 0 % ; chute libre jusqu'au palier",
+    "nom": "la grotte secrète et son passage ne sont pas bouchés par le Terrain"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Terrain",
+    "detail": "Technology illisible ici, EnvironmentDiffuse/Specular 1/1, herbe animée illisible ici",
+    "nom": "éclairage réaliste actif (lumière tirée du ciel, herbe animée)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "achats : crédité une seule fois même si Roblox renvoie le reçu"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "achats : gestionnaire qui plante → profil restauré, rien crédité"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "achats : joueur absent → « pas encore »"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "achats : produit inconnu → « pas encore », rien crédité"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "achats : sauvegarde en échec → « pas encore », puis accordé sans double crédit"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "profil : ancien profil complété sans perdre ses données"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "profil : monnaie jamais négative, NaN refusé"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "profil : mémoire des achats bornée"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "profil : nouveau joueur reçoit les valeurs par défaut"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "récompense : le jour change à minuit UTC, pas 24 h après"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "récompense : première réclamation puis refus le même jour"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "récompense : série sur jours consécutifs, puis cycle de 7"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "récompense : un jour manqué casse la série"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "sauvegarde : charger, modifier, sauvegarder, recharger"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "sauvegarde : panne durable signalée, pas de données inventées"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "sauvegarde : pannes passagères du DataStore surmontées"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "sauvegarde : un serveur qui a perdu le verrou ne peut plus écraser"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Noyau",
+    "nom": "sauvegarde : verrou — un 2e serveur attend que le 1er libère"
+   },
+   {
+    "statut": "ok",
+    "groupe": "DataStore réel",
+    "detail": "clé test_a10385d9-9f3d-45be-8a7a-88e026202cf1 supprimée ; 2.1 s",
+    "nom": "sauvegarde, verrou de session entre 2 serveurs, libération"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Boutique",
+    "detail": "« Cristaux x2 », 99 Robux, en vente : true",
+    "nom": "pass « Cristaux x2 » (id 2062597704) en vente au prix prévu"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Boutique",
+    "detail": "« Sac de cristaux », 25 Robux, en vente : true",
+    "nom": "produit « Sac de cristaux » (id 3725192416) en vente au prix prévu"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Boutique",
+    "detail": "« Coffre de cristaux », 99 Robux, en vente : true",
+    "nom": "produit « Coffre de cristaux » (id 3725192420) en vente au prix prévu"
+   },
+   {
+    "statut": "ignore",
+    "groupe": "Scripts serveur",
+    "detail": "le script cloné n'a pas démarré en 10 s (les scripts ne tournent pas dans Luau Execution)",
+    "nom": "Principal démarre sans erreur et branche le DataStore"
+   },
+   {
+    "statut": "ignore",
+    "groupe": "Scripts serveur",
+    "detail": "aucun mouvement en 3 s : script non démarré ou Heartbeat arrêté dans cet environnement",
+    "nom": "script de la map démarre sans erreur et anime les cristaux"
+   }
+  ],
+  "reussis": 33,
+  "echoues": 0,
+  "mesures": {
+   "emetteursParticules": 110,
+   "versionMoteur": "0.745.0.7451137",
+   "terrainSecondes": 0.13,
+   "vitesseMarche": 16,
+   "spawns": 1,
+   "collectibles": 50,
+   "hauteurSaut": 6.37,
+   "grotteRemplissageTerrain": 0.07,
+   "environmentSpecularScale": 1,
+   "fallenPartsDestroyHeight": 60,
+   "dureeTestDataStore": 2.06,
+   "passageRemplissageTerrain": 0,
+   "pieces": 1189,
+   "gravite": 196.2,
+   "terrainOperations": 372,
+   "characterUseJumpPower": true,
+   "environmentDiffuseScale": 1,
+   "sons": 50,
+   "lumieres": 100,
+   "piecesNonAncrees": 0,
+   "technologie": "illisible ici",
+   "placeVersion": 8,
+   "erreursJournal": 0
+  }
+ },
+ "journal": [
+  "Moteur Roblox 0.745.0.7451137 — place 116414227319701, version 8",
+  "[ok] Place — c'est la version qui vient d'être publiée : place 116414227319701, version 8",
+  "[ok] Place — scripts du noyau, de la map et de l'interface présents",
+  "[ok] Place — Configuration : pass et produits ont leur vrai ID Roblox : 3 objet(s) avec un ID",
+  "[ok] Place — contenu identique au fichier construit (comptages du validateur) : 1189 pièces, 50 cristaux, 100 lumières, 1 spawn",
+  "[ok] Place — saut et marche réels ≥ ceux supposés par le test d'accessibilité : saut 6.37 studs (validateur 6.37), marche 16",
+  "[ok] Place — point d'apparition : sol réel juste dessous, au-dessus de la zone mortelle : sol à Y = 189.6, zone mortelle à Y = 60",
+  "[ok] Terrain — le plan du Terrain se rejoue sans erreur dans le vrai moteur : 372 opérations en 0.13 s",
+  "[ok] Terrain — chaque île a un sol d'herbe au niveau prévu (lecture des voxels) : 6 îles, points d'herbe au bon niveau : 12/12, 12/12, 12/12, 12/12, 12/12, 12/12",
+  "[ok] Terrain — les 50 cristaux ont un sol réel juste dessous (pièces ou Terrain) : 24 au-dessus du Terrain, 26 au-dessus de pièces (ponts, pierres, grotte…)",
+  "[ok] Terrain — la grotte secrète et son passage ne sont pas bouchés par le Terrain : Terrain : grotte remplie à 6 %, passage à 0 % ; chute libre jusqu'au palier",
+  "[ok] Terrain — éclairage réaliste actif (lumière tirée du ciel, herbe animée) : Technology illisible ici, EnvironmentDiffuse/Specular 1/1, herbe animée illisible ici",
+  "[ok] Noyau — achats : crédité une seule fois même si Roblox renvoie le reçu",
+  "[ok] Noyau — achats : gestionnaire qui plante → profil restauré, rien crédité",
+  "[ok] Noyau — achats : joueur absent → « pas encore »",
+  "[ok] Noyau — achats : produit inconnu → « pas encore », rien crédité",
+  "[ok] Noyau — achats : sauvegarde en échec → « pas encore », puis accordé sans double crédit",
+  "[ok] Noyau — profil : ancien profil complété sans perdre ses données",
+  "[ok] Noyau — profil : monnaie jamais négative, NaN refusé",
+  "[ok] Noyau — profil : mémoire des achats bornée",
+  "[ok] Noyau — profil : nouveau joueur reçoit les valeurs par défaut",
+  "[ok] Noyau — récompense : le jour change à minuit UTC, pas 24 h après",
+  "[ok] Noyau — récompense : première réclamation puis refus le même jour",
+  "[ok] Noyau — récompense : série sur jours consécutifs, puis cycle de 7",
+  "[ok] Noyau — récompense : un jour manqué casse la série",
+  "[ok] Noyau — sauvegarde : charger, modifier, sauvegarder, recharger",
+  "[ok] Noyau — sauvegarde : panne durable signalée, pas de données inventées",
+  "[ok] Noyau — sauvegarde : pannes passagères du DataStore surmontées",
+  "[ok] Noyau — sauvegarde : un serveur qui a perdu le verrou ne peut plus écraser",
+  "[ok] Noyau — sauvegarde : verrou — un 2e serveur attend que le 1er libère",
+  "[ok] DataStore réel — sauvegarde, verrou de session entre 2 serveurs, libération : clé test_a10385d9-9f3d-45be-8a7a-88e026202cf1 supprimée ; 2.1 s",
+  "[ok] Boutique — pass « Cristaux x2 » (id 2062597704) en vente au prix prévu : « Cristaux x2 », 99 Robux, en vente : true",
+  "[ok] Boutique — produit « Sac de cristaux » (id 3725192416) en vente au prix prévu : « Sac de cristaux », 25 Robux, en vente : true",
+  "[ok] Boutique — produit « Coffre de cristaux » (id 3725192420) en vente au prix prévu : « Coffre de cristaux », 99 Robux, en vente : true",
+  "[ignore] Scripts serveur — Principal démarre sans erreur et branche le DataStore : le script cloné n'a pas démarré en 10 s (les scripts ne tournent pas dans Luau Execution)",
+  "[ignore] Scripts serveur — script de la map démarre sans erreur et anime les cristaux : aucun mouvement en 3 s : script non démarré ou Heartbeat arrêté dans cet environnement",
+  "Bilan : 33 réussi(s), 0 échoué(s), 2 non vérifiable(s)"
+ ]
+}

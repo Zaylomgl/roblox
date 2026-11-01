@@ -27,10 +27,13 @@ local function construire(options: { map: string?, studio: boolean? }?)
 	end
 	injection.injecter(game, "src")
 	local config = game:GetService("ReplicatedStorage").Partage.Configuration
+	-- Remplace les IDs (0 ou vrais IDs Roblox) par des IDs de test connus du moteur simulé.
 	local source = config.Source
-	source = string.gsub(source, '(cle = "DoubleMonnaie",%s*id = )0', "%1" .. PASS_X2)
-	source = string.gsub(source, '(cle = "PackPetit", id = )0', "%1" .. PRODUIT_PETIT)
-	source = string.gsub(source, '(cle = "PackGrand", id = )0', "%1" .. PRODUIT_GRAND)
+	for cle, id in { DoubleMonnaie = PASS_X2, PackPetit = PRODUIT_PETIT, PackGrand = PRODUIT_GRAND } do
+		local n
+		source, n = string.gsub(source, `(cle = "{cle}",%s*id = )%d+`, "%1" .. id)
+		assert(n == 1, `Configuration.luau : id de « {cle} » introuvable`)
+	end
 	config.Source = source
 	local moteur = Moteur.nouveau(game, { studio = opts.studio, debut = 20_000 * JOUR + 10 * 3600 })
 	moteur:demarrerServeur()

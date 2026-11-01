@@ -199,4 +199,42 @@ M["Terrain n'est pas compté comme une pièce"] = function(t)
 	t.egal(rapport.statistiques.pieces, 1) -- uniquement le spawn
 end
 
+-- Plan de Terrain minimal (format de ServerStorage.PlanTerrain écrit par les maps).
+local function planTerrain(game, lignes: string)
+	local module = Instance.new("ModuleScript")
+	module.Name = "PlanTerrain"
+	module.Source = "local Plan = {}\nPlan.OPERATIONS = {\n" .. lignes .. "\n}\nreturn Plan\n"
+	module.Parent = game:GetService("ServerStorage")
+end
+
+M["Terrain du plan : un plateau marchable rend un collectible accessible"] = function(t)
+	-- Île de Terrain (cylindre de rayon 10, dessus à Y = 0) collée au spawn ; cristal au milieu.
+	local game, _, collect = nouvellePlace()
+	collectible(collect, 14, 2.5, 0)
+	t.egal((accessibles(game)), 0) -- sans le Terrain, rien sous le cristal
+
+	planTerrain(game, '\t{ "Cylindre", "Grass", true, { 14, -1.5, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1 }, { 3, 10 } },')
+	local rapport = analyse.analyser(game, "test")
+	t.egal(rapport.accessibilite.collectiblesAccessibles, 1)
+	t.egal(rapport.terrain.operations, 1)
+	t.egal(rapport.terrain.surfacesMarchables, 1)
+	t.egal(rapport.statistiques.pieces, 2) -- spawn + cristal : les pièces virtuelles du Terrain ne sont pas comptées
+end
+
+M["Terrain du plan : une opération non marchable (roche, eau) ne crée pas de sol"] = function(t)
+	local game, _, collect = nouvellePlace()
+	collectible(collect, 14, 2.5, 0)
+	planTerrain(game, '\t{ "Cylindre", "Water", false, { 14, -1.5, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1 }, { 3, 10 } },')
+	t.egal((accessibles(game)), 0)
+end
+
+M["Terrain du plan : un plan illisible est une erreur"] = function(t)
+	local game = nouvellePlace()
+	local module = Instance.new("ModuleScript")
+	module.Name = "PlanTerrain"
+	module.Source = "return 42"
+	module.Parent = game:GetService("ServerStorage")
+	t.vrai(codes(analyse.analyser(game, "test")).PLAN_TERRAIN_ILLISIBLE)
+end
+
 return M
