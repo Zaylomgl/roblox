@@ -1,32 +1,32 @@
 {
- "photos": 2,
- "observations": 10,
+ "photos": 3,
+ "observations": 15,
  "periode": [
   "2026-10-31T20:54:38+00:00",
-  "2026-11-01T00:58:47+00:00"
+  "2026-11-01T06:59:06+00:00"
  ],
- "jeux_uniques": 701,
+ "jeux_uniques": 721,
  "genres": [
   {
    "genre": "Simulation",
-   "jeux": 238,
-   "joueurs": 3954838,
-   "part_joueurs": 0.3901060707824428,
-   "concentration_top1": 0.25037738587522423,
-   "mediane_joueurs_par_jeu": 4893.0,
-   "ratio_votes_median": 0.901098396838485,
-   "ascension": 101,
+   "jeux": 246,
+   "joueurs": 4304020,
+   "part_joueurs": 0.3928765531741886,
+   "concentration_top1": 0.2700967932305147,
+   "mediane_joueurs_par_jeu": 4940.5,
+   "ratio_votes_median": 0.9028776330232287,
+   "ascension": 106,
    "revisites": 47,
-   "tendances": 103
+   "tendances": 110
   },
   {
    "genre": "Survival",
    "jeux": 94,
-   "joueurs": 1616657,
-   "part_joueurs": 0.1594673941316766,
-   "concentration_top1": 0.3222897621449695,
-   "mediane_joueurs_par_jeu": 5075.0,
-   "ratio_votes_median": 0.8792519060768426,
+   "joueurs": 1761178,
+   "part_joueurs": 0.16076262242420136,
+   "concentration_top1": 0.2958428960616133,
+   "mediane_joueurs_par_jeu": 5468.5,
+   "ratio_votes_median": 0.8793282940264313,
    "ascension": 22,
    "revisites": 40,
    "tendances": 38
@@ -34,131 +34,131 @@
   {
    "genre": "Roleplay & Avatar Sim",
    "jeux": 55,
-   "joueurs": 1203845,
-   "part_joueurs": 0.1187475296791145,
-   "concentration_top1": 0.3866859936287479,
+   "joueurs": 1238337,
+   "part_joueurs": 0.11303701475087598,
+   "concentration_top1": 0.3759154414347629,
    "mediane_joueurs_par_jeu": 3866,
-   "ratio_votes_median": 0.8848733233979136,
+   "ratio_votes_median": 0.8848947662506984,
    "ascension": 6,
    "revisites": 30,
-   "tendances": 8
+   "tendances": 9
   },
   {
    "genre": "Action",
-   "jeux": 91,
-   "joueurs": 853206,
-   "part_joueurs": 0.08416042331645567,
-   "concentration_top1": 0.18000576648546776,
-   "mediane_joueurs_par_jeu": 3280,
-   "ratio_votes_median": 0.8570283270978086,
+   "jeux": 92,
+   "joueurs": 866058,
+   "part_joueurs": 0.0790549026001114,
+   "concentration_top1": 0.1773345434139515,
+   "mediane_joueurs_par_jeu": 3195.5,
+   "ratio_votes_median": 0.8580251495735768,
    "ascension": 13,
    "revisites": 51,
-   "tendances": 13
+   "tendances": 14
   },
   {
    "genre": "RPG",
    "jeux": 20,
-   "joueurs": 527582,
-   "part_joueurs": 0.05204080193311148,
-   "concentration_top1": 0.633931786907059,
-   "mediane_joueurs_par_jeu": 5000.5,
-   "ratio_votes_median": 0.9152265463495037,
+   "joueurs": 614199,
+   "part_joueurs": 0.05606488494083055,
+   "concentration_top1": 0.6808786728731242,
+   "mediane_joueurs_par_jeu": 5048.5,
+   "ratio_votes_median": 0.9152229098223099,
    "ascension": 1,
    "revisites": 15,
-   "tendances": 2
-  },
-  {
-   "genre": "Sports & Racing",
-   "jeux": 41,
-   "joueurs": 416278,
-   "part_joueurs": 0.041061751437903075,
-   "concentration_top1": 0.19765397162473156,
-   "mediane_joueurs_par_jeu": 3467,
-   "ratio_votes_median": 0.8587537091988131,
-   "ascension": 7,
-   "revisites": 18,
-   "tendances": 10
+   "tendances": 3
   },
   {
    "genre": "Shooter",
-   "jeux": 30,
-   "joueurs": 396261,
-   "part_joueurs": 0.03908727025337613,
-   "concentration_top1": 0.5122785234984013,
-   "mediane_joueurs_par_jeu": 4055.5,
-   "ratio_votes_median": 0.8782402230798021,
-   "ascension": 7,
+   "jeux": 31,
+   "joueurs": 433347,
+   "part_joueurs": 0.03955647875436804,
+   "concentration_top1": 0.5155568170542314,
+   "mediane_joueurs_par_jeu": 4597,
+   "ratio_votes_median": 0.8784584980237155,
+   "ascension": 8,
    "revisites": 11,
    "tendances": 6
   },
   {
+   "genre": "Sports & Racing",
+   "jeux": 42,
+   "joueurs": 419270,
+   "part_joueurs": 0.03827151185388127,
+   "concentration_top1": 0.19624347079447613,
+   "mediane_joueurs_par_jeu": 3426.0,
+   "ratio_votes_median": 0.8548283134217569,
+   "ascension": 8,
+   "revisites": 18,
+   "tendances": 11
+  },
+  {
    "genre": "Obby & Platformer",
-   "jeux": 39,
-   "joueurs": 294588,
-   "part_joueurs": 0.029058223669252255,
-   "concentration_top1": 0.4180211006558312,
-   "mediane_joueurs_par_jeu": 3271,
-   "ratio_votes_median": 0.8155194926319717,
-   "ascension": 14,
+   "jeux": 44,
+   "joueurs": 336386,
+   "part_joueurs": 0.030705752346887938,
+   "concentration_top1": 0.36607944444774754,
+   "mediane_joueurs_par_jeu": 3390.5,
+   "ratio_votes_median": 0.8112489361950173,
+   "ascension": 17,
    "revisites": 5,
-   "tendances": 23
+   "tendances": 24
   },
   {
    "genre": "Party & Casual",
-   "jeux": 32,
-   "joueurs": 200984,
-   "part_joueurs": 0.019825104980314867,
-   "concentration_top1": 0.10581439318552721,
-   "mediane_joueurs_par_jeu": 4326.0,
-   "ratio_votes_median": 0.8001809871181069,
-   "ascension": 11,
+   "jeux": 33,
+   "joueurs": 227566,
+   "part_joueurs": 0.02077252096868449,
+   "concentration_top1": 0.11802290324565182,
+   "mediane_joueurs_par_jeu": 4687,
+   "ratio_votes_median": 0.7983622802899911,
+   "ascension": 12,
    "revisites": 0,
    "tendances": 14
   },
   {
    "genre": "Strategy",
-   "jeux": 19,
-   "joueurs": 190598,
-   "part_joueurs": 0.01880062770687245,
-   "concentration_top1": 0.23477161355313278,
-   "mediane_joueurs_par_jeu": 3469,
-   "ratio_votes_median": 0.9412601331805549,
-   "ascension": 1,
+   "jeux": 20,
+   "joueurs": 222467,
+   "part_joueurs": 0.020307077605355512,
+   "concentration_top1": 0.24404518422957114,
+   "mediane_joueurs_par_jeu": 4241.0,
+   "ratio_votes_median": 0.9418637714952525,
+   "ascension": 2,
    "revisites": 15,
    "tendances": 2
   },
   {
-   "genre": "Entertainment",
-   "jeux": 6,
-   "joueurs": 143969,
-   "part_joueurs": 0.014201133119606291,
-   "concentration_top1": 0.8302898540658058,
-   "mediane_joueurs_par_jeu": 3353.5,
-   "ratio_votes_median": 0.8810537480944345,
-   "ascension": 2,
-   "revisites": 2,
-   "tendances": 2
-  },
-  {
    "genre": "Adventure",
-   "jeux": 18,
-   "joueurs": 143156,
-   "part_joueurs": 0.014120938624775876,
-   "concentration_top1": 0.19028891558858868,
-   "mediane_joueurs_par_jeu": 4474.0,
-   "ratio_votes_median": 0.8977920203888725,
+   "jeux": 20,
+   "joueurs": 181490,
+   "part_joueurs": 0.016566643657692923,
+   "concentration_top1": 0.15207449446250482,
+   "mediane_joueurs_par_jeu": 5165.5,
+   "ratio_votes_median": 0.9006967371080845,
    "ascension": 8,
    "revisites": 5,
    "tendances": 12
   },
   {
+   "genre": "Entertainment",
+   "jeux": 6,
+   "joueurs": 143969,
+   "part_joueurs": 0.013141677892745564,
+   "concentration_top1": 0.8302898540658058,
+   "mediane_joueurs_par_jeu": 3353.5,
+   "ratio_votes_median": 0.8808776586268939,
+   "ascension": 2,
+   "revisites": 2,
+   "tendances": 2
+  },
+  {
    "genre": "Shopping",
    "jeux": 4,
    "joueurs": 103178,
-   "part_joueurs": 0.010177500107764435,
+   "part_joueurs": 0.00941822226741661,
    "concentration_top1": 0.7435015216422105,
    "mediane_joueurs_par_jeu": 12594.5,
-   "ratio_votes_median": 0.8772315482390858,
+   "ratio_votes_median": 0.8772850064305624,
    "ascension": 0,
    "revisites": 2,
    "tendances": 0
@@ -166,11 +166,11 @@
   {
    "genre": "(inconnu)",
    "jeux": 6,
-   "joueurs": 55328,
-   "part_joueurs": 0.005457565817930088,
-   "concentration_top1": 0.5096153846153846,
+   "joueurs": 63973,
+   "part_joueurs": 0.005839538788437872,
+   "concentration_top1": 0.4407484407484408,
    "mediane_joueurs_par_jeu": 3932.0,
-   "ratio_votes_median": 0.8617239091262312,
+   "ratio_votes_median": 0.861368507159708,
    "ascension": 4,
    "revisites": 0,
    "tendances": 1
@@ -178,11 +178,11 @@
   {
    "genre": "Puzzle",
    "jeux": 6,
-   "joueurs": 26434,
-   "part_joueurs": 0.0026074554444614653,
-   "concentration_top1": 0.25383975183475826,
+   "joueurs": 28757,
+   "part_joueurs": 0.002624976426603534,
+   "concentration_top1": 0.3005181347150259,
    "mediane_joueurs_par_jeu": 4545.0,
-   "ratio_votes_median": 0.8594789614248803,
+   "ratio_votes_median": 0.85955145814015,
    "ascension": 1,
    "revisites": 2,
    "tendances": 2
@@ -191,10 +191,10 @@
    "genre": "Social",
    "jeux": 2,
    "joueurs": 10951,
-   "part_joueurs": 0.0010802089949420257,
+   "part_joueurs": 0.0009996215477183052,
    "concentration_top1": 0.8169116975618665,
    "mediane_joueurs_par_jeu": 5475.5,
-   "ratio_votes_median": 0.877650700427277,
+   "ratio_votes_median": 0.8775075794208052,
    "ascension": 0,
    "revisites": 2,
    "tendances": 0
@@ -202,23 +202,23 @@
  ],
  "mots_ascension": [
   [
-   "ragdoll",
-   10,
-   [
-    "[💉INJECTIONS] Ragdoll Playground",
-    "[🎃] Realistic Ragdoll Engine 🩸",
-    "Ragdoll Reality 🩸",
-    "[FREE 🔫] Realistic Ragdoll Playground 💥"
-   ]
-  ],
-  [
    "steal",
-   10,
+   11,
    [
     "[🎃] Steal A Pet And Ride It!",
     "Hide to Steal Eggs",
     "Steal An Exu [Exu-lloween!🎃]",
     "Fly Tesla Roadster To Steal Eggs"
+   ]
+  ],
+  [
+   "ragdoll",
+   10,
+   [
+    "[💉INJECTIONS] Ragdoll Playground",
+    "Realistic Ragdoll Engine 🩸",
+    "Ragdoll Reality 🩸",
+    "[UPD 🔨] Realistic Ragdoll Playground 💥"
    ]
   ],
   [
@@ -232,8 +232,18 @@
    ]
   ],
   [
+   "tower",
+   9,
+   [
+    "🍀 Tower Of Luck [1.8]",
+    "TROLL Jail Hug Tower",
+    "Climb The Locust Tower",
+    "Would You Rather: Games Tower"
+   ]
+  ],
+  [
    "egg",
-   6,
+   7,
    [
     "[🎃] Fake an Egg",
     "Ride An Egg",
@@ -252,16 +262,6 @@
    ]
   ],
   [
-   "tower",
-   6,
-   [
-    "🍀 Tower Of Luck [1.8]",
-    "TROLL Jail Hug Tower",
-    "Climb The Locust Tower",
-    "Would You Rather: Games Tower"
-   ]
-  ],
-  [
    "eggs",
    6,
    [
@@ -272,13 +272,33 @@
    ]
   ],
   [
+   "evolution",
+   5,
+   [
+    "Bug Evolution [🕷️]",
+    "[🎃] +1 Venom Evolution",
+    "[W3] +1 Titan Evolution! ",
+    "[2x WEEKEND] Farm Evolution"
+   ]
+  ],
+  [
    "realistic",
    5,
    [
-    "[🎃] Realistic Ragdoll Engine 🩸",
+    "Realistic Ragdoll Engine 🩸",
     "[UPDATE] REALISTIC HOME DEFENSE",
-    "[FREE 🔫] Realistic Ragdoll Playground 💥",
-    "Realistic Car Destruction"
+    "[UPD 🔨] Realistic Ragdoll Playground 💥",
+    "[12H] Realistic Car Destruction"
+   ]
+  ],
+  [
+   "make",
+   5,
+   [
+    "Make The Logo!",
+    "Make Viral Candy! 🍬",
+    "🎬 Make a Cartoon!",
+    "Make Ramen To Get Rich [RELEASE]"
    ]
   ],
   [
@@ -289,16 +309,6 @@
     "Prison Dodgeball",
     "🥟SQUISHY DUMPLING PRISON RUN! (Obby)",
     "🪓BUDDY PRISON RUN! (Obby)"
-   ]
-  ],
-  [
-   "evolution",
-   4,
-   [
-    "Bug Evolution [🕷️]",
-    "[🎃] +1 Venom Evolution",
-    "[W3] +1 Titan Evolution! ",
-    "[2x WEEKEND] Farm Evolution"
    ]
   ],
   [
@@ -342,16 +352,6 @@
    ]
   ],
   [
-   "make",
-   4,
-   [
-    "Make The Logo!",
-    "Make Viral Candy! 🍬",
-    "🎬 Make a Cartoon!",
-    "Make Ramen To Get Rich [RELEASE]"
-   ]
-  ],
-  [
    "punch",
    4,
    [
@@ -375,7 +375,7 @@
    "car",
    4,
    [
-    "Realistic Car Destruction",
+    "[12H] Realistic Car Destruction",
     "[🎃] Launch Your CAR! ",
     "[🎃] [Roadster🚀] Flying car obby",
     "Get Your Car License!🚗"
@@ -402,12 +402,31 @@
    ]
   ],
   [
+   "you",
+   4,
+   [
+    "Would You Rather: Games Tower",
+    "Can You Pass A Driving Test?",
+    "Would You Rather: Christmas Outfit Tower 🎄",
+    "Would You Rather: Autumn Contest Outfit Tower 🍂"
+   ]
+  ],
+  [
    "playground",
    3,
    [
     "[💉INJECTIONS] Ragdoll Playground",
-    "[FREE 🔫] Realistic Ragdoll Playground 💥",
+    "[UPD 🔨] Realistic Ragdoll Playground 💥",
     "[💥] CLONE PLAYGROUND!"
+   ]
+  ],
+  [
+   "anime",
+   3,
+   [
+    "[🌍UPD] +1 Anime Eyes",
+    "Build An Anime Character",
+    "Anime Galaxies | UPDATE 0.5"
    ]
   ],
   [
@@ -420,30 +439,12 @@
    ]
   ],
   [
-   "fight",
+   "pet",
    3,
    [
-    "[🎃 HALLOWEEN PT 2] UNDERTALE Fight!",
-    "Ragdoll Fight [NEW]",
-    "Fight for Eggs"
-   ]
-  ],
-  [
-   "hide",
-   3,
-   [
-    "[RANKED] Hide From The Hulk",
-    "Hide to Steal Eggs",
-    "Hide In Drawings 🎨"
-   ]
-  ],
-  [
-   "find",
-   3,
-   [
-    "[🎃] Find Animal Bones",
-    "[UPD] Find The Country 🌍",
-    "Find The Animals [280]"
+    "[🎃] Steal A Pet And Ride It!",
+    "[🎃BUNNY🐇] 7 Days as a Pet",
+    "Lasso A Pet"
    ]
   ]
  ],
@@ -452,9 +453,9 @@
    "universeId": 10771421858,
    "nom": "DONT SPLASH",
    "genre": "Obby & Platformer",
-   "joueurs": 98986,
-   "pour": 73417,
-   "contre": 10535,
+   "joueurs": 101326,
+   "pour": 75498,
+   "contre": 10852,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 123144
@@ -463,9 +464,9 @@
    "universeId": 10770728771,
    "nom": "The Hollow",
    "genre": "Entertainment",
-   "joueurs": 109173,
-   "pour": 103992,
-   "contre": 18193,
+   "joueurs": 113783,
+   "pour": 106384,
+   "contre": 18651,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 119536
@@ -474,64 +475,86 @@
    "universeId": 10629695169,
    "nom": "[✨] Tap Simulator REBORN",
    "genre": "Simulation",
-   "joueurs": 43184,
-   "pour": 25060,
-   "contre": 1538,
+   "joueurs": 43510,
+   "pour": 25277,
+   "contre": 1557,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 45162
   },
   {
+   "universeId": 10769315427,
+   "nom": "[🎃] Steal A Pet And Ride It!",
+   "genre": "Simulation",
+   "joueurs": 44278,
+   "pour": 17002,
+   "contre": 980,
+   "sponsorise": false,
+   "maturite": "minimal",
+   "joueurs_max": 44278
+  },
+  {
    "universeId": 10771997908,
    "nom": "+1 Spider Arm🕷️",
    "genre": "Simulation",
-   "joueurs": 31992,
-   "pour": 71425,
-   "contre": 2146,
+   "joueurs": 35525,
+   "pour": 77931,
+   "contre": 2355,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 44070
   },
   {
-   "universeId": 10769315427,
-   "nom": "[🎃] Steal A Pet And Ride It!",
+   "universeId": 10769384180,
+   "nom": "[🎃] Fake an Egg",
    "genre": "Simulation",
-   "joueurs": 36866,
-   "pour": 16410,
-   "contre": 934,
+   "joueurs": 40937,
+   "pour": 52745,
+   "contre": 6709,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 37191
+   "joueurs_max": 41628
   },
   {
    "universeId": 10770593871,
-   "nom": "[🎃] Realistic Ragdoll Engine 🩸",
+   "nom": "Realistic Ragdoll Engine 🩸",
    "genre": "Simulation",
-   "joueurs": 29585,
-   "pour": 20850,
-   "contre": 2916,
+   "joueurs": 23061,
+   "pour": 21443,
+   "contre": 2980,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 35481
   },
   {
-   "universeId": 10769384180,
-   "nom": "[🎃] Fake an Egg",
+   "universeId": 10769464063,
+   "nom": "[🎃] +1 Venom Evolution",
    "genre": "Simulation",
-   "joueurs": 32832,
-   "pour": 51756,
-   "contre": 6582,
+   "joueurs": 33444,
+   "pour": 127536,
+   "contre": 4151,
+   "sponsorise": false,
+   "maturite": "mild",
+   "joueurs_max": 33444
+  },
+  {
+   "universeId": 10772253152,
+   "nom": "[UPD] Durian Garden 🍈",
+   "genre": "Simulation",
+   "joueurs": 32791,
+   "pour": 6016,
+   "contre": 267,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 32832
+   "joueurs_max": 32791
   },
   {
    "universeId": 10770605947,
    "nom": "Ragdoll Reality 🩸",
    "genre": "Simulation",
-   "joueurs": 29799,
-   "pour": 25671,
-   "contre": 5119,
+   "joueurs": 29686,
+   "pour": 26069,
+   "contre": 5215,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 32551
@@ -540,31 +563,20 @@
    "universeId": 10770933473,
    "nom": "[🌍UPD] +1 Anime Eyes",
    "genre": "Simulation",
-   "joueurs": 32063,
-   "pour": 26032,
-   "contre": 1118,
+   "joueurs": 28390,
+   "pour": 27179,
+   "contre": 1150,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 32063
   },
   {
-   "universeId": 10769464063,
-   "nom": "[🎃] +1 Venom Evolution",
-   "genre": "Simulation",
-   "joueurs": 31300,
-   "pour": 125243,
-   "contre": 4087,
-   "sponsorise": false,
-   "maturite": "mild",
-   "joueurs_max": 31465
-  },
-  {
    "universeId": 10769957062,
    "nom": "Bug Evolution [🕷️]",
    "genre": "Survival",
-   "joueurs": 17256,
-   "pour": 15140,
-   "contre": 4843,
+   "joueurs": 24692,
+   "pour": 16044,
+   "contre": 5048,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 29213
@@ -573,9 +585,9 @@
    "universeId": 10769149947,
    "nom": "صيد الضبّان",
    "genre": "Simulation",
-   "joueurs": 15091,
-   "pour": 37479,
-   "contre": 2043,
+   "joueurs": 19029,
+   "pour": 37661,
+   "contre": 2046,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 28990
@@ -584,9 +596,9 @@
    "universeId": 10769543742,
    "nom": "Backseat Rally",
    "genre": "(inconnu)",
-   "joueurs": 20619,
-   "pour": 42488,
-   "contre": 3767,
+   "joueurs": 25360,
+   "pour": 42997,
+   "contre": 3820,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 28196
@@ -595,9 +607,9 @@
    "universeId": 10768383600,
    "nom": "[💉INJECTIONS] Ragdoll Playground",
    "genre": "Simulation",
-   "joueurs": 17579,
-   "pour": 24168,
-   "contre": 1059,
+   "joueurs": 17243,
+   "pour": 25511,
+   "contre": 1122,
    "sponsorise": false,
    "maturite": "moderate",
    "joueurs_max": 27735
@@ -606,9 +618,9 @@
    "universeId": 10771507608,
    "nom": "🧸 My Small Business",
    "genre": "Simulation",
-   "joueurs": 20403,
-   "pour": 23612,
-   "contre": 1083,
+   "joueurs": 23218,
+   "pour": 24300,
+   "contre": 1103,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 26147
@@ -617,20 +629,31 @@
    "universeId": 10769543567,
    "nom": "Cat Battles 🐾",
    "genre": "Action",
-   "joueurs": 21257,
-   "pour": 45406,
-   "contre": 16432,
+   "joueurs": 13752,
+   "pour": 45714,
+   "contre": 16570,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 25041
   },
   {
+   "universeId": 10772066587,
+   "nom": "[CLASS] MALAM SAMA OPAH ",
+   "genre": "Survival",
+   "joueurs": 24001,
+   "pour": 1088,
+   "contre": 219,
+   "sponsorise": false,
+   "maturite": "minimal",
+   "joueurs_max": 24001
+  },
+  {
    "universeId": 10769851460,
    "nom": "Criminal Simulator 💰 [ALPHA]",
    "genre": "Simulation",
-   "joueurs": 13543,
-   "pour": 16874,
-   "contre": 2175,
+   "joueurs": 16608,
+   "pour": 17727,
+   "contre": 2239,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 22294
@@ -639,9 +662,9 @@
    "universeId": 10771871836,
    "nom": "📸 Say Cheese! [STORY]",
    "genre": "Adventure",
-   "joueurs": 13108,
-   "pour": 16612,
-   "contre": 1830,
+   "joueurs": 11922,
+   "pour": 17492,
+   "contre": 1923,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 20509
@@ -650,9 +673,9 @@
    "universeId": 10770699460,
    "nom": "Raise The Biggest Family",
    "genre": "Roleplay & Avatar Sim",
-   "joueurs": 15364,
-   "pour": 4376,
-   "contre": 1638,
+   "joueurs": 15669,
+   "pour": 4629,
+   "contre": 1710,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 20443
@@ -661,31 +684,31 @@
    "universeId": 10769835283,
    "nom": "[UPD4 💀] Depth Incremental",
    "genre": "Simulation",
-   "joueurs": 11086,
-   "pour": 12087,
-   "contre": 545,
+   "joueurs": 10481,
+   "pour": 12618,
+   "contre": 566,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 18711
   },
   {
-   "universeId": 10772253152,
-   "nom": "[UPD] Durian Garden 🍈",
+   "universeId": 10765618402,
+   "nom": "[x2💵] Steel Fighters",
    "genre": "Simulation",
-   "joueurs": 16846,
-   "pour": 5748,
-   "contre": 254,
+   "joueurs": 17798,
+   "pour": 13496,
+   "contre": 1357,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 17100
+   "joueurs_max": 17798
   },
   {
    "universeId": 10769634720,
    "nom": "PINKIE PROMISE [HORROR]",
    "genre": "Adventure",
-   "joueurs": 11028,
-   "pour": 38466,
-   "contre": 2294,
+   "joueurs": 8832,
+   "pour": 39216,
+   "contre": 2345,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 16746
@@ -694,9 +717,9 @@
    "universeId": 10768372920,
    "nom": "[🎃] +1 Upgrade Per Kill",
    "genre": "Action",
-   "joueurs": 11256,
-   "pour": 11283,
-   "contre": 13782,
+   "joueurs": 13085,
+   "pour": 11564,
+   "contre": 14077,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 16388
@@ -705,31 +728,20 @@
    "universeId": 10770018231,
    "nom": "Clone Baby Care (Anomaly)",
    "genre": "Survival",
-   "joueurs": 14754,
-   "pour": 10552,
-   "contre": 1203,
+   "joueurs": 13154,
+   "pour": 10700,
+   "contre": 1229,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 16156
   },
   {
-   "universeId": 10765618402,
-   "nom": "[x2💵] Steel Fighters",
-   "genre": "Simulation",
-   "joueurs": 15646,
-   "pour": 13320,
-   "contre": 1338,
-   "sponsorise": false,
-   "maturite": "minimal",
-   "joueurs_max": 15793
-  },
-  {
    "universeId": 10769621465,
    "nom": "Cook the Chicken (by slapping it)",
    "genre": "Simulation",
-   "joueurs": 6853,
-   "pour": 4505,
-   "contre": 1232,
+   "joueurs": 12114,
+   "pour": 4603,
+   "contre": 1258,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 15703
@@ -738,45 +750,34 @@
    "universeId": 10769484703,
    "nom": "[👽] What If Disasters",
    "genre": "Survival",
-   "joueurs": 13151,
-   "pour": 24128,
-   "contre": 2509,
+   "joueurs": 14304,
+   "pour": 24542,
+   "contre": 2550,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 15657
   },
   {
+   "universeId": 10771403972,
+   "nom": "Thai Quiz Duels [UPDATES]",
+   "genre": "Party & Casual",
+   "joueurs": 14679,
+   "pour": 1053,
+   "contre": 659,
+   "sponsorise": false,
+   "maturite": "minimal",
+   "joueurs_max": 14801
+  },
+  {
    "universeId": 10769249409,
    "nom": "[🎃] Drive a Cart Downhill!",
    "genre": "Obby & Platformer",
-   "joueurs": 12514,
-   "pour": 4372,
-   "contre": 989,
+   "joueurs": 10103,
+   "pour": 4516,
+   "contre": 1018,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 14643
-  },
-  {
-   "universeId": 10771051754,
-   "nom": "Realistic Car Destruction",
-   "genre": "Simulation",
-   "joueurs": 10498,
-   "pour": 2900,
-   "contre": 830,
-   "sponsorise": false,
-   "maturite": "minimal",
-   "joueurs_max": 14535
-  },
-  {
-   "universeId": 10771410956,
-   "nom": "[FREE 🔫] Realistic Ragdoll Playground 💥",
-   "genre": "Simulation",
-   "joueurs": 8495,
-   "pour": 4426,
-   "contre": 1519,
-   "sponsorise": false,
-   "maturite": "moderate",
-   "joueurs_max": 13845
   }
  ],
  "revisites": [
@@ -784,20 +785,20 @@
    "universeId": 10563114921,
    "nom": "Steal An Egg",
    "genre": "Simulation",
-   "joueurs": 990202,
-   "pour": 3959550,
-   "contre": 367976,
+   "joueurs": 1162502,
+   "pour": 3964387,
+   "contre": 368702,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 990202
+   "joueurs_max": 1162502
   },
   {
    "universeId": 66654135,
    "nom": "Murder Mystery 2",
    "genre": "Survival",
-   "joueurs": 369419,
-   "pour": 10882647,
-   "contre": 1101909,
+   "joueurs": 347495,
+   "pour": 10883515,
+   "contre": 1102066,
    "sponsorise": false,
    "maturite": "moderate",
    "joueurs_max": 521032
@@ -806,9 +807,9 @@
    "universeId": 1686885941,
    "nom": "Brookhaven 🏡RP",
    "genre": "Roleplay & Avatar Sim",
-   "joueurs": 404376,
-   "pour": 8702885,
-   "contre": 1429399,
+   "joueurs": 373157,
+   "pour": 8703665,
+   "contre": 1429569,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 465510
@@ -817,53 +818,53 @@
    "universeId": 994732206,
    "nom": "[🎃] Blox Fruits",
    "genre": "RPG",
-   "joueurs": 299110,
-   "pour": 12811779,
-   "contre": 1069122,
+   "joueurs": 418195,
+   "pour": 12812969,
+   "contre": 1069180,
    "sponsorise": false,
    "maturite": "mild",
-   "joueurs_max": 334451
+   "joueurs_max": 418195
   },
   {
    "universeId": 383310974,
    "nom": "[1.2X🎃] Adopt Me!",
    "genre": "Roleplay & Avatar Sim",
-   "joueurs": 179425,
-   "pour": 9605996,
-   "contre": 1515573,
+   "joueurs": 250370,
+   "pour": 9606406,
+   "contre": 1515586,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 235831
+   "joueurs_max": 259309
   },
   {
    "universeId": 6035872082,
    "nom": "[🎃] RIVALS",
    "genre": "Shooter",
-   "joueurs": 179381,
-   "pour": 10914130,
-   "contre": 740214,
+   "joueurs": 223415,
+   "pour": 10915889,
+   "contre": 740450,
    "sponsorise": false,
    "maturite": "mild",
-   "joueurs_max": 202996
+   "joueurs_max": 223415
   },
   {
    "universeId": 7326934954,
    "nom": "99 Nights in the Forest 🔦",
    "genre": "Survival",
-   "joueurs": 144554,
+   "joueurs": 208220,
    "pour": 5493430,
    "contre": 577306,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 164251
+   "joueurs_max": 208220
   },
   {
    "universeId": 3508322461,
    "nom": "[🎃] Jujutsu Shenanigans",
    "genre": "Action",
-   "joueurs": 125263,
-   "pour": 2716626,
-   "contre": 430560,
+   "joueurs": 101675,
+   "pour": 2717253,
+   "contre": 430697,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 153582
@@ -872,9 +873,9 @@
    "universeId": 5750914919,
    "nom": "Fisch 🎸 [VENUE ENCORE]",
    "genre": "Simulation",
-   "joueurs": 107740,
-   "pour": 3081062,
-   "contre": 312022,
+   "joueurs": 100325,
+   "pour": 3081589,
+   "contre": 312179,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 126568
@@ -883,7 +884,7 @@
    "universeId": 5569032992,
    "nom": "🎃 Dandy's World [ALPHA]",
    "genre": "Survival",
-   "joueurs": 91989,
+   "joueurs": 81816,
    "pour": 1759068,
    "contre": 241779,
    "sponsorise": false,
@@ -894,141 +895,152 @@
    "universeId": 10765288803,
    "nom": "Break and Steal an Egg",
    "genre": "Simulation",
-   "joueurs": 85918,
-   "pour": 414244,
-   "contre": 11635,
+   "joueurs": 88887,
+   "pour": 415446,
+   "contre": 11699,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 86704
+   "joueurs_max": 89957
   },
   {
    "universeId": 7219654364,
    "nom": "[💀DUELS] Murderers VS Sheriffs",
    "genre": "Action",
-   "joueurs": 65156,
-   "pour": 286280,
-   "contre": 44632,
+   "joueurs": 26237,
+   "pour": 286479,
+   "contre": 44696,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 81777
   },
   {
+   "universeId": 6739698191,
+   "nom": "[WEEK 2 🎃 x BUTCHER] Violence District",
+   "genre": "Survival",
+   "joueurs": 79363,
+   "pour": 811318,
+   "contre": 61366,
+   "sponsorise": false,
+   "maturite": "mild",
+   "joueurs_max": 79363
+  },
+  {
    "universeId": 3808081382,
    "nom": "The Strongest Battlegrounds",
    "genre": "Action",
-   "joueurs": 70415,
-   "pour": 5350187,
-   "contre": 1038665,
+   "joueurs": 72681,
+   "pour": 5350778,
+   "contre": 1038772,
    "sponsorise": false,
    "maturite": "mild",
-   "joueurs_max": 71259
-  },
-  {
-   "universeId": 6931042565,
-   "nom": "[UPD] Volleyball Legends",
-   "genre": "Sports & Racing",
-   "joueurs": 60800,
-   "pour": 2623980,
-   "contre": 133775,
-   "sponsorise": false,
-   "maturite": "minimal",
-   "joueurs_max": 63396
+   "joueurs_max": 72681
   },
   {
    "universeId": 3647333358,
    "nom": "[🎃THE HOLLOW🎃] Evade ",
    "genre": "Survival",
-   "joueurs": 58293,
-   "pour": 3284712,
-   "contre": 213298,
+   "joueurs": 71267,
+   "pour": 3285189,
+   "contre": 213417,
    "sponsorise": false,
    "maturite": "mild",
-   "joueurs_max": 58655
+   "joueurs_max": 71507
+  },
+  {
+   "universeId": 6931042565,
+   "nom": "[UPD] Volleyball Legends",
+   "genre": "Sports & Racing",
+   "joueurs": 48348,
+   "pour": 2624481,
+   "contre": 133826,
+   "sponsorise": false,
+   "maturite": "minimal",
+   "joueurs_max": 63396
   },
   {
    "universeId": 10708913337,
    "nom": "[🎃] Anime Dice",
    "genre": "Simulation",
-   "joueurs": 53832,
-   "pour": 752702,
-   "contre": 7295,
+   "joueurs": 54623,
+   "pour": 753722,
+   "contre": 7324,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 55981
   },
   {
-   "universeId": 6739698191,
-   "nom": "[WEEK 2 🎃 x BUTCHER] Violence District",
-   "genre": "Survival",
-   "joueurs": 54816,
-   "pour": 810802,
-   "contre": 61322,
+   "universeId": 3183403065,
+   "nom": "[🤹APRIL FOOL'S🤡] Anime Adventures",
+   "genre": "Strategy",
+   "joueurs": 54283,
+   "pour": 734821,
+   "contre": 64813,
    "sponsorise": false,
    "maturite": "mild",
-   "joueurs_max": 54816
+   "joueurs_max": 54292
   },
   {
    "universeId": 10155360168,
    "nom": "Illegal Soccer",
    "genre": "Sports & Racing",
-   "joueurs": 45866,
-   "pour": 129855,
-   "contre": 20161,
+   "joueurs": 34920,
+   "pour": 130241,
+   "contre": 20238,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 50813
   },
   {
+   "universeId": 10766620257,
+   "nom": "[🎃] Bike For Egg!",
+   "genre": "Simulation",
+   "joueurs": 47052,
+   "pour": 21250,
+   "contre": 1124,
+   "sponsorise": false,
+   "maturite": "minimal",
+   "joueurs_max": 47248
+  },
+  {
    "universeId": 6331902150,
    "nom": "Forsaken",
    "genre": "Survival",
-   "joueurs": 45578,
-   "pour": 2418159,
-   "contre": 445945,
+   "joueurs": 41416,
+   "pour": 2418363,
+   "contre": 446025,
    "sponsorise": false,
    "maturite": "mild",
    "joueurs_max": 45666
   },
   {
-   "universeId": 3183403065,
-   "nom": "[🤹APRIL FOOL'S🤡] Anime Adventures",
-   "genre": "Strategy",
-   "joueurs": 44649,
-   "pour": 734631,
-   "contre": 64816,
-   "sponsorise": false,
-   "maturite": "mild",
-   "joueurs_max": 44747
-  },
-  {
    "universeId": 5361032378,
    "nom": "Sol's RNG [ Halloween Event 🎃]",
    "genre": "Simulation",
-   "joueurs": 41436,
-   "pour": 1431338,
-   "contre": 134413,
+   "joueurs": 43903,
+   "pour": 1431463,
+   "contre": 134428,
    "sponsorise": false,
    "maturite": "minimal",
-   "joueurs_max": 41449
+   "joueurs_max": 43903
   },
   {
-   "universeId": 10766620257,
-   "nom": "[🎃] Bike For Egg!",
+   "universeId": 2668101271,
+   "nom": "Fling Things and People",
    "genre": "Simulation",
-   "joueurs": 40699,
-   "pour": 20901,
-   "contre": 1093,
+   "joueurs": 42021,
+   "pour": 964342,
+   "contre": 234831,
    "sponsorise": false,
-   "maturite": "minimal",
-   "joueurs_max": 40995
+   "maturite": "mild",
+   "joueurs_max": 42021
   },
   {
    "universeId": 4839802560,
    "nom": "LifeTogether 🏠 RP [FAMILIES]",
    "genre": "Roleplay & Avatar Sim",
-   "joueurs": 24213,
-   "pour": 960161,
-   "contre": 102813,
+   "joueurs": 26052,
+   "pour": 960296,
+   "contre": 102826,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 40638
@@ -1037,9 +1049,9 @@
    "universeId": 1176784616,
    "nom": "[🌙 NIGHT 4] Tower Defense Simulator",
    "genre": "Strategy",
-   "joueurs": 26848,
-   "pour": 2087330,
-   "contre": 130261,
+   "joueurs": 29554,
+   "pour": 2087418,
+   "contre": 130299,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 36745
@@ -1048,9 +1060,9 @@
    "universeId": 601130232,
    "nom": "Bee Swarm Simulator",
    "genre": "Simulation",
-   "joueurs": 30752,
-   "pour": 3046383,
-   "contre": 140001,
+   "joueurs": 31395,
+   "pour": 3046510,
+   "contre": 140009,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 33309
@@ -1059,7 +1071,7 @@
    "universeId": 372226183,
    "nom": "Flee the Facility",
    "genre": "Survival",
-   "joueurs": 33287,
+   "joueurs": 15645,
    "pour": 2811818,
    "contre": 241220,
    "sponsorise": false,
@@ -1067,23 +1079,12 @@
    "joueurs_max": 33294
   },
   {
-   "universeId": 2668101271,
-   "nom": "Fling Things and People",
-   "genre": "Simulation",
-   "joueurs": 30252,
-   "pour": 964162,
-   "contre": 234803,
-   "sponsorise": false,
-   "maturite": "mild",
-   "joueurs_max": 30581
-  },
-  {
    "universeId": 703124385,
    "nom": "Tower of Hell",
    "genre": "Obby & Platformer",
-   "joueurs": 11141,
-   "pour": 4388541,
-   "contre": 1571955,
+   "joueurs": 26225,
+   "pour": 4388706,
+   "contre": 1572000,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 29596
@@ -1092,9 +1093,9 @@
    "universeId": 2619619496,
    "nom": "[👻Rereleases] BedWars",
    "genre": "Action",
-   "joueurs": 25641,
-   "pour": 2489794,
-   "contre": 535427,
+   "joueurs": 27482,
+   "pour": 2489902,
+   "contre": 535446,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 29420
@@ -1103,9 +1104,9 @@
    "universeId": 10769149947,
    "nom": "صيد الضبّان",
    "genre": "Simulation",
-   "joueurs": 15091,
-   "pour": 37479,
-   "contre": 2043,
+   "joueurs": 19029,
+   "pour": 37661,
+   "contre": 2046,
    "sponsorise": false,
    "maturite": "minimal",
    "joueurs_max": 28990
