@@ -103,11 +103,10 @@ jouant) :
 - Grimmulf : 1 600 PV, marche lente (8 studs/s), se retourne lentement ; balayage, onde de choc (on l'évite aussi en
   sautant), charge à distance ; à 50 % : rugissement, attaques 15 % plus
   rapides, lancer de rochers. Chaque attaque est annoncée par une zone
-  rouge au sol. Il se régénère si tout le monde meurt ou quitte la cour, et
-  réapparaît 45 s après sa mort.
+  rouge au sol. Il réapparaît 45 s après sa mort.
 - Dégâts de l'Ogre (après le 1er test) : balayage 20, onde 24, charge 28,
-  rocher 22 ; il revient à pleine vie si le joueur meurt (règle du genre,
-  ❓ à confirmer par le propriétaire).
+  rocher 22 ; ✅ si le joueur meurt ou
+  s'éloigne, il rentre à sa place **sans se soigner**.
 - 💡 Revaincre un boss ne redonne que 100 XP (les récompenses permanentes
   ne se gagnent qu'une fois).
 - Animations procédurales (sans fichiers d'animation) : épée en main, coups

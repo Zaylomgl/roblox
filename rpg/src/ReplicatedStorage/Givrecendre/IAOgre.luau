@@ -130,8 +130,11 @@ function IA.mettreAJour(ia: IA, t: number, distance: number?, deFace: boolean?):
 	end
 	if distance == nil then
 		if ia.etat ~= "attente" then
-			IA.reinitialiser(ia) -- tout le monde est mort ou parti : le boss se régénère
-			table.insert(ordres, { type = "reinitialiser" })
+			-- Tout le monde est mort ou parti : il retourne à sa place SANS se
+			-- soigner (choix du propriétaire, 01/11/2026). Sa phase est conservée.
+			ia.etat = "attente"
+			ia.attaque = nil
+			table.insert(ordres, { type = "retour" })
 		end
 		return ordres
 	end

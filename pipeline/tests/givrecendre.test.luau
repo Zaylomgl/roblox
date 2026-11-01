@@ -226,14 +226,18 @@ M["IA : meurt une seule fois"] = function(t)
 	t.egal(IA.subirDegats(ia, 10), 0)
 end
 
-M["IA : se régénère si tout le monde meurt ou part"] = function(t)
+M["IA : si tout le monde meurt ou part, il rentre sans se soigner"] = function(t)
 	local ia = IA.nouveau(rng({ 0.5 }))
 	IA.mettreAJour(ia, 0, 10)
 	IA.subirDegats(ia, 300)
 	local o = IA.mettreAJour(ia, 1, nil)
-	t.egal(o[1].type, "reinitialiser")
-	t.egal(ia.vie, 1600)
+	t.egal(o[1].type, "retour")
+	t.egal(ia.vie, 1300)
 	t.egal(ia.etat, "attente")
+	-- Le joueur revient : le combat reprend là où il en était.
+	IA.mettreAJour(ia, 2, 10)
+	t.egal(ia.etat, "preparation")
+	t.egal(ia.vie, 1300)
 end
 
 M["IA : se tourne vers la cible avant un balayage"] = function(t)
