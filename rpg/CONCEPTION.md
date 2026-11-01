@@ -105,6 +105,9 @@ jouant) :
   rapides, lancer de rochers. Chaque attaque est annoncée par une zone
   rouge au sol. Il se régénère si tout le monde meurt ou quitte la cour, et
   réapparaît 45 s après sa mort.
+- Dégâts de l'Ogre (après le 1er test) : balayage 20, onde 24, charge 28,
+  rocher 22 ; il revient à pleine vie si le joueur meurt (règle du genre,
+  ❓ à confirmer par le propriétaire).
 - 💡 Revaincre un boss ne redonne que 100 XP (les récompenses permanentes
   ne se gagnent qu'une fois).
 - Animations procédurales (sans fichiers d'animation) : épée en main, coups

@@ -36,9 +36,19 @@ do
 	end
 end
 
-local CENTRE = Vector3.new(0, 0, 0) -- centre de la cour
+-- Hauteur du sol (terrain) en (x, z) : mesurée, jamais supposée
+-- (le sol pavé de la cour est à y ≈ 1,8 et non 0 : mesuré en jeu le 01/11/2026).
+local paramsSol = RaycastParams.new()
+paramsSol.FilterType = Enum.RaycastFilterType.Include
+paramsSol.FilterDescendantsInstances = { workspace.Terrain }
+local function hauteurSol(x: number, z: number, defaut: number): number
+	local r = workspace:Raycast(Vector3.new(x, 120, z), Vector3.new(0, -240, 0), paramsSol)
+	return r and r.Position.Y or defaut
+end
+
+local CENTRE = Vector3.new(0, hauteurSol(0, 0, 0), 0) -- centre de la cour, au niveau du sol
 local RAYON_COUR = 46 -- un joueur à moins de cette distance (et au sol) est « dans l'arène »
-local RAYON_OGRE_MAX = 36 -- l'Ogre ne sort pas de la cour
+local RAYON_OGRE_MAX = 39 -- l'Ogre ne sort pas de la cour
 local DELAI_REAPPARITION = 45
 
 --------------------------------------------------------------------------------
@@ -215,6 +225,13 @@ local pivotDepart = ogre:GetPivot()
 local function lacet(v: Vector3): number
 	return math.atan2(-v.X, -v.Z)
 end
+-- Poser les pieds de l'Ogre sur le sol (le modèle était enfoncé de ~1,8 stud).
+do
+	local boite, taille = ogre:GetBoundingBox()
+	local pieds = boite.Position.Y - taille.Y / 2
+	local sol = hauteurSol(boite.Position.X, boite.Position.Z, pieds)
+	pivotDepart = pivotDepart + Vector3.new(0, sol - pieds, 0)
+end
 local position = pivotDepart.Position
 local direction = Vector3.new(0, 0, 1)
 -- Pose du corps (animation procédurale : le modèle est d'un seul bloc) :
@@ -242,8 +259,8 @@ local function telegraphe(forme: string, cf: CFrame, taille: Vector3, duree: num
 	p.CanTouch = false
 	p.CastShadow = false
 	p.Material = Enum.Material.Neon
-	p.Color = Color3.fromRGB(200, 40, 25)
-	p.Transparency = 0.85
+	p.Color = Color3.fromRGB(220, 40, 25)
+	p.Transparency = 0.6
 	if forme == "disque" then
 		p.Shape = Enum.PartType.Cylinder
 		p.Size = Vector3.new(0.2, taille.X * 2, taille.X * 2)
@@ -253,7 +270,7 @@ local function telegraphe(forme: string, cf: CFrame, taille: Vector3, duree: num
 		p.CFrame = cf
 	end
 	p.Parent = effets
-	TweenService:Create(p, TweenInfo.new(duree, Enum.EasingStyle.Linear), { Transparency = 0.35 }):Play()
+	TweenService:Create(p, TweenInfo.new(duree, Enum.EasingStyle.Linear), { Transparency = 0.2 }):Play()
 	task.delay(duree + 0.15, function()
 		p:Destroy()
 	end)
@@ -315,7 +332,7 @@ end
 
 local function preparer(nom: string, duree: number)
 	local A = Regles.OGRE.attaques
-	local sol = Vector3.new(position.X, CENTRE.Y + 0.15, position.Z)
+	local sol = Vector3.new(position.X, hauteurSol(position.X, position.Z, CENTRE.Y) + 0.25, position.Z)
 	local c = cible and racine(cible)
 	if c then
 		local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
@@ -324,7 +341,7 @@ local function preparer(nom: string, duree: number)
 		if nom == "charge" and v.Magnitude > 0.1 then
 			direction = v.Unit
 		end
-		attaqueVisee = Vector3.new(c.Position.X, CENTRE.Y, c.Position.Z)
+		attaqueVisee = Vector3.new(c.Position.X, hauteurSol(c.Position.X, c.Position.Z, CENTRE.Y), c.Position.Z)
 	end
 	if nom == "balayage" then
 		local a = A.balayage
@@ -346,7 +363,7 @@ local function preparer(nom: string, duree: number)
 			duree
 		)
 	elseif nom == "rocher" and attaqueVisee then
-		telegraphe("disque", CFrame.new(attaqueVisee + Vector3.new(0, 0.15, 0)), Vector3.new(A.rocher.rayon, 0, 0), duree)
+		telegraphe("disque", CFrame.new(attaqueVisee + Vector3.new(0, 0.25, 0)), Vector3.new(A.rocher.rayon, 0, 0), duree)
 	end
 end
 
@@ -590,7 +607,7 @@ RunService.Heartbeat:Connect(function(dt)
 		for _, ordre in IA.mettreAJour(ia, t, distance, deFace) do
 			if ordre.type == "avancer" and c and not charge then
 				local v = Vector3.new(c.Position.X - position.X, 0, c.Position.Z - position.Z)
-				if v.Magnitude > Regles.OGRE.attaques.balayage.portee * 0.7 then
+				if v.Magnitude > Regles.OGRE.attaques.balayage.portee * 0.5 then
 					local suivant = position + direction * ordre.vitesse * dt
 					if (Vector3.new(suivant.X, 0, suivant.Z) - CENTRE).Magnitude <= RAYON_OGRE_MAX then
 						position = suivant

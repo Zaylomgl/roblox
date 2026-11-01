@@ -36,18 +36,18 @@ Regles.OGRE = {
 	rage = 2.2, -- secondes de rugissement au passage en phase 2 (pas d'attaque)
 	accelerationPhase2 = 0.85, -- préparations raccourcies en phase 2
 	attaques = {
-		balayage = { portee = 24, angle = 150, degats = 28, preparation = 1.25, recuperation = 1.5 },
-		onde = { portee = 20, rayon = 26, degats = 34, preparation = 1.7, recuperation = 2.0 },
+		balayage = { portee = 22, angle = 150, degats = 20, preparation = 1.25, recuperation = 1.5 },
+		onde = { portee = 18, rayon = 24, degats = 24, preparation = 1.7, recuperation = 2.0 },
 		charge = {
 			porteeMin = 26,
 			porteeMax = 80,
 			largeur = 12,
 			vitesse = 46,
-			degats = 38,
+			degats = 28,
 			preparation = 1.4,
 			recuperation = 2.2,
 		},
-		rocher = { porteeMin = 30, porteeMax = 90, rayon = 9, degats = 30, preparation = 1.5, recuperation = 1.6 },
+		rocher = { porteeMin = 30, porteeMax = 90, rayon = 9, degats = 22, preparation = 1.5, recuperation = 1.6 },
 	},
 }
 
