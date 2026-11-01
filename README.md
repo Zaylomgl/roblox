@@ -1,4 +1,30 @@
-# ✦ L'Île d'Auraciel ✦
+# Roblox : maps générées, testées et améliorées automatiquement
+
+| Dossier / fichier | Contenu |
+|---|---|
+| [`src/`](src/) | Noyau commun à tous les jeux : sauvegarde (avec verrou de session), récompense quotidienne, achats, boutique, interface |
+| [`maps/`](maps/) | Scripts de construction des maps (à coller dans la barre de commande de Roblox Studio, ou à construire avec le pipeline) |
+| [`pipeline/`](pipeline/) | Chaîne automatique : construction hors Studio, tests, rapport de validation ([mode d'emploi](pipeline/README.md)) |
+| [`reports/`](reports/) | Derniers rapports de validation de chaque map |
+| [`recherche/`](recherche/) | Recherche de niche à partir des classements officiels Roblox ([dernier rapport](recherche/rapport-niche.md)) |
+| [`prompt-map-roblox.md`](prompt-map-roblox.md) | Prompt d'origine pour générer une map |
+
+Lancer tous les tests :
+
+```bash
+./pipeline/run.sh
+```
+
+Nouvelle photo des classements Roblox + rapport de niche :
+
+```bash
+python3 recherche/niche.py
+```
+
+## Autre map : L'Île d'Auraciel (`ile-auraciel.lua`)
+
+Script autonome à coller dans la barre de commande de Roblox Studio. Il n'est
+pas (encore) construit ni validé par le pipeline, qui ne traite que `maps/`.
 
 **Thème choisi : île flottante fantasy au crépuscule doré** — cascades qui tombent dans le
 vide, arbre-cristal géant, village de lanternes, ruines célestes et secrets à découvrir.
@@ -6,7 +32,7 @@ vide, arbre-cristal géant, village de lanternes, ruines célestes et secrets à
 Le script complet est dans [`ile-auraciel.lua`](ile-auraciel.lua) (le prompt qui a servi de
 cahier des charges est dans [`prompt-map-roblox.md`](prompt-map-roblox.md)).
 
-## Mode d'emploi
+### Mode d'emploi
 
 1. Ouvre Roblox Studio dans une place (Baseplate ou vide).
 2. Affiche la barre de commande : **View → Command Bar**.
@@ -14,7 +40,7 @@ cahier des charges est dans [`prompt-map-roblox.md`](prompt-map-roblox.md)).
 4. Attends quelques secondes : l'île, le lighting et le script de jeu s'installent seuls.
 5. Appuie sur **▶ Play** : leaderboard, collecte d'Éclats, animations et secrets sont actifs.
 
-## Ce qui t'attend sur l'île
+### Ce qui t'attend sur l'île
 
 | | Zone | Ambiance |
 |---|---|---|
@@ -34,7 +60,7 @@ nombre d'éclats, palette, heure du jour, densité du décor, préréglage `mobi
 Le script est re-exécutable : le relancer reconstruit l'île proprement. Aucun asset payant ni
 ID externe — uniquement des textures et sons intégrés à Roblox (`rbxasset://`).
 
-## 3 pistes pour la suite
+### 3 pistes pour la suite
 
 1. **Quêtes du Hameau** : un PNJ devant l'auberge qui demande « rapporte-moi 10 Éclats » puis
    « trouve la Grotte de Lune », avec un coffre de récompense qui s'ouvre au retour — la

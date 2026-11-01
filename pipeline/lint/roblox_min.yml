@@ -1,0 +1,53 @@
+# Bibliothèque standard minimale « Roblox » pour selene.
+# selene ne peut pas télécharger l'API dump officiel depuis cet environnement :
+# on déclare donc les globales Roblox sans typer leurs membres. Cela suffit pour
+# repérer les variables inutilisées, les globales inconnues (fautes de frappe),
+# le code mort, l'ombrage de variables, etc.
+---
+base: luau
+name: roblox_min
+globals:
+  game: { any: true }
+  workspace: { any: true }
+  script: { any: true }
+  plugin: { any: true }
+  shared: { any: true }
+  task: { any: true }
+  Instance: { any: true }
+  Enum: { any: true }
+  Vector3: { any: true }
+  Vector2: { any: true }
+  Vector3int16: { any: true }
+  Vector2int16: { any: true }
+  CFrame: { any: true }
+  Color3: { any: true }
+  BrickColor: { any: true }
+  UDim: { any: true }
+  UDim2: { any: true }
+  Rect: { any: true }
+  Ray: { any: true }
+  Region3: { any: true }
+  NumberRange: { any: true }
+  NumberSequence: { any: true }
+  NumberSequenceKeypoint: { any: true }
+  ColorSequence: { any: true }
+  ColorSequenceKeypoint: { any: true }
+  PhysicalProperties: { any: true }
+  TweenInfo: { any: true }
+  Random: { any: true }
+  Font: { any: true }
+  Faces: { any: true }
+  Axes: { any: true }
+  RaycastParams: { any: true }
+  OverlapParams: { any: true }
+  DateTime: { any: true }
+  SharedTable: { any: true }
+  buffer: { any: true }
+  tick: { any: true }
+  time: { any: true }
+  elapsedTime: { any: true }
+  wait: { any: true, deprecated: { message: "utiliser task.wait" } }
+  spawn: { any: true, deprecated: { message: "utiliser task.spawn" } }
+  delay: { any: true, deprecated: { message: "utiliser task.delay" } }
+  warn: { any: true }
+  typeof: { any: true }
