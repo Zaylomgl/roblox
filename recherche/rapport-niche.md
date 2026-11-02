@@ -1,30 +1,30 @@
 # Recherche de niche Roblox — classements de la page Découvrir
 
 - Source : `apis.roblox.com/explore-api/v1/get-sorts` (données officielles Roblox, tous pays).
-- Photos analysées : **6** (30 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-02T07:05:13+00:00.
-- Jeux uniques (hors sponsorisés) : **806**.
+- Photos analysées : **7** (35 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-02T13:31:35+00:00.
+- Jeux uniques (hors sponsorisés) : **808**.
 - ⚠️ Une seule photo = un instantané. Relancer le script plusieurs jours à des heures différentes pour fiabiliser.
 
 ## Genres
 
 | Genre | Jeux classés | Joueurs connectés (somme des pics) | Part | Joueurs du n°1 / genre | Médiane joueurs/jeu | Votes positifs (médiane) | En ascension | Revisités | Tendances |
 |---|---|---|---|---|---|---|---|---|---|
-| Simulation | 273 | 4 755 277 | 38 % | 24 % | 5 389 | 90 % | 120 | 60 | 120 |
-| Survival | 100 | 1 938 701 | 15 % | 27 % | 5 609 | 88 % | 24 | 43 | 44 |
-| Roleplay & Avatar Sim | 63 | 1 643 782 | 13 % | 37 % | 4 208 | 88 % | 8 | 34 | 10 |
-| Action | 108 | 1 022 606 | 8 % | 16 % | 3 746 | 86 % | 19 | 59 | 18 |
-| RPG | 23 | 630 912 | 5 % | 67 % | 4 875 | 92 % | 1 | 18 | 5 |
-| Sports & Racing | 44 | 546 587 | 4 % | 22 % | 5 185 | 86 % | 9 | 20 | 12 |
-| Shooter | 33 | 468 393 | 4 % | 51 % | 4 055 | 88 % | 8 | 13 | 9 |
-| Obby & Platformer | 53 | 428 814 | 3 % | 37 % | 2 939 | 80 % | 22 | 5 | 28 |
-| Strategy | 23 | 300 571 | 2 % | 35 % | 4 583 | 92 % | 2 | 19 | 3 |
-| Party & Casual | 37 | 291 318 | 2 % | 10 % | 4 715 | 79 % | 14 | 0 | 17 |
-| Adventure | 21 | 219 893 | 2 % | 16 % | 6 376 | 90 % | 9 | 6 | 13 |
-| Entertainment | 7 | 193 900 | 2 % | 62 % | 4 400 | 91 % | 2 | 2 | 2 |
+| Simulation | 273 | 4 829 975 | 38 % | 24 % | 5 532 | 90 % | 120 | 60 | 121 |
+| Survival | 100 | 1 941 554 | 15 % | 27 % | 5 609 | 88 % | 24 | 43 | 44 |
+| Roleplay & Avatar Sim | 63 | 1 646 599 | 13 % | 37 % | 4 420 | 88 % | 8 | 34 | 10 |
+| Action | 108 | 1 026 593 | 8 % | 16 % | 3 765 | 86 % | 19 | 59 | 19 |
+| RPG | 23 | 632 098 | 5 % | 66 % | 4 929 | 92 % | 1 | 18 | 5 |
+| Sports & Racing | 45 | 560 426 | 4 % | 21 % | 5 225 | 86 % | 10 | 20 | 14 |
+| Shooter | 34 | 473 157 | 4 % | 50 % | 3 996 | 88 % | 9 | 13 | 9 |
+| Obby & Platformer | 53 | 435 525 | 3 % | 37 % | 2 939 | 79 % | 22 | 5 | 28 |
+| Strategy | 23 | 301 959 | 2 % | 34 % | 4 583 | 92 % | 2 | 19 | 3 |
+| Party & Casual | 37 | 293 985 | 2 % | 10 % | 4 715 | 79 % | 14 | 0 | 18 |
+| Adventure | 21 | 222 167 | 2 % | 16 % | 6 376 | 90 % | 9 | 6 | 13 |
+| Entertainment | 7 | 193 900 | 2 % | 62 % | 4 400 | 91 % | 2 | 2 | 3 |
 | Shopping | 4 | 118 140 | 1 % | 77 % | 12 594 | 88 % | 0 | 2 | 0 |
 | (inconnu) | 7 | 71 706 | 1 % | 46 % | 4 002 | 81 % | 5 | 0 | 1 |
 | Puzzle | 7 | 36 040 | 0 % | 27 % | 3 823 | 85 % | 2 | 2 | 3 |
-| Social | 3 | 11 052 | 0 % | 81 % | 2 005 | 90 % | 0 | 3 | 0 |
+| Social | 3 | 11 352 | 0 % | 79 % | 2 005 | 90 % | 0 | 3 | 0 |
 
 Lecture :
 - **Joueurs du n°1 / genre** proche de 100 % : genre dominé par un seul jeu, difficile d'y percer.
@@ -40,7 +40,7 @@ Lecture :
 | escape | 12 | [CH3] Punch Walls To Escape · Punch to Escape! 👊 · [🚨] Escape The Walls · +1 Slinky Escape |
 | tower | 10 | 🍀 Tower Of Luck [1.8] · TROLL Jail Hug Tower · Climb The Locust Tower · Would You Rather: Games Tower |
 | egg | 8 | [🎃] Fake an Egg · Ride An Egg · Save an Egg · Steal an Entity Egg! [⚔️BOSSES] |
-| build | 7 | Build An Anime Character · [🏴󠁧󠁢󠁥󠁮󠁧󠁿ENGLAND U-20] Build A Striker ⚽ · Build and Drive · Build Whatever! [🔨] |
+| build | 8 | Build An Anime Character · [🏴󠁧󠁢󠁥󠁮󠁧󠁿ENGLAND U-20] Build A Striker ⚽ · Build and Drive · Build Whatever! [🔨] |
 | eggs | 7 | Hide to Steal Eggs · Fly Tesla Roadster To Steal Eggs · Jump For Eggs · Bike For Animals Eggs🥚 |
 | prison | 6 | Punch Out Of Prison · Prison Dodgeball · 🥟SQUISHY DUMPLING PRISON RUN! (Obby) · 🪓BUDDY PRISON RUN! (Obby) |
 | evolution | 5 | Bug Evolution [🕷️] · [UPD🎃] +1 Venom Evolution · [W3] +1 Titan Evolution!  · [2x WEEKEND] Farm Evolution |
@@ -48,8 +48,8 @@ Lecture :
 | make | 5 | Make The Logo! · Make Viral Candy! 🍬 · 🎬 Make a Cartoon! · Make Ramen To Get Rich [RELEASE] |
 | fart | 4 | Fart Together [1-4 PLAYER OBBY] 💨 · [🎃UPD]Fart With Your Friends! [HALLOWEEN EVENT] · Fart Raft! [1-4 Players] 🌊 · Fart Together |
 | drive | 4 | [🎃] Drive a Cart Downhill! · [MOTORBIKES] DRIVE: Highway · [NEW DRIVERS] Teach Your Granny How To Drive! 🎙️ · Build and Drive |
-| tesla | 4 | Flying Tesla Roadster · Tesla Roadster Chase · Fly Tesla Roadster To Steal Eggs · Tesla Roadster 2028 (New Map) |
-| roadster | 4 | Flying Tesla Roadster · Tesla Roadster Chase · Fly Tesla Roadster To Steal Eggs · Tesla Roadster 2028 (New Map) |
+| tesla | 4 | Flying Tesla Roadster [Open World Update] · Tesla Roadster Chase · Fly Tesla Roadster To Steal Eggs · Tesla Roadster 2028 (New Map) |
+| roadster | 4 | Flying Tesla Roadster [Open World Update] · Tesla Roadster Chase · Fly Tesla Roadster To Steal Eggs · Tesla Roadster 2028 (New Map) |
 | punch | 4 | [CH3] Punch Walls To Escape · Punch to Escape! 👊 · Punch Out Of Prison · Punch Walls to Escape |
 | walls | 4 | [CH3] Punch Walls To Escape · [🚨] Escape The Walls · Punch Walls to Escape · Break Walls To Escape |
 | car | 4 | [UPD] Realistic Car Destruction · [RACES🏁] Launch Your CAR! 🚗 · [🎃] [Roadster🚀] Flying car obby · Get Your Car License!🚗 |
@@ -72,20 +72,20 @@ Lecture :
 | Bug Evolution [🕷️] | Survival | 45 032 | 78 % | 10769957062 |
 | [🎃] Steal A Pet And Ride It! | Simulation | 44 278 | 95 % | 10769315427 |
 | [UPD🎃] +1 Venom Evolution | Simulation | 44 211 | 97 % | 10769464063 |
+| صيد الضبّان | Simulation | 42 931 | 95 % | 10769149947 |
 | [🎃] Fake an Egg | Simulation | 41 628 | 89 % | 10769384180 |
 | Realistic Ragdoll Engine 🩸 | Simulation | 39 077 | 88 % | 10770593871 |
 | [💉INJECTIONS] Ragdoll Playground | Simulation | 36 284 | 96 % | 10768383600 |
 | 🧸 My Small Business | Simulation | 34 959 | 96 % | 10771507608 |
 | Backseat Rally | (inconnu) | 33 218 | 92 % | 10769543742 |
-| [UPD] Durian Garden 🍈 | Simulation | 32 791 | 96 % | 10772253152 |
-| صيد الضبّان | Simulation | 32 738 | 95 % | 10769149947 |
+| [UPD] Durian Garden 🍈 | Simulation | 32 791 | 95 % | 10772253152 |
 | Ragdoll Reality 🩸 | Simulation | 32 551 | 83 % | 10770605947 |
 | [🌍UPD] +1 Anime Eyes | Simulation | 32 063 | 96 % | 10770933473 |
 | Criminal Simulator 💰 [ALPHA] | Simulation | 31 917 | 90 % | 10769851460 |
 | Raise The Biggest Family | Roleplay & Avatar Sim | 28 699 | 74 % | 10770699460 |
 | PINKIE PROMISE [HORROR] | Adventure | 26 638 | 94 % | 10769634720 |
 | Cat Battles 🐾 | Action | 25 041 | 73 % | 10769543567 |
-| [CLASS] MALAM SAMA OPAH  | Survival | 24 001 | 84 % | 10772066587 |
+| [CLASS] MALAM SAMA OPAH  | Survival | 24 001 | 85 % | 10772066587 |
 | 📸 Say Cheese! [STORY] | Adventure | 23 164 | 90 % | 10771871836 |
 | Clone Baby Care (Anomaly) | Survival | 23 129 | 90 % | 10770018231 |
 | [UPD4 💀] Depth Incremental | Simulation | 23 047 | 96 % | 10769835283 |
@@ -108,8 +108,8 @@ Lecture :
 | [1.2X🎃] Adopt Me! | Roleplay & Avatar Sim | 294 911 | 86 % | 383310974 |
 | [🎃] RIVALS | Shooter | 237 719 | 94 % | 6035872082 |
 | 99 Nights in the Forest 🔦 | Survival | 221 566 | 90 % | 7326934954 |
+| Break and Steal an Egg | Simulation | 164 354 | 97 % | 10765288803 |
 | [🎃] Jujutsu Shenanigans | Action | 162 968 | 86 % | 3508322461 |
-| Break and Steal an Egg | Simulation | 147 095 | 97 % | 10765288803 |
 | 🎃 Dandy's World [ALPHA] | Survival | 130 929 | 88 % | 5569032992 |
 | Fisch 🎸 [VENUE ENCORE] | Simulation | 126 568 | 91 % | 5750914919 |
 | [👻UPD] Fish It! 🐟 | Simulation | 113 166 | 83 % | 6701277882 |
@@ -118,16 +118,16 @@ Lecture :
 | [UPDATE 5] Attack on Titan Revolution | RPG | 93 448 | 96 % | 4658598196 |
 | 🎃 [MINIGAMES] Pet Simulator 99! 👻 | Simulation | 91 904 | 95 % | 3317771874 |
 | [💀DUELS] Murderers VS Sheriffs | Action | 84 438 | 86 % | 7219654364 |
-| [WEEK 2 🎃 x BUTCHER] Violence District | Survival | 79 363 | 93 % | 6739698191 |
+| [WEEK 2 🎃 x BUTCHER] Violence District | Survival | 80 915 | 93 % | 6739698191 |
 | [🎃THE HOLLOW🎃] Evade  | Survival | 71 507 | 94 % | 3647333358 |
 | [UPD] Volleyball Legends | Sports & Racing | 66 338 | 95 % | 6931042565 |
 | [GO-KART!] Illegal Soccer | Sports & Racing | 59 174 | 87 % | 10155360168 |
 | LifeTogether 🏠 RP [FAMILIES] | Roleplay & Avatar Sim | 58 919 | 90 % | 4839802560 |
 | [⭐UPD 11] Anime Dice | Simulation | 56 336 | 99 % | 10708913337 |
 | Forsaken | Survival | 52 060 | 84 % | 6331902150 |
-| [X3] +1 Speed Keyboard Escape / Candy & Chocolate | Simulation | 47 730 | 97 % | 9584852943 |
+| +1 Speed Keyboard Escape / Candy & Chocolate | Simulation | 47 730 | 97 % | 9584852943 |
 | [🎃] Bike For Egg! | Simulation | 47 248 | 95 % | 10766620257 |
+| Fling Things and People | Simulation | 46 204 | 80 % | 2668101271 |
 | Sol's RNG [ Halloween Event 🎃] | Simulation | 43 903 | 91 % | 5361032378 |
 | Tower of Hell | Obby & Platformer | 43 788 | 74 % | 703124385 |
-| Flee the Facility | Survival | 42 428 | 92 % | 372226183 |
 
