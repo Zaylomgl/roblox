@@ -1,28 +1,28 @@
 # Recherche de niche Roblox — classements de la page Découvrir
 
 - Source : `apis.roblox.com/explore-api/v1/get-sorts` (données officielles Roblox, tous pays).
-- Photos analysées : **17** (85 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-05T00:58:52+00:00.
-- Jeux uniques (hors sponsorisés) : **965**.
+- Photos analysées : **18** (90 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-05T06:59:12+00:00.
+- Jeux uniques (hors sponsorisés) : **981**.
 - ⚠️ Une seule photo = un instantané. Relancer le script plusieurs jours à des heures différentes pour fiabiliser.
 
 ## Genres
 
 | Genre | Jeux classés | Joueurs connectés (somme des pics) | Part | Joueurs du n°1 / genre | Médiane joueurs/jeu | Votes positifs (médiane) | En ascension | Revisités | Tendances |
 |---|---|---|---|---|---|---|---|---|---|
-| Simulation | 347 | 5 275 085 | 39 % | 22 % | 4 939 | 90 % | 168 | 70 | 155 |
-| Survival | 111 | 2 003 474 | 15 % | 26 % | 5 221 | 88 % | 29 | 46 | 51 |
-| Roleplay & Avatar Sim | 71 | 1 666 807 | 12 % | 36 % | 4 007 | 89 % | 10 | 40 | 13 |
-| Action | 123 | 1 062 717 | 8 % | 15 % | 3 207 | 86 % | 20 | 72 | 29 |
-| RPG | 30 | 653 761 | 5 % | 64 % | 4 604 | 92 % | 2 | 24 | 5 |
+| Simulation | 353 | 5 304 329 | 39 % | 22 % | 4 891 | 90 % | 172 | 70 | 158 |
+| Survival | 112 | 2 005 710 | 15 % | 26 % | 5 168 | 87 % | 30 | 47 | 52 |
+| Roleplay & Avatar Sim | 72 | 1 667 062 | 12 % | 36 % | 3 981 | 89 % | 10 | 41 | 14 |
+| Action | 125 | 1 063 631 | 8 % | 15 % | 3 198 | 86 % | 20 | 74 | 29 |
+| RPG | 31 | 654 623 | 5 % | 64 % | 4 429 | 91 % | 2 | 25 | 5 |
 | Sports & Racing | 51 | 575 533 | 4 % | 21 % | 3 828 | 86 % | 14 | 22 | 16 |
-| Shooter | 40 | 483 305 | 4 % | 49 % | 2 633 | 88 % | 11 | 16 | 12 |
-| Obby & Platformer | 60 | 478 287 | 4 % | 33 % | 3 709 | 80 % | 24 | 5 | 38 |
+| Shooter | 41 | 484 281 | 4 % | 49 % | 2 610 | 88 % | 12 | 16 | 12 |
+| Obby & Platformer | 61 | 478 494 | 4 % | 33 % | 3 682 | 80 % | 24 | 5 | 39 |
 | Party & Casual | 44 | 327 552 | 2 % | 9 % | 4 366 | 79 % | 16 | 1 | 23 |
-| Strategy | 28 | 317 760 | 2 % | 33 % | 3 901 | 92 % | 3 | 22 | 5 |
+| Strategy | 29 | 318 720 | 2 % | 33 % | 3 895 | 92 % | 3 | 23 | 5 |
 | Adventure | 22 | 216 283 | 2 % | 17 % | 5 274 | 89 % | 8 | 7 | 16 |
 | Entertainment | 8 | 192 909 | 1 % | 62 % | 3 692 | 91 % | 1 | 3 | 2 |
 | Shopping | 4 | 118 140 | 1 % | 77 % | 12 594 | 88 % | 0 | 2 | 0 |
-| (inconnu) | 12 | 78 710 | 1 % | 42 % | 1 446 | 84 % | 10 | 0 | 0 |
+| (inconnu) | 14 | 80 266 | 1 % | 41 % | 1 335 | 86 % | 12 | 0 | 0 |
 | Puzzle | 9 | 41 377 | 0 % | 23 % | 3 823 | 86 % | 2 | 3 | 4 |
 | Social | 5 | 16 133 | 0 % | 67 % | 2 005 | 90 % | 0 | 4 | 0 |
 
