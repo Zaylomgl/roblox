@@ -1,28 +1,28 @@
 # Recherche de niche Roblox — classements de la page Découvrir
 
 - Source : `apis.roblox.com/explore-api/v1/get-sorts` (données officielles Roblox, tous pays).
-- Photos analysées : **19** (95 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-05T12:59:39+00:00.
-- Jeux uniques (hors sponsorisés) : **1007**.
+- Photos analysées : **20** (100 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-05T18:58:42+00:00.
+- Jeux uniques (hors sponsorisés) : **1009**.
 - ⚠️ Une seule photo = un instantané. Relancer le script plusieurs jours à des heures différentes pour fiabiliser.
 
 ## Genres
 
 | Genre | Jeux classés | Joueurs connectés (somme des pics) | Part | Joueurs du n°1 / genre | Médiane joueurs/jeu | Votes positifs (médiane) | En ascension | Revisités | Tendances |
 |---|---|---|---|---|---|---|---|---|---|
-| Simulation | 364 | 5 382 045 | 39 % | 22 % | 4 892 | 90 % | 180 | 72 | 162 |
-| Survival | 114 | 2 012 549 | 15 % | 26 % | 5 045 | 87 % | 30 | 48 | 54 |
-| Roleplay & Avatar Sim | 74 | 1 669 897 | 12 % | 36 % | 3 855 | 89 % | 10 | 43 | 14 |
-| Action | 129 | 1 071 611 | 8 % | 15 % | 3 008 | 86 % | 20 | 77 | 31 |
+| Simulation | 365 | 5 416 612 | 39 % | 21 % | 4 971 | 90 % | 181 | 72 | 164 |
+| Survival | 114 | 2 015 646 | 15 % | 26 % | 5 045 | 87 % | 30 | 48 | 54 |
+| Roleplay & Avatar Sim | 74 | 1 670 617 | 12 % | 36 % | 3 855 | 89 % | 10 | 43 | 14 |
+| Action | 130 | 1 076 179 | 8 % | 15 % | 3 103 | 86 % | 21 | 77 | 31 |
 | RPG | 32 | 657 882 | 5 % | 64 % | 4 044 | 91 % | 2 | 26 | 5 |
-| Sports & Racing | 53 | 577 598 | 4 % | 21 % | 3 785 | 86 % | 15 | 24 | 16 |
-| Shooter | 41 | 486 874 | 4 % | 49 % | 2 610 | 88 % | 12 | 16 | 13 |
-| Obby & Platformer | 62 | 480 987 | 4 % | 33 % | 3 709 | 80 % | 24 | 5 | 39 |
-| Party & Casual | 44 | 328 542 | 2 % | 9 % | 4 366 | 79 % | 16 | 1 | 23 |
-| Strategy | 30 | 325 969 | 2 % | 32 % | 3 175 | 92 % | 3 | 24 | 5 |
-| Adventure | 22 | 218 003 | 2 % | 17 % | 5 274 | 89 % | 8 | 7 | 16 |
+| Sports & Racing | 53 | 578 326 | 4 % | 21 % | 3 785 | 86 % | 15 | 24 | 16 |
+| Shooter | 42 | 492 122 | 4 % | 48 % | 2 839 | 88 % | 12 | 16 | 14 |
+| Obby & Platformer | 62 | 483 376 | 4 % | 33 % | 3 709 | 80 % | 24 | 5 | 39 |
+| Party & Casual | 44 | 331 526 | 2 % | 8 % | 4 382 | 79 % | 16 | 1 | 23 |
+| Strategy | 30 | 326 027 | 2 % | 32 % | 3 175 | 92 % | 3 | 24 | 5 |
+| Adventure | 22 | 220 113 | 2 % | 16 % | 5 647 | 89 % | 8 | 7 | 16 |
 | Entertainment | 8 | 192 909 | 1 % | 62 % | 3 692 | 91 % | 1 | 3 | 2 |
 | Shopping | 4 | 118 140 | 1 % | 77 % | 12 594 | 88 % | 0 | 2 | 0 |
-| (inconnu) | 16 | 84 539 | 1 % | 39 % | 1 508 | 85 % | 13 | 1 | 0 |
+| (inconnu) | 15 | 81 268 | 1 % | 41 % | 1 621 | 83 % | 12 | 1 | 0 |
 | Puzzle | 9 | 41 377 | 0 % | 23 % | 3 823 | 86 % | 2 | 3 | 4 |
 | Social | 5 | 16 215 | 0 % | 66 % | 2 005 | 90 % | 0 | 4 | 0 |
 
@@ -69,7 +69,7 @@ Lecture :
 | The Hollow | Entertainment | 119 536 | 85 % | 10770728771 |
 | +1 Spider Arm🕷️ | Simulation | 50 581 | 97 % | 10771997908 |
 | ✨Tap Simulator REBORN | Simulation | 45 162 | 94 % | 10629695169 |
-| Bug Evolution [🦟] | Survival | 45 032 | 80 % | 10769957062 |
+| Bug Evolution [🦟] | Survival | 45 032 | 81 % | 10769957062 |
 | [🎃] Steal A Pet And Ride It! | Simulation | 44 278 | 95 % | 10769315427 |
 | [🎃] +1 Venom Evolution | Simulation | 44 211 | 97 % | 10769464063 |
 | صيد الضبّان | Simulation | 42 931 | 95 % | 10769149947 |
@@ -77,7 +77,7 @@ Lecture :
 | [NEW LIMITED & UPDATE] Onthel Purwodadi | Simulation | 39 280 | 93 % | 10771440209 |
 | [UPD] Realistic Ragdoll Engine 🩸 | Simulation | 39 077 | 88 % | 10770593871 |
 | [💉INJECTIONS] Ragdoll Playground | Simulation | 36 284 | 95 % | 10768383600 |
-| [CLASS] MALAM SAMA OPAH  | Survival | 35 610 | 84 % | 10772066587 |
+| [CLASS] MALAM SAMA OPAH  | Survival | 35 610 | 85 % | 10772066587 |
 | 🧸 My Small Business | Simulation | 34 959 | 96 % | 10771507608 |
 | Backseat Rally | (inconnu) | 33 218 | 92 % | 10769543742 |
 | [UPD] Durian Garden 🍈 | Simulation | 32 791 | 94 % | 10772253152 |
@@ -85,16 +85,16 @@ Lecture :
 | [🌍UPD] +1 Anime Eyes | Simulation | 32 063 | 96 % | 10770933473 |
 | Criminal Simulator 💰 [ALPHA] | Simulation | 31 917 | 91 % | 10769851460 |
 | Raise The Biggest Family | Roleplay & Avatar Sim | 28 699 | 74 % | 10770699460 |
+| Ragdoll Physics 🩸 | Simulation | 28 606 | 93 % | 10770575733 |
 | PINKIE PROMISE [HORROR] | Adventure | 26 638 | 94 % | 10769634720 |
-| Can You Pass A Driving Test? | Simulation | 25 416 | 83 % | 10771680162 |
+| Can You Pass A Driving Test? | Simulation | 25 416 | 84 % | 10771680162 |
 | Cat Battles 🐾 | Action | 25 041 | 73 % | 10769543567 |
 | Ragdoll Sandbox | Simulation | 24 541 | 86 % | 10771155665 |
 | Tesla Roadster Chase | Simulation | 24 123 | 84 % | 10772217708 |
+| [UPD4 💀] Depth Incremental | Simulation | 23 353 | 96 % | 10769835283 |
 | 📸 Say Cheese! [STORY] | Adventure | 23 164 | 90 % | 10771871836 |
-| [UPD4 💀] Depth Incremental | Simulation | 23 164 | 96 % | 10769835283 |
 | Clone Baby Care (Anomaly) | Survival | 23 129 | 90 % | 10770018231 |
 | Ride An Egg | Simulation | 22 886 | 97 % | 10767808614 |
-| [👽] What If Disasters | Survival | 22 651 | 91 % | 10769484703 |
 
 ## Jeux « Les plus revisités » (30 plus gros)
 
