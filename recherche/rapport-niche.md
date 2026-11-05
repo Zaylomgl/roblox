@@ -1,7 +1,7 @@
 # Recherche de niche Roblox — classements de la page Découvrir
 
 - Source : `apis.roblox.com/explore-api/v1/get-sorts` (données officielles Roblox, tous pays).
-- Photos analysées : **16** (80 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-04T18:59:49+00:00.
+- Photos analysées : **17** (85 relevés appareil × photo), période 2026-10-31T20:54:38+00:00 → 2026-11-05T00:58:52+00:00.
 - Jeux uniques (hors sponsorisés) : **965**.
 - ⚠️ Une seule photo = un instantané. Relancer le script plusieurs jours à des heures différentes pour fiabiliser.
 
@@ -9,20 +9,20 @@
 
 | Genre | Jeux classés | Joueurs connectés (somme des pics) | Part | Joueurs du n°1 / genre | Médiane joueurs/jeu | Votes positifs (médiane) | En ascension | Revisités | Tendances |
 |---|---|---|---|---|---|---|---|---|---|
-| Simulation | 347 | 5 270 810 | 39 % | 22 % | 4 894 | 90 % | 168 | 70 | 155 |
-| Survival | 111 | 2 001 125 | 15 % | 26 % | 5 221 | 88 % | 29 | 46 | 51 |
-| Roleplay & Avatar Sim | 71 | 1 666 135 | 12 % | 36 % | 4 007 | 89 % | 10 | 40 | 13 |
-| Action | 123 | 1 061 529 | 8 % | 15 % | 3 198 | 86 % | 20 | 72 | 29 |
-| RPG | 30 | 653 670 | 5 % | 64 % | 4 604 | 92 % | 2 | 24 | 5 |
-| Sports & Racing | 51 | 575 429 | 4 % | 21 % | 3 828 | 86 % | 14 | 22 | 16 |
+| Simulation | 347 | 5 275 085 | 39 % | 22 % | 4 939 | 90 % | 168 | 70 | 155 |
+| Survival | 111 | 2 003 474 | 15 % | 26 % | 5 221 | 88 % | 29 | 46 | 51 |
+| Roleplay & Avatar Sim | 71 | 1 666 807 | 12 % | 36 % | 4 007 | 89 % | 10 | 40 | 13 |
+| Action | 123 | 1 062 717 | 8 % | 15 % | 3 207 | 86 % | 20 | 72 | 29 |
+| RPG | 30 | 653 761 | 5 % | 64 % | 4 604 | 92 % | 2 | 24 | 5 |
+| Sports & Racing | 51 | 575 533 | 4 % | 21 % | 3 828 | 86 % | 14 | 22 | 16 |
 | Shooter | 40 | 483 305 | 4 % | 49 % | 2 633 | 88 % | 11 | 16 | 12 |
-| Obby & Platformer | 60 | 477 815 | 4 % | 34 % | 3 709 | 80 % | 24 | 5 | 38 |
-| Party & Casual | 44 | 327 152 | 2 % | 9 % | 4 366 | 79 % | 16 | 1 | 23 |
-| Strategy | 28 | 317 755 | 2 % | 33 % | 3 901 | 92 % | 3 | 22 | 5 |
+| Obby & Platformer | 60 | 478 287 | 4 % | 33 % | 3 709 | 80 % | 24 | 5 | 38 |
+| Party & Casual | 44 | 327 552 | 2 % | 9 % | 4 366 | 79 % | 16 | 1 | 23 |
+| Strategy | 28 | 317 760 | 2 % | 33 % | 3 901 | 92 % | 3 | 22 | 5 |
 | Adventure | 22 | 216 283 | 2 % | 17 % | 5 274 | 89 % | 8 | 7 | 16 |
 | Entertainment | 8 | 192 909 | 1 % | 62 % | 3 692 | 91 % | 1 | 3 | 2 |
 | Shopping | 4 | 118 140 | 1 % | 77 % | 12 594 | 88 % | 0 | 2 | 0 |
-| (inconnu) | 12 | 78 601 | 1 % | 42 % | 1 446 | 84 % | 10 | 0 | 0 |
+| (inconnu) | 12 | 78 710 | 1 % | 42 % | 1 446 | 84 % | 10 | 0 | 0 |
 | Puzzle | 9 | 41 377 | 0 % | 23 % | 3 823 | 86 % | 2 | 3 | 4 |
 | Social | 5 | 16 133 | 0 % | 67 % | 2 005 | 90 % | 0 | 4 | 0 |
 
@@ -38,12 +38,12 @@ Lecture :
 | steal | 19 | [🎃] Steal A Pet And Ride It! · Hide to Steal Eggs · Steal An Exu [Exu-lloween!🎃] · Fly Tesla Roadster To Steal Eggs |
 | ragdoll | 15 | [💉INJECTIONS] Ragdoll Playground · [UPD] Realistic Ragdoll Engine 🩸 · Ragdoll Reality 🩸 · [UPD 🛠️] Realistic Ragdoll Playground 💥 |
 | escape | 14 | [CH3] Punch Walls To Escape · Punch to Escape! 👊 · [🚨] Escape The Walls · +1 Slinky Escape |
-| egg | 11 | Fake an Egg · Ride An Egg · Save an Egg · Steal an Entity Egg! [⚔️BOSSES] |
+| egg | 11 | [🧪] Fake an Egg · Ride An Egg · Save an Egg · Steal an Entity Egg! [⚔️BOSSES] |
 | build | 10 | Build An Anime Character · [🏴󠁧󠁢󠁥󠁮󠁧󠁿ENGLAND U-20] Build A Striker ⚽ · Build and Drive · Build Whatever! [🔨] |
-| tower | 10 | 🍀 Tower Of Luck [1.8] · TROLL Jail Hug Tower · Climb The Shrike Tower · Would You Rather: Games Tower |
+| tower | 10 | 🍀 Tower Of Luck [1.8] · TROLL Jail Hug Tower · Climb The Rake Tower · Would You Rather: Games Tower |
 | eggs | 9 | Hide to Steal Eggs · Fly Tesla Roadster To Steal Eggs · Jump For Eggs · Bike For Animals Eggs🥚 |
 | prison | 7 | Punch Out Of Prison · Prison Dodgeball · 🥟SQUISHY DUMPLING PRISON RUN! (Obby) · 🪓BUDDY PRISON RUN! (Obby) |
-| evolution | 6 | Bug Evolution [🕷️] · [🎃] +1 Venom Evolution · [W3] +1 Titan Evolution!  · [2x WEEKEND] Farm Evolution |
+| evolution | 6 | Bug Evolution [🦟] · [🎃] +1 Venom Evolution · [W3] +1 Titan Evolution!  · [2x WEEKEND] Farm Evolution |
 | realistic | 5 | [UPD] Realistic Ragdoll Engine 🩸 · REALISTIC HOME DEFENSE · [UPD 🛠️] Realistic Ragdoll Playground 💥 · Realistic Car Destruction |
 | simulator | 5 | Criminal Simulator 💰 [ALPHA] · [🎃] Wheelie a Kukirin: Escooter Simulator · ✨Tap Simulator REBORN · [UPD] SEPEDA ONTEL SIMULATOR |
 | fart | 5 | Fart Together [1-4 PLAYER OBBY] 💨 · [🎃UPD]Fart With Your Friends! [HALLOWEEN EVENT] · Fart Raft! [1-4 Players] 🌊 · Fart Together |
@@ -69,11 +69,11 @@ Lecture :
 | The Hollow | Entertainment | 119 536 | 85 % | 10770728771 |
 | +1 Spider Arm🕷️ | Simulation | 50 581 | 97 % | 10771997908 |
 | ✨Tap Simulator REBORN | Simulation | 45 162 | 94 % | 10629695169 |
-| Bug Evolution [🕷️] | Survival | 45 032 | 80 % | 10769957062 |
+| Bug Evolution [🦟] | Survival | 45 032 | 80 % | 10769957062 |
 | [🎃] Steal A Pet And Ride It! | Simulation | 44 278 | 95 % | 10769315427 |
 | [🎃] +1 Venom Evolution | Simulation | 44 211 | 97 % | 10769464063 |
 | صيد الضبّان | Simulation | 42 931 | 95 % | 10769149947 |
-| Fake an Egg | Simulation | 41 628 | 89 % | 10769384180 |
+| [🧪] Fake an Egg | Simulation | 41 628 | 88 % | 10769384180 |
 | [UPD] Realistic Ragdoll Engine 🩸 | Simulation | 39 077 | 88 % | 10770593871 |
 | [💉INJECTIONS] Ragdoll Playground | Simulation | 36 284 | 96 % | 10768383600 |
 | 🧸 My Small Business | Simulation | 34 959 | 96 % | 10771507608 |
