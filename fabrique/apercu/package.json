@@ -1,0 +1,9 @@
+{
+  "name": "fabrique-apercu",
+  "private": true,
+  "type": "module",
+  "description": "Aperçu en images des jeux de la Fabrique (rendu approximatif, hors Roblox)",
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}

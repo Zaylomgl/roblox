@@ -1,0 +1,74 @@
+{
+  "accessibilite": {
+    "collectiblesAccessibles": 40,
+    "collectiblesTotal": 40,
+    "profondeurMaxCollectibles": 94,
+    "profondeurMedianeCollectibles": 50,
+    "surfacesAtteintes": 148,
+    "surfacesMarchables": 186
+  },
+  "ambiance": {
+    "Atmosphere": true,
+    "BloomEffect": true,
+    "ColorCorrectionEffect": true,
+    "Sky": true,
+    "SunRaysEffect": true
+  },
+  "fichier": "build/evasion-prison.rbxl",
+  "map": "evasion-prison",
+  "monde": {
+    "fallenPartsDestroyHeight": -20,
+    "gravite": 196.1999969482422,
+    "hauteurSautTheorique": 6.37,
+    "porteeSautAPlat": 8.15,
+    "vitesseMarche": 16
+  },
+  "problemes": [
+    {
+      "categorie": "Accessibilité",
+      "code": "GRANDES_SURFACES_NON_ATTEINTES",
+      "gravite": "info",
+      "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
+      "objets": [
+        "Workspace.Parcours.Decor.Linteau (≈173 studs², Y=50.1)"
+      ]
+    },
+    {
+      "categorie": "Rétention",
+      "code": "PAS_DE_BADGES",
+      "gravite": "info",
+      "message": "Aucun badge : les badges donnent des objectifs à long terme aux joueurs."
+    }
+  ],
+  "resume": {
+    "avertissement": 0,
+    "erreur": 0,
+    "info": 2
+  },
+  "statistiques": {
+    "collectibles": 40,
+    "emetteursParticules": 56,
+    "lumieres": 133,
+    "lumieresAvecOmbres": 0,
+    "meshParts": 0,
+    "objets": 2007,
+    "padsDeSaut": 0,
+    "particulesParSeconde": 9,
+    "pieces": 1687,
+    "piecesNonAncrees": 0,
+    "scripts": 9,
+    "sons": 49,
+    "spawns": 1
+  },
+  "statut": "OK",
+  "systemes": {
+    "AdService": false,
+    "BadgeService": false,
+    "DataStoreService": true,
+    "MarketplaceService": true
+  },
+  "terrain": {
+    "operations": 0,
+    "surfacesMarchables": 0
+  }
+}
