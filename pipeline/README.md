@@ -31,6 +31,7 @@ rampe, pad de saut, zone mortelle, etc.
 | `tests/analyse.test.luau` | Le validateur de maps, sur des places artificielles |
 | `tests/noyau.test.luau` | Les modules purs du noyau (`src/ServerScriptService/Noyau`) : profil, récompense quotidienne (jours UTC, séries), achats (jamais de double crédit, jamais de perte), sauvegarde (verrou de session, pannes du DataStore) |
 | `tests/integration.test.luau` | Les **vrais scripts** du jeu (serveur, interface, map) exécutés dans un **moteur Roblox simulé** (`lib/moteur.luau`) avec des joueurs simulés : arrivée, interface, récompense le lendemain, achats, pass x2, collecte de cristaux, départ/retour, panne du DataStore, fermeture du serveur |
+| `tests/fabrique.test.luau` | La Fabrique ([`fabrique/`](../fabrique/README.md)) : choix d'après les tendances, les 12 combinaisons format × thème construites et validées, parcours joueur complet (bornes, mort, chute, victoire, sauvegarde), reliques, record, pièges, sabotages volontaires |
 
 Le moteur simulé utilise les vraies instances Roblox de Lune : un nom de
 propriété mal écrit ou une valeur du mauvais type fait échouer le test, comme
@@ -56,6 +57,7 @@ repo ; les identifiants de l'expérience sont dans `pipeline/experience.json`.
 | `python3 pipeline/opencloud.py publier build/iles-celestes.rbxl` | Publie la place (version « Published », **visible des joueurs**) et note le numéro de version dans `build/derniere-publication.json` |
 | `python3 pipeline/opencloud.py publier build/iles-celestes.rbxl --brouillon` | Envoie la place en version « Saved » : enregistrée mais **pas publiée**, pour la tester dans le vrai moteur avant les joueurs |
 | `python3 pipeline/opencloud.py tester` | Lance `pipeline/reel/tests.luau` dans le vrai moteur sur la version publiée, affiche le journal du serveur Roblox, écrit `reports/<map>-moteur-reel.md` et `.json`. Code de sortie 1 si un test échoue |
+| `python3 pipeline/opencloud.py tester --map <nom>` | Même chose pour une map donnée. Un jeu de la Fabrique (présent dans `jeux/catalogue.json`) est testé avec `pipeline/reel/tests-parcours.luau` |
 
 Ordre habituel : `boutique` → `./pipeline/run.sh` → `publier --brouillon` →
 `tester` → si tout est vert, `publier` (puis `tester` à nouveau).
@@ -131,8 +133,16 @@ Injecté dans chaque place au moment du build (`--src src`), à la manière de R
 Il faut [Rust/cargo](https://rustup.rs), puis :
 
 ```bash
-cargo install --locked lune@0.11.1 selene@0.31.0 stylua@2.6.0
+cargo install --locked lune@0.11.1 selene@0.31.0
 ```
+
+```bash
+cargo install --locked stylua@2.6.0 --features luau
+```
+
+`--features luau` est indispensable : sans cette option, stylua ignore en silence
+les fichiers qui utilisent des chaînes entre accents graves (c'était le cas en
+CI jusqu'à la version 2 : huit fichiers n'étaient jamais vérifiés).
 
 ## Utilisation
 

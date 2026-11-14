@@ -295,6 +295,7 @@ end
 
 local EVENEMENTS = {
 	Players = { "PlayerAdded", "PlayerRemoving" },
+	Player = { "CharacterAdded", "CharacterRemoving" },
 	MarketplaceService = { "PromptGamePassPurchaseFinished", "PromptProductPurchaseFinished" },
 	GuiButton = { "Activated", "MouseButton1Click" },
 	BasePart = { "Touched", "TouchEnded" },
@@ -543,14 +544,16 @@ function Moteur:requerir(module)
 	if cache then
 		return cache.valeur
 	end
-	local fonction = luau.load(module.Source, { debugName = module:GetFullName(), environment = self:_environnement(module) })
+	local fonction =
+		luau.load(module.Source, { debugName = module:GetFullName(), environment = self:_environnement(module) })
 	local valeur = fonction()
 	self._modules[module] = { valeur = valeur }
 	return valeur
 end
 
 function Moteur:executer(script)
-	local fonction = luau.load(script.Source, { debugName = script:GetFullName(), environment = self:_environnement(script) })
+	local fonction =
+		luau.load(script.Source, { debugName = script:GetFullName(), environment = self:_environnement(script) })
 	local co = coroutine.create(fonction)
 	local ok, err = coroutine.resume(co)
 	if not ok then
@@ -574,6 +577,21 @@ end
 -- Joueurs
 --------------------------------------------------------------------------------
 
+-- Personnage minimal : une pièce racine (pour les contacts) et un Humanoid en vie.
+function Moteur:_creerPersonnage(nom: string)
+	local perso = roblox.Instance.new("Model")
+	perso.Name = nom
+	local racine = roblox.Instance.new("Part")
+	racine.Name = "HumanoidRootPart"
+	racine.Parent = perso
+	local humanoide = roblox.Instance.new("Humanoid")
+	humanoide.MaxHealth = 100
+	humanoide.Health = 100
+	humanoide.Parent = perso
+	perso.Parent = self.game:GetService("Workspace")
+	return perso
+end
+
 function Moteur:ajouterJoueur(nom: string, userId: number)
 	local players = self.game:GetService("Players")
 	local joueur = roblox.Instance.new("Player")
@@ -581,14 +599,7 @@ function Moteur:ajouterJoueur(nom: string, userId: number)
 	joueur.UserId = userId
 	roblox.Instance.new("PlayerGui").Parent = joueur
 
-	-- Personnage minimal (pour les contacts avec les collectibles).
-	local perso = roblox.Instance.new("Model")
-	perso.Name = nom
-	local racine = roblox.Instance.new("Part")
-	racine.Name = "HumanoidRootPart"
-	racine.Parent = perso
-	roblox.Instance.new("Humanoid").Parent = perso
-	perso.Parent = self.game:GetService("Workspace")
+	local perso = self:_creerPersonnage(nom)
 	joueur.Character = perso
 
 	joueur.Parent = players
@@ -665,6 +676,20 @@ end
 function Moteur:cliquer(bouton)
 	self:signal(bouton, "Activated"):Fire()
 	self:avancer(0.2)
+end
+
+-- Réapparition : l'ancien personnage disparaît, un nouveau arrive (CharacterAdded).
+function Moteur:reapparaitre(joueur)
+	local ancien = joueur.Character
+	if ancien then
+		self:signal(joueur, "CharacterRemoving"):Fire(ancien)
+		ancien:Destroy()
+	end
+	local perso = self:_creerPersonnage(joueur.Name)
+	joueur.Character = perso
+	self:signal(joueur, "CharacterAdded"):Fire(perso)
+	self:avancer(0.5)
+	return perso
 end
 
 -- Contact d'une partie du personnage avec une pièce.

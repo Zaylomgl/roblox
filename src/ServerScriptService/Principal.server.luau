@@ -178,7 +178,9 @@ local function joueurArrive(joueur: Player)
 			donnees = nil
 		else
 			-- En ligne : mieux vaut refuser que risquer d'écraser la progression.
-			joueur:Kick("Tes données n'ont pas pu être chargées. Réessaie dans une minute, ta progression est en sécurité.")
+			joueur:Kick(
+				"Tes données n'ont pas pu être chargées. Réessaie dans une minute, ta progression est en sécurité."
+			)
 			return
 		end
 	end
@@ -261,7 +263,8 @@ remoteReclamer.OnServerInvoke = function(joueur: Player)
 	if not session then
 		return { ok = false, raison = "pas_charge" }
 	end
-	local gain = RecompenseQuotidienne.reclamer(session.profil.recompense, os.time(), Configuration.RECOMPENSES_QUOTIDIENNES)
+	local gain =
+		RecompenseQuotidienne.reclamer(session.profil.recompense, os.time(), Configuration.RECOMPENSES_QUOTIDIENNES)
 	if not gain then
 		return { ok = false, raison = "deja_reclamee", etat = etatPourClient(joueur) }
 	end

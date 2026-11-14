@@ -1,0 +1,117 @@
+name: Fabrique — nouveau jeu
+
+# L'agent de création : reprend une photo des classements Roblox, laisse la
+# Fabrique choisir un format et un thème, construit et valide le jeu, rend la
+# planche d'aperçu, puis ouvre une pull request (brouillon) à relire.
+#
+# - Chaque lundi matin (uniquement une fois ce fichier sur la branche par défaut).
+# - À la demande : onglet Actions → « Fabrique — nouveau jeu » → Run workflow.
+#
+# Rien n'est publié sur Roblox ici : la publication reste une décision humaine.
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      format:
+        description: "Format (vide = choisi d'après les tendances)"
+        type: choice
+        options: ["", "tour", "evasion"]
+        default: ""
+      theme:
+        description: "Thème (vide = choisi par la Fabrique)"
+        type: choice
+        options: ["", "volcan", "glace", "jungle", "bonbon", "neon", "prison"]
+        default: ""
+      etapes:
+        description: "Nombre d'étapes (3 à 12)"
+        type: number
+        default: 10
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: fabrique
+  cancel-in-progress: false
+
+jobs:
+  creer:
+    runs-on: ubuntu-latest
+    env:
+      LUNE_VERSION: 0.11.1
+      SELENE_VERSION: 0.31.0
+      STYLUA_VERSION: 2.6.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache des outils (lune, selene, stylua)
+        id: cache-outils
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: outils-${{ runner.os }}-lune${{ env.LUNE_VERSION }}-selene${{ env.SELENE_VERSION }}-stylua${{ env.STYLUA_VERSION }}-luau
+
+      - name: Installation des outils
+        if: steps.cache-outils.outputs.cache-hit != 'true'
+        run: |
+          cargo install --locked lune@${LUNE_VERSION}
+          cargo install --locked selene@${SELENE_VERSION}
+          cargo install --locked stylua@${STYLUA_VERSION} --features luau
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Outils d'aperçu (three.js, Playwright, Chromium)
+        working-directory: fabrique/apercu
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Photo des classements, création, validation, aperçu
+        id: jeu
+        env:
+          FORMAT: ${{ inputs.format }}
+          THEME: ${{ inputs.theme }}
+          ETAPES: ${{ inputs.etapes }}
+        run: |
+          options=(--photo)
+          case "$FORMAT" in tour|evasion) options+=(--format "$FORMAT") ;; esac
+          case "$THEME" in volcan|glace|jungle|bonbon|neon|prison) options+=(--theme "$THEME") ;; esac
+          case "$ETAPES" in ''|*[!0-9]*) ;; *) options+=(--etapes "$ETAPES") ;; esac
+          ./fabrique/nouveau-jeu.sh "${options[@]}" | tee fabrique.log
+          nom="$(sed -n 's/^NOM=//p' fabrique.log)"
+          rm fabrique.log
+          echo "nom=$nom" >> "$GITHUB_OUTPUT"
+
+      - name: Publier la place et les rapports (artefact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabrique-${{ steps.jeu.outputs.nom || 'echec' }}
+          path: |
+            build/*.rbxl
+            reports/
+            jeux/apercus/
+
+      - name: Pull request du nouveau jeu
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOM: ${{ steps.jeu.outputs.nom }}
+        run: |
+          branche="fabrique/$NOM-$(date -u +%Y%m%d-%H%M)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branche"
+          git add maps jeux reports recherche
+          git commit -m "Fabrique : nouveau jeu $NOM"
+          git push -u origin "$branche"
+          # Demande le réglage « Allow GitHub Actions to create and approve pull requests »
+          # (Settings → Actions → General). Sans lui, la branche est poussée mais la PR est à ouvrir à la main.
+          gh pr create --draft --head "$branche" \
+            --title "Fabrique : nouveau jeu $NOM" \
+            --body "Jeu créé automatiquement par la Fabrique. Fiche : \`jeux/$NOM.md\` · aperçu : \`jeux/apercus/$NOM.jpg\` · rapport de validation : \`reports/$NOM.md\`. À relire et à essayer dans Roblox Studio avant toute publication." \
+            || echo "::warning::Branche $branche poussée, mais la pull request n'a pas pu être ouverte automatiquement."

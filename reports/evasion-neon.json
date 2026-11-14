@@ -1,0 +1,80 @@
+{
+  "accessibilite": {
+    "collectiblesAccessibles": 49,
+    "collectiblesTotal": 49,
+    "profondeurMaxCollectibles": 123,
+    "profondeurMedianeCollectibles": 70,
+    "surfacesAtteintes": 163,
+    "surfacesMarchables": 201
+  },
+  "ambiance": {
+    "Atmosphere": true,
+    "BloomEffect": true,
+    "ColorCorrectionEffect": true,
+    "Sky": true,
+    "SunRaysEffect": false
+  },
+  "fichier": "build/evasion-neon.rbxl",
+  "map": "evasion-neon",
+  "monde": {
+    "fallenPartsDestroyHeight": -20,
+    "gravite": 196.1999969482422,
+    "hauteurSautTheorique": 6.37,
+    "porteeSautAPlat": 8.15,
+    "vitesseMarche": 16
+  },
+  "problemes": [
+    {
+      "categorie": "Ambiance",
+      "code": "EFFET_ABSENT",
+      "gravite": "info",
+      "message": "Pas de SunRaysEffect dans Lighting."
+    },
+    {
+      "categorie": "Accessibilité",
+      "code": "GRANDES_SURFACES_NON_ATTEINTES",
+      "gravite": "info",
+      "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
+      "objets": [
+        "Workspace.Parcours.Decor.Linteau (≈175 studs², Y=52.5)"
+      ]
+    },
+    {
+      "categorie": "Rétention",
+      "code": "PAS_DE_BADGES",
+      "gravite": "info",
+      "message": "Aucun badge : les badges donnent des objectifs à long terme aux joueurs."
+    }
+  ],
+  "resume": {
+    "avertissement": 0,
+    "erreur": 0,
+    "info": 3
+  },
+  "statistiques": {
+    "collectibles": 49,
+    "emetteursParticules": 65,
+    "lumieres": 167,
+    "lumieresAvecOmbres": 0,
+    "meshParts": 0,
+    "objets": 2897,
+    "padsDeSaut": 0,
+    "particulesParSeconde": 9,
+    "pieces": 2475,
+    "piecesNonAncrees": 0,
+    "scripts": 9,
+    "sons": 58,
+    "spawns": 1
+  },
+  "statut": "OK",
+  "systemes": {
+    "AdService": false,
+    "BadgeService": false,
+    "DataStoreService": true,
+    "MarketplaceService": true
+  },
+  "terrain": {
+    "operations": 0,
+    "surfacesMarchables": 0
+  }
+}
