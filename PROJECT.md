@@ -13,6 +13,14 @@ plus de joueurs possible : agréables à regarder, détaillés, où tout fonctio
 Aucun chiffre du projet ne garantit des joueurs ; les tendances servent à
 choisir, pas à promettre.
 
+## Périmètre V3 (livré après le premier essai en jeu)
+- Vrais sauts (vides de 4,6 à 6,9 studs), plus aucun obstacle franchissable en marchant
+- Chute : retour à la dernière borne sans mourir ; filet de sécurité si l'on apparaît hors de la map
+- Lumière plafonnée (brume, éblouissement, halo) pour une image nette
+- Gemmes à facettes, coupe, reliques et plateformes modélisées
+- Rejouabilité : chronomètre et record, cinq reliques secrètes par jeu, traînée des vainqueurs
+- Le jeu collé dans Studio est exactement celui que le pipeline a validé (générateur de hasard maison)
+
 ## Périmètre V2 (livré)
 - La Fabrique : choix d'après les tendances, 2 formats constructibles (tour à grimper, évasion), 6 thèmes, 10 obstacles, étapes sauvegardées, gemmes, victoires
 - 6 jeux créés (un par thème), validés par le pipeline ; 2 testés dans le vrai moteur Roblox

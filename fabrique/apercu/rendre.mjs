@@ -67,6 +67,17 @@ function geometrie(p) {
 	let g;
 	if (p.f === "Ball") g = new THREE.SphereGeometry(p.s[0] / 2, 20, 14);
 	else if (p.f === "Cylinder") { g = new THREE.CylinderGeometry(p.s[1] / 2, p.s[1] / 2, p.s[0], 28); g.rotateZ(Math.PI / 2); }
+	else if (p.f === "CornerWedge" || p.f === "Wedge") {
+		// Orientations vérifiées dans le vrai moteur : coin → sommet en (+X, +Y, -Z) ; rampe → haute côté +Z.
+		const [x, y, z] = p.s.map((v) => v / 2);
+		const A = [x, -y, -z], B = [x, -y, z], C = [-x, -y, z], D = [-x, -y, -z];
+		const faces = p.f === "CornerWedge"
+			? ((S) => [[A, B, C], [A, C, D], [S, A, B], [S, D, A], [S, B, C], [S, C, D]])([x, y, -z])
+			: ((H1, H2) => [[A, B, C], [A, C, D], [B, H1, H2], [B, H2, C], [A, H1, B], [D, C, H2], [A, D, H2], [A, H2, H1]])([x, y, z], [-x, y, z]);
+		g = new THREE.BufferGeometry();
+		g.setAttribute("position", new THREE.Float32BufferAttribute(faces.flat(2), 3));
+		g.computeVertexNormals();
+	}
 	else g = new THREE.BoxGeometry(p.s[0], p.s[1], p.s[2]);
 	geometries.set(cle, g);
 	return g;
@@ -74,13 +85,13 @@ function geometrie(p) {
 const RUGOSITE = { Metal: 0.35, DiamondPlate: 0.4, Glass: 0.1, Ice: 0.15, Glacier: 0.25, SmoothPlastic: 0.45, Plastic: 0.5, Foil: 0.2 };
 const materiaux = new Map();
 function materiau(p) {
-	const cle = p.m + p.k.join(",") + p.t;
+	const cle = p.m + p.k.join(",") + p.t + (p.f === "CornerWedge" || p.f === "Wedge");
 	if (materiaux.has(cle)) return materiaux.get(cle);
 	const c = couleur(p.k);
 	let m;
 	if (p.m === "Neon") m = new THREE.MeshBasicMaterial({ color: c, toneMapped: false });
 	else if (p.m === "ForceField") m = new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.3, depthWrite: false, toneMapped: false });
-	else m = new THREE.MeshStandardMaterial({ color: c, roughness: RUGOSITE[p.m] ?? 0.85, metalness: p.m === "Metal" || p.m === "DiamondPlate" ? 0.5 : 0 });
+	else m = new THREE.MeshStandardMaterial({ color: c, roughness: RUGOSITE[p.m] ?? 0.85, metalness: p.m === "Metal" || p.m === "DiamondPlate" ? 0.5 : 0, side: THREE.DoubleSide, flatShading: p.f === "CornerWedge" || p.f === "Wedge" });
 	if (p.t > 0 && p.m !== "ForceField") { m.transparent = true; m.opacity = 1 - p.t; m.depthWrite = p.t < 0.5; }
 	materiaux.set(cle, m);
 	return m;
@@ -163,6 +174,16 @@ if (format === "tour") {
 	vues["2-depart"] = [[d[0] + 3, d[1] + 8, d[2] - 5], [d[0] - 1, d[1] + 3, d[2] + 60], 80];
 	vues["3-etape"] = [[milieu[0] + 22, milieu[1] + 14, milieu[2] - 40], [milieu[0], milieu[1], milieu[2] + 16], 68];
 	vues["4-arrivee"] = [[a[0] + 26, a[1] + 16, a[2] - 52], [a[0], a[1] + 5, a[2] + 6], 62];
+}
+
+// Mode « détails » (3e argument) : gros plans sur une gemme, la coupe, une relique et une borne.
+if (process.argv[4] === "details") {
+	for (const cle of Object.keys(vues)) delete vues[cle];
+	const g = reperes.gemme || centre, c = reperes.coupe || centre, r = reperes.relique || centre, e = reperes.etapes[etapes[0]] || centre;
+	vues["1-gemme"] = [[g[0] + 7, g[1] + 3, g[2] + 9], [g[0], g[1] - 1.5, g[2]], 50];
+	vues["2-coupe"] = [[c[0] + 7, c[1] + 2.5, c[2] + 8], [c[0], c[1] - 1, c[2]], 50];
+	vues["3-relique"] = [[r[0] + 9, r[1] + 1, r[2] + 9], [r[0], r[1], r[2]], 55];
+	vues["4-borne"] = [[e[0] + 16, e[1] + 6, e[2] + 18], [e[0], e[1] - 2, e[2]], 60];
 }
 
 await mkdir(dirname(sortie), { recursive: true });

@@ -20,7 +20,7 @@ return {
 	{
 		cle = "volcan",
 		motsTendance = { "lava", "volcano", "magma" },
-		dessous = { genre = "lueur", couleur = "danger" },
+		dessous = { genre = "lueur", couleur = "danger", materiau = "CrackedLava" },
 		nom = "Volcan",
 		motsTitre = { "Volcano", "Lava", "Magma" },
 		emoji = "🌋",

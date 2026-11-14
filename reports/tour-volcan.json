@@ -1,18 +1,18 @@
 {
   "accessibilite": {
-    "collectiblesAccessibles": 40,
-    "collectiblesTotal": 40,
-    "profondeurMaxCollectibles": 90,
-    "profondeurMedianeCollectibles": 49,
-    "surfacesAtteintes": 175,
-    "surfacesMarchables": 182
+    "collectiblesAccessibles": 49,
+    "collectiblesTotal": 49,
+    "profondeurMaxCollectibles": 117,
+    "profondeurMedianeCollectibles": 63,
+    "surfacesAtteintes": 190,
+    "surfacesMarchables": 194
   },
   "ambiance": {
     "Atmosphere": true,
     "BloomEffect": true,
     "ColorCorrectionEffect": true,
     "Sky": true,
-    "SunRaysEffect": true
+    "SunRaysEffect": false
   },
   "fichier": "build/tour-volcan.rbxl",
   "map": "tour-volcan",
@@ -25,13 +25,18 @@
   },
   "problemes": [
     {
+      "categorie": "Ambiance",
+      "code": "EFFET_ABSENT",
+      "gravite": "info",
+      "message": "Pas de SunRaysEffect dans Lighting."
+    },
+    {
       "categorie": "Accessibilité",
       "code": "GRANDES_SURFACES_NON_ATTEINTES",
       "gravite": "info",
-      "message": "2 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
+      "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
       "objets": [
-        "Workspace.Parcours.Decor.Tour (≈1600 studs², Y=172.4)",
-        "Workspace.Parcours.Decor.Linteau (≈266 studs², Y=169.1)"
+        "Workspace.Parcours.Decor.Tour (≈1600 studs², Y=214.9)"
       ]
     },
     {
@@ -44,21 +49,21 @@
   "resume": {
     "avertissement": 0,
     "erreur": 0,
-    "info": 2
+    "info": 3
   },
   "statistiques": {
-    "collectibles": 40,
-    "emetteursParticules": 97,
-    "lumieres": 108,
+    "collectibles": 49,
+    "emetteursParticules": 104,
+    "lumieres": 122,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 2005,
+    "objets": 2699,
     "padsDeSaut": 0,
-    "particulesParSeconde": 417,
-    "pieces": 1669,
+    "particulesParSeconde": 399,
+    "pieces": 2283,
     "piecesNonAncrees": 0,
     "scripts": 9,
-    "sons": 49,
+    "sons": 58,
     "spawns": 1
   },
   "statut": "OK",

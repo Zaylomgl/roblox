@@ -1,6 +1,6 @@
 # Roblox : des jeux créés à partir des tendances, testés automatiquement
 
-**Nouveau (version 2) : [la Fabrique](fabrique/README.md).** Elle lit les
+**[La Fabrique](fabrique/README.md).** Elle lit les
 classements Roblox, choisit un format de jeu qui monte et un thème, puis écrit
 un jeu complet, construit, testé et validé. Un jeu de plus, en une commande :
 
@@ -8,20 +8,22 @@ un jeu complet, construit, testé et validé. Un jeu de plus, en une commande :
 ./fabrique/nouveau-jeu.sh
 ```
 
-## Les jeux de la version 2
+## Les jeux
 
 Six jeux, six thèmes, deux formats. Tous passent le pipeline sans erreur ni
 avertissement ; les deux premiers ont aussi été testés dans le vrai moteur
-Roblox (17 tests sur 17 chacun).
+Roblox (21 tests sur 21 chacun). Ils ont été repris après un premier essai en
+jeu du propriétaire : vrais sauts, lumière plus nette, gemmes et coupe
+modélisées, chute qui ramène à la dernière borne, reliques secrètes, record.
 
-| Jeu | Format | Thème | Pièces | Gemmes atteignables | |
+| Jeu | Format | Thème | Pièces | Gemmes et reliques atteignables | |
 |---|---|---|---|---|---|
-| 🚨 [Escape The Prison Run](jeux/evasion-prison.md) | Évasion | prison | 2724 | 40 / 40 | [aperçu](jeux/apercus/evasion-prison.jpg) · [rapport](reports/evasion-prison.md) |
-| 🌋 [Tower Of Volcano](jeux/tour-volcan.md) | Tour | volcan | 1669 | 40 / 40 | [aperçu](jeux/apercus/tour-volcan.jpg) · [rapport](reports/tour-volcan.md) |
-| 🌃 [Night City Escape Obby](jeux/evasion-neon.md) | Évasion | neon | 2141 | 40 / 40 | [aperçu](jeux/apercus/evasion-neon.jpg) · [rapport](reports/evasion-neon.md) |
-| 🌴 [Ruins Prison Run](jeux/evasion-jungle.md) | Évasion | jungle | 2803 | 40 / 40 | [aperçu](jeux/apercus/evasion-jungle.jpg) · [rapport](reports/evasion-jungle.md) |
-| 🧊 [Tower Of Ice](jeux/tour-glace.md) | Tour | glace | 1870 | 40 / 40 | [aperçu](jeux/apercus/tour-glace.jpg) · [rapport](reports/tour-glace.md) |
-| 🍭 [Escape The Candy Run](jeux/evasion-bonbon.md) | Évasion | bonbon | 2541 | 40 / 40 | [aperçu](jeux/apercus/evasion-bonbon.jpg) · [rapport](reports/evasion-bonbon.md) |
+| 🚨 [Escape The Prison Run](jeux/evasion-prison.md) | Évasion | prison | 2997 | 49 / 49 | [aperçu](jeux/apercus/evasion-prison.jpg) · [rapport](reports/evasion-prison.md) |
+| 🌋 [Tower Of Volcano](jeux/tour-volcan.md) | Tour | volcan | 2283 | 49 / 49 | [aperçu](jeux/apercus/tour-volcan.jpg) · [rapport](reports/tour-volcan.md) |
+| 🌃 [Night City Escape Obby](jeux/evasion-neon.md) | Évasion | neon | 2475 | 49 / 49 | [aperçu](jeux/apercus/evasion-neon.jpg) · [rapport](reports/evasion-neon.md) |
+| 🌴 [Ruins Prison Run](jeux/evasion-jungle.md) | Évasion | jungle | 3150 | 49 / 49 | [aperçu](jeux/apercus/evasion-jungle.jpg) · [rapport](reports/evasion-jungle.md) |
+| 🧊 [Tower Of Ice](jeux/tour-glace.md) | Tour | glace | 2358 | 49 / 49 | [aperçu](jeux/apercus/tour-glace.jpg) · [rapport](reports/tour-glace.md) |
+| 🍭 [Escape The Candy Run](jeux/evasion-bonbon.md) | Évasion | bonbon | 2831 | 49 / 49 | [aperçu](jeux/apercus/evasion-bonbon.jpg) · [rapport](reports/evasion-bonbon.md) |
 
 ![Aperçu de « Tower Of Volcano »](jeux/apercus/tour-volcan.jpg)
 

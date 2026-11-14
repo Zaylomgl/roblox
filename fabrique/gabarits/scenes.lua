@@ -51,11 +51,12 @@ function SCENES.tour()
 	-- Départ : rosace, arche, dalles qui mènent au premier obstacle
 	local depart = P.repere(-14, 7, 0)
 	local spawn = P.spawn(depart)
-	P.arche(P.repere(1, 0, 0), 10, "▶")
+	P.arche(P.repere(0, 0, 0), 10, "▶")
+	P.ligneDepart(P.repere(0, 0, 0), 10)
 	for i = 0, 3 do
 		K.deco({
 			Size = Vector3.new(5, 0.2, 2.4),
-			CFrame = P.repere(-10 + i * 3.4, 6 - i * 1.6, 0.1),
+			CFrame = P.repere(-10.4 + i * 3.2, 6 - i * 1.6, 0.1),
 			Color = C.solAlt,
 			Material = MAT.solAlt,
 			Name = "Pas",
@@ -301,6 +302,7 @@ function SCENES.evasion(sFin)
 		})
 	end
 	P.arche(P.repere(3.5, 0, 0), 10, "▶")
+	P.ligneDepart(P.repere(3.5, 0, 0), 10)
 
 	-- Îlots de chaque côté du chemin, et grands pitons au loin
 	local niveauVide = Y_DEPART - 30
@@ -310,7 +312,7 @@ function SCENES.evasion(sFin)
 			local position = P.repere(s + K.hasard(-8, 8), cote * K.hasard(24, 38), K.hasard(-7, 9)).Position
 			P.ilot(position, K.hasard(6, 10))
 		end
-		s += 44
+		s += 62
 	end
 	-- Massifs étagés qui sortent du vide, de part et d'autre
 	s = 0
@@ -341,7 +343,7 @@ function SCENES.evasion(sFin)
 		K.special(sommetMassif + Vector3.new(0, 0.4, 0))
 		K.arbre(sommetMassif + Vector3.new(rayon * 0.28, 0.4, -rayon * 0.2), K.hasard(1, 1.5))
 		cote = -cote
-		s += 52
+		s += 66
 	end
 
 	-- Enceinte lointaine : deux murailles à tours qui ferment l'horizon

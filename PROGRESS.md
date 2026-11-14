@@ -1,5 +1,14 @@
 # Travail accompli
 
+## 2026-11-14 — Version 3 : reprise après le premier essai en jeu
+- Parcours : vides de 4,6 à 6,9 studs, modules sans marche, deux modules de sauts purs par étape, 12 étapes au maximum.
+- Script de jeu : retour à la borne après une chute (sans mourir) ou une mort, dalles de verre qui préviennent 3 secondes, chronomètre et record, cinq reliques secrètes, traînée des vainqueurs, modèles soudés.
+- Modèles : `K.pyramide`, `K.joyau`, `K.coupe`, `K.relique` dans `gabarits/kit.lua` ; plateformes à cadre et gradins.
+- Lumière plafonnée ; générateur de hasard maison (même jeu dans Studio et dans le pipeline).
+- Tests : 90 au total (45 pour la Fabrique) ; 21 tests dans le vrai moteur, réussis sur `evasion-prison` et `tour-volcan`.
+- Aperçu : formes en coin dessinées, mode `details` (gros plans).
+- Non vérifié : tout ce qui demande un joueur (sauts, sons, rendu des lumières, retour à la borne après une mort).
+
 ## 2026-11-14 — Tests dans le vrai moteur Roblox pour les jeux générés
 - `pipeline/reel/tests-parcours.luau` : 17 tests exécutés par Open Cloud « Luau Execution » (fichier relu à l'identique, vrai sol sous chaque borne, PivotTo, GetPartsInPart, vitesse d'un tapis ancré, script de jeu exécuté sans erreur, animations).
 - `python3 pipeline/opencloud.py tester --map <nom>` choisit ce script pour tout jeu présent dans `jeux/catalogue.json`.

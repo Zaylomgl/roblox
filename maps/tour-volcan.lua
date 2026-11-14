@@ -40,6 +40,7 @@ local FABRIQUE = {
 		dessous = {
 			couleur = "danger",
 			genre = "lueur",
+			materiau = "CrackedLava",
 		},
 		emoji = "🌋",
 		heure = 18.4,
@@ -93,11 +94,13 @@ local FABRIQUE = {
 
 local SOURCE_JEU = [==[
 -- Script de jeu d'un parcours de la Fabrique (installé par le script de construction).
--- Gère : étapes sauvegardées, retour à la dernière étape, pièges, gemmes, victoire.
+-- Gère : étapes sauvegardées, retour à la dernière borne (chute ou mort), pièges,
+-- gemmes, reliques secrètes, chronomètre et record, victoire, traînée des vainqueurs.
 --
 -- Avec le noyau commun (build du pipeline avec --src src) : les gemmes vont dans
--- le profil sauvegardé du joueur et l'étape atteinte est conservée entre deux
--- visites. Sans lui (script collé seul dans Studio) : tout marche, sans sauvegarde.
+-- le profil sauvegardé du joueur, et l'étape atteinte, les victoires, le record et
+-- les reliques trouvées sont conservés entre deux visites. Sans lui (script collé
+-- seul dans Studio) : tout marche, sans sauvegarde.
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -105,17 +108,33 @@ local RunService = game:GetService("RunService")
 local map = workspace:WaitForChild("Parcours")
 local dossierEtapes = map:WaitForChild("Etapes")
 local dossierGemmes = map:WaitForChild("Collectibles")
+local dossierSecrets = map:WaitForChild("Secrets")
+local dossierBijoux = map:WaitForChild("Bijoux")
 local dossierDangers = map:WaitForChild("Dangers")
 local dossierFragiles = map:WaitForChild("Fragiles")
 local dossierTapis = map:WaitForChild("Tapis")
 local depart = map:WaitForChild("Depart")
 local arrivee = map:WaitForChild("Arrivee")
+local ligneDepart = map:FindFirstChild("LigneDepart")
 
 local NOM_JEU = map:GetAttribute("Nom") or "parcours"
 local NB_ETAPES = map:GetAttribute("NombreEtapes") or 1
+local NB_SECRETS = map:GetAttribute("NombreSecrets") or 0
+local MARGE_CHUTE = map:GetAttribute("MargeChute") or 14 -- tombé plus bas que ça sous sa borne : retour à la borne
 local TEMPS_REAPPARITION = 25 -- secondes avant qu'une gemme revienne
+local DELAI_FRAGILE = 3 -- secondes entre le premier pas sur une dalle de verre et sa disparition
+local ABSENCE_FRAGILE = 2.5
 local GAIN_ETAPE = 3
 local GAIN_VICTOIRE = 50
+local GAIN_SECRET = 15
+local GAIN_TOUS_SECRETS = 100
+-- Traînée derrière le joueur selon ses victoires : une raison visible de regagner.
+local TRAINEES = {
+	{ victoires = 10, couleurs = { Color3.fromRGB(255, 80, 80), Color3.fromRGB(255, 220, 80), Color3.fromRGB(80, 220, 255) } },
+	{ victoires = 5, couleurs = { Color3.fromRGB(255, 205, 80), Color3.fromRGB(255, 240, 180) } },
+	{ victoires = 3, couleurs = { Color3.fromRGB(200, 210, 225), Color3.fromRGB(255, 255, 255) } },
+	{ victoires = 1, couleurs = { Color3.fromRGB(205, 127, 50), Color3.fromRGB(240, 190, 140) } },
+}
 
 local dossierNoyau = game:GetService("ServerScriptService"):FindFirstChild("Noyau")
 local API = dossierNoyau and dossierNoyau:FindFirstChild("API") and require(dossierNoyau.API)
@@ -132,28 +151,43 @@ end
 -- Progression de chaque joueur
 --------------------------------------------------------------------------------
 
-local progressions = {} -- [joueur] = { jeu, etape, victoires }
+local progressions = {} -- [joueur] = { jeu, etape, victoires, record, secrets }
 local sauvegardees = {} -- [joueur] = true quand la progression est celle du profil sauvegardé
 local enVictoire = {}
+local debutCourse = {} -- [joueur] = heure de passage de la ligne de départ (course complète en cours)
+
+local function nouvelleProgression()
+	return { jeu = NOM_JEU, etape = 0, victoires = 0, record = 0, secrets = {} }
+end
 
 local function progression(joueur)
 	local p = progressions[joueur]
 	if not p then
-		p = { jeu = NOM_JEU, etape = 0, victoires = 0 }
+		p = nouvelleProgression()
 		progressions[joueur] = p
 	end
 	if API and not sauvegardees[joueur] then
 		local donnees = API.donneesJeu(joueur)
 		if donnees then
 			local garde = donnees.parcours
-			if type(garde) ~= "table" then
-				garde = { jeu = NOM_JEU, etape = 0, victoires = 0 }
-			elseif garde.jeu ~= NOM_JEU then
-				-- Sauvegarde d'un autre parcours publié dans la même expérience : on repart du début.
-				garde.jeu, garde.etape = NOM_JEU, 0
+			if type(garde) ~= "table" or garde.jeu ~= NOM_JEU then
+				-- Première visite, ou sauvegarde d'un autre parcours publié dans la même expérience.
+				local victoires = (type(garde) == "table") and tonumber(garde.victoires) or 0
+				garde = nouvelleProgression()
+				garde.victoires = victoires or 0
 			end
 			garde.etape = math.clamp(math.max(tonumber(garde.etape) or 0, p.etape), 0, NB_ETAPES - 1)
 			garde.victoires = (tonumber(garde.victoires) or 0) + p.victoires
+			garde.record = tonumber(garde.record) or 0
+			if p.record > 0 and (garde.record == 0 or p.record < garde.record) then
+				garde.record = p.record
+			end
+			if type(garde.secrets) ~= "table" then
+				garde.secrets = {}
+			end
+			for cle in pairs(p.secrets) do
+				garde.secrets[cle] = true
+			end
 			donnees.parcours = garde
 			progressions[joueur] = garde
 			sauvegardees[joueur] = true
@@ -161,6 +195,14 @@ local function progression(joueur)
 		end
 	end
 	return p
+end
+
+local function nbSecrets(p)
+	local n = 0
+	for _ in pairs(p.secrets) do
+		n += 1
+	end
+	return n
 end
 
 local function valeurStat(joueur, nom)
@@ -184,13 +226,12 @@ end
 
 local function majStats(joueur)
 	local p = progression(joueur)
-	local etape = valeurStat(joueur, "Étape")
-	if etape then
-		etape.Value = p.etape
-	end
-	local victoires = valeurStat(joueur, "Victoires")
-	if victoires then
-		victoires.Value = p.victoires
+	local valeurs = { ["Étape"] = p.etape, Victoires = p.victoires, ["Record (s)"] = math.ceil(p.record), Secrets = nbSecrets(p) }
+	for nom, nombre in pairs(valeurs) do
+		local valeur = valeurStat(joueur, nom)
+		if valeur then
+			valeur.Value = nombre
+		end
 	end
 end
 
@@ -249,34 +290,106 @@ local function effet(zone, nb)
 	end
 end
 
+local function chrono(secondes)
+	local minutes = math.floor(secondes / 60)
+	return string.format("%d:%04.1f", minutes, secondes - minutes * 60)
+end
+
 --------------------------------------------------------------------------------
--- Retour à la dernière étape atteinte
+-- Retour à la dernière borne : après une mort, et après une chute
 --------------------------------------------------------------------------------
 
-local function placer(joueur, perso)
-	local p = progression(joueur)
-	local racine = perso:WaitForChild("HumanoidRootPart", 10)
+-- Où le joueur doit se retrouver : au-dessus de sa dernière borne, sinon au départ.
+local function retour(joueur)
+	local zone = bornes[progression(joueur).etape]
+	if zone then
+		return zone.CFrame * CFrame.new(0, 1, 2)
+	end
+	return depart.CFrame * CFrame.new(0, 4, 0)
+end
+
+local function envoyer(perso, cible)
+	local racine = perso:FindFirstChild("HumanoidRootPart")
 	if not racine then
 		return
 	end
-	local zone = bornes[p.etape]
-	if zone then
-		local cible = zone.CFrame * CFrame.new(0, 1, 2)
-		-- PivotTo déplace tout le personnage ; à défaut, on déplace sa pièce racine.
-		if not pcall(function()
-			perso:PivotTo(cible)
-		end) then
-			racine.CFrame = cible
+	-- PivotTo déplace tout le personnage ; à défaut, on déplace sa pièce racine.
+	if not pcall(function()
+		perso:PivotTo(cible)
+	end) then
+		racine.CFrame = cible
+	end
+	pcall(function()
+		racine.AssemblyLinearVelocity = Vector3.zero -- sinon il garde sa vitesse de chute
+	end)
+end
+
+-- Traînée des vainqueurs, accrochée au personnage.
+local function poserTrainee(joueur, perso)
+	local racine = perso:FindFirstChild("HumanoidRootPart")
+	if not racine then
+		return
+	end
+	local ancienne = racine:FindFirstChild("TraineeVictoire")
+	if ancienne then
+		ancienne:Destroy()
+	end
+	local victoires = progression(joueur).victoires
+	for _, palier in ipairs(TRAINEES) do
+		if victoires >= palier.victoires then
+			pcall(function()
+				local haut = Instance.new("Attachment")
+				haut.Name = "TraineeHaut"
+				haut.Position = Vector3.new(0, 0.9, 0)
+				haut.Parent = racine
+				local bas = Instance.new("Attachment")
+				bas.Name = "TraineeBas"
+				bas.Position = Vector3.new(0, -0.9, 0)
+				bas.Parent = racine
+				local trainee = Instance.new("Trail")
+				trainee.Name = "TraineeVictoire"
+				trainee.Attachment0 = haut
+				trainee.Attachment1 = bas
+				trainee.Lifetime = 0.7
+				trainee.LightEmission = 0.4
+				local points = {}
+				for i, couleur in ipairs(palier.couleurs) do
+					table.insert(points, ColorSequenceKeypoint.new((i - 1) / (#palier.couleurs - 1), couleur))
+				end
+				trainee.Color = ColorSequence.new(points)
+				trainee.Transparency = NumberSequence.new(0.3, 1)
+				trainee.Parent = racine
+			end)
+			return
 		end
+	end
+end
+
+local function personnageArrive(joueur, perso)
+	-- Roblox pose le personnage au point de départ un peu après sa création : pendant
+	-- trois secondes, tant qu'il est près du départ alors qu'il a déjà passé une
+	-- borne, on le remet sur sa borne.
+	local fin = os.clock() + 3
+	local equipe = false
+	while os.clock() < fin and perso.Parent and joueur.Character == perso do
+		local racine = perso:FindFirstChild("HumanoidRootPart")
+		if racine then
+			if not equipe then
+				equipe = true
+				poserTrainee(joueur, perso)
+			end
+			local p = progression(joueur)
+			if p.etape > 0 and (racine.CFrame.Position - depart.CFrame.Position).Magnitude < 25 then
+				envoyer(perso, retour(joueur))
+			end
+		end
+		task.wait(0.1)
 	end
 end
 
 local function joueurArrive(joueur)
 	joueur.CharacterAdded:Connect(function(perso)
-		task.wait(0.1) -- laisse Roblox poser le personnage au départ avant de le déplacer
-		if perso.Parent then
-			placer(joueur, perso)
-		end
+		personnageArrive(joueur, perso)
 	end)
 	task.spawn(function()
 		-- Avec le noyau, le profil arrive un peu après le joueur : on attend sa progression sauvegardée.
@@ -290,11 +403,16 @@ local function joueurArrive(joueur)
 			return
 		end
 		majStats(joueur)
-		local p = progression(joueur)
-		if p.etape > 0 and joueur.Character then
-			placer(joueur, joueur.Character)
+		if joueur.Character then
+			poserTrainee(joueur, joueur.Character)
+			if progression(joueur).etape > 0 then
+				envoyer(joueur.Character, retour(joueur))
+			end
 		end
 	end)
+	if joueur.Character then
+		task.spawn(personnageArrive, joueur, joueur.Character)
+	end
 end
 
 Players.PlayerAdded:Connect(joueurArrive)
@@ -305,10 +423,33 @@ Players.PlayerRemoving:Connect(function(joueur)
 	progressions[joueur] = nil
 	sauvegardees[joueur] = nil
 	enVictoire[joueur] = nil
+	debutCourse[joueur] = nil
+end)
+
+-- Filet de sécurité contre les chutes : quatre fois par seconde, tout joueur tombé
+-- plus bas que MARGE_CHUTE sous sa dernière borne (ou sous le départ) y est ramené,
+-- sans mourir. Cela couvre aussi une apparition hors de la map.
+task.spawn(function()
+	while true do
+		task.wait(0.25)
+		for _, joueur in ipairs(Players:GetPlayers()) do
+			local perso = joueur.Character
+			local racine = perso and perso:FindFirstChild("HumanoidRootPart")
+			local humanoide = perso and perso:FindFirstChildOfClass("Humanoid")
+			if racine and humanoide and humanoide.Health > 0 and not enVictoire[joueur] then
+				local cible = retour(joueur)
+				if racine.CFrame.Position.Y < cible.Position.Y - MARGE_CHUTE then
+					envoyer(perso, cible)
+					debutCourse[joueur] = (progression(joueur).etape == 0) and nil or debutCourse[joueur]
+					annoncer(joueur, "↩")
+				end
+			end
+		end
+	end
 end)
 
 --------------------------------------------------------------------------------
--- Étapes et victoire
+-- Étapes, chronomètre et victoire
 --------------------------------------------------------------------------------
 
 local function joueurDe(hit)
@@ -318,6 +459,16 @@ local function joueurDe(hit)
 		return nil
 	end
 	return Players:GetPlayerFromCharacter(perso), humanoide, perso
+end
+
+if ligneDepart then
+	ligneDepart.Touched:Connect(function(hit)
+		local joueur = joueurDe(hit)
+		-- Le chronomètre ne part que pour une course complète (depuis l'étape 0).
+		if joueur and not enVictoire[joueur] and progression(joueur).etape == 0 then
+			debutCourse[joueur] = os.clock()
+		end
+	end)
 end
 
 for numero, zone in pairs(bornes) do
@@ -349,15 +500,26 @@ arrivee.Touched:Connect(function(hit)
 	enVictoire[joueur] = true
 	p.victoires += 1
 	p.etape = 0
+	local message = "🏆 " .. p.victoires
+	local debut = debutCourse[joueur]
+	debutCourse[joueur] = nil
+	if debut then
+		local duree = os.clock() - debut
+		message = message .. "   ⏱ " .. chrono(duree)
+		if p.record == 0 or duree < p.record then
+			p.record = duree
+			message = message .. " ★"
+		end
+	end
 	majStats(joueur)
 	crediter(joueur, GAIN_VICTOIRE, "victoire")
 	effet(arrivee, 80)
-	annoncer(joueur, "🏆 " .. p.victoires)
+	annoncer(joueur, message)
+	poserTrainee(joueur, perso)
 	task.delay(4, function()
 		enVictoire[joueur] = nil
-		local racine = perso.Parent and perso:FindFirstChild("HumanoidRootPart")
-		if racine then
-			racine.CFrame = depart.CFrame * CFrame.new(0, 4, 0)
+		if perso.Parent then
+			envoyer(perso, depart.CFrame * CFrame.new(0, 4, 0))
 		end
 	end)
 end)
@@ -377,20 +539,26 @@ for _, danger in ipairs(dossierDangers:GetChildren()) do
 	end
 end
 
+-- Dalles de verre : au premier pas elles rougissent (avertissement), puis s'effacent
+-- DELAI_FRAGILE secondes plus tard et reviennent après ABSENCE_FRAGILE secondes.
 for _, dalle in ipairs(dossierFragiles:GetChildren()) do
 	if dalle:IsA("BasePart") then
-		local transparence = dalle.Transparency
+		local transparence, couleur = dalle.Transparency, dalle.Color
 		local active = false
 		dalle.Touched:Connect(function(hit)
 			if active or not joueurDe(hit) then
 				return
 			end
 			active = true
-			task.wait(0.45)
-			dalle.Transparency = 0.9
+			dalle.Color = Color3.fromRGB(255, 90, 70)
+			task.wait(DELAI_FRAGILE * 0.6)
+			dalle.Transparency = math.min(0.75, transparence + 0.35) -- elle pâlit : plus qu'un instant
+			task.wait(DELAI_FRAGILE * 0.4)
+			dalle.Transparency = 0.95
 			dalle.CanCollide = false
-			task.wait(2.5)
+			task.wait(ABSENCE_FRAGILE)
 			dalle.Transparency = transparence
+			dalle.Color = couleur
 			dalle.CanCollide = true
 			active = false
 		end)
@@ -407,15 +575,44 @@ for _, tapis in ipairs(dossierTapis:GetChildren()) do
 end
 
 --------------------------------------------------------------------------------
--- Gemmes
+-- Gemmes et reliques : modèle visible soudé à la pièce invisible qu'on touche
 --------------------------------------------------------------------------------
 
-local gemmes, basesGemmes = {}, {}
+-- Soude le modèle (dossier Bijoux/<Id>) à son cœur : quand le cœur bouge, tout suit.
+-- Renvoie une fonction qui montre ou cache le modèle.
+local function monter(coeur)
+	local dossier = dossierBijoux:FindFirstChild(coeur:GetAttribute("Bijou") or "")
+	local pieces = {}
+	if dossier then
+		for _, piece in ipairs(dossier:GetChildren()) do
+			if piece:IsA("BasePart") then
+				local soudure = Instance.new("WeldConstraint")
+				soudure.Part0 = coeur
+				soudure.Part1 = piece
+				soudure.Parent = coeur
+				piece.Anchored = false
+				table.insert(pieces, { piece = piece, transparence = piece.Transparency })
+			end
+		end
+	end
+	return function(visible)
+		for _, info in ipairs(pieces) do
+			info.piece.Transparency = visible and info.transparence or 1
+		end
+		local lumiere = coeur:FindFirstChildOfClass("PointLight")
+		if lumiere then
+			lumiere.Enabled = visible
+		end
+	end
+end
+
+local flottants, basesFlottants = {}, {}
+
 for _, gemme in ipairs(dossierGemmes:GetChildren()) do
 	if gemme:IsA("BasePart") then
-		table.insert(gemmes, gemme)
-		basesGemmes[gemme] = gemme.CFrame
-		local transparence = gemme.Transparency
+		local montrer = monter(gemme)
+		table.insert(flottants, gemme)
+		basesFlottants[gemme] = gemme.CFrame
 		gemme.Touched:Connect(function(hit)
 			if gemme:GetAttribute("Pris") then
 				return
@@ -426,24 +623,49 @@ for _, gemme in ipairs(dossierGemmes:GetChildren()) do
 			end
 			gemme:SetAttribute("Pris", true)
 			crediter(joueur, gemme:GetAttribute("Valeur") or 1, "gemme")
-			effet(gemme, 30)
-			local lumiere = gemme:FindFirstChildOfClass("PointLight")
-			if lumiere then
-				lumiere.Enabled = false
-			end
-			gemme.Transparency = 1
+			effet(gemme, 24)
+			montrer(false)
 			gemme.CanTouch = false
 			task.delay(TEMPS_REAPPARITION, function()
 				if not gemme.Parent then
 					return
 				end
-				gemme.Transparency = transparence
+				montrer(true)
 				gemme.CanTouch = true
-				if lumiere then
-					lumiere.Enabled = true
-				end
 				gemme:SetAttribute("Pris", false)
 			end)
+		end)
+	end
+end
+
+-- Reliques secrètes : elles restent en place, mais chaque joueur ne les compte qu'une fois, pour toujours.
+for _, relique in ipairs(dossierSecrets:GetChildren()) do
+	local numero = relique:GetAttribute("Secret")
+	if relique:IsA("BasePart") and numero then
+		monter(relique)
+		table.insert(flottants, relique)
+		basesFlottants[relique] = relique.CFrame
+		local cle = "s" .. numero
+		relique.Touched:Connect(function(hit)
+			local joueur = joueurDe(hit)
+			if not joueur then
+				return
+			end
+			local p = progression(joueur)
+			if p.secrets[cle] then
+				return
+			end
+			p.secrets[cle] = true
+			local trouves = nbSecrets(p)
+			crediter(joueur, GAIN_SECRET, "secret")
+			effet(relique, 40)
+			if trouves >= NB_SECRETS then
+				crediter(joueur, GAIN_TOUS_SECRETS, "tous-les-secrets")
+				annoncer(joueur, "✦ " .. trouves .. " / " .. NB_SECRETS .. " ✦")
+			else
+				annoncer(joueur, "✦ " .. trouves .. " / " .. NB_SECRETS)
+			end
+			majStats(joueur)
 		end)
 	end
 end
@@ -495,8 +717,8 @@ RunService.Heartbeat:Connect(function(dt)
 		dernierBalayage = temps
 		balayer()
 	end
-	for i, gemme in ipairs(gemmes) do
-		gemme.CFrame = basesGemmes[gemme] * CFrame.new(0, math.sin(temps * 2 + i) * 0.35, 0) * CFrame.Angles(0, temps * 1.5, 0)
+	for i, objet in ipairs(flottants) do
+		objet.CFrame = basesFlottants[objet] * CFrame.new(0, math.sin(temps * 2 + i) * 0.3, 0) * CFrame.Angles(0, temps * 1.2 + i, 0)
 	end
 end)
 ]==]
@@ -510,7 +732,22 @@ local Lighting = game:GetService("Lighting")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local THEME = FABRIQUE.theme
-local rng = Random.new(FABRIQUE.graine)
+
+-- Générateur pseudo-aléatoire maison (Park–Miller). Le `Random` de Roblox ne donne
+-- pas les mêmes tirages hors de Roblox : avec celui-ci, le jeu construit dans
+-- Studio est exactement celui que le pipeline a construit et validé.
+local rng = { etat = math.floor(FABRIQUE.graine) % 2147483646 + 1 }
+function rng:suivant()
+	self.etat = (self.etat * 48271) % 2147483647
+	return (self.etat - 1) / 2147483646
+end
+function rng:NextNumber(a, b)
+	local mini, maxi = a or 0, b or 1
+	return mini + (maxi - mini) * self:suivant()
+end
+function rng:NextInteger(a, b)
+	return math.floor(a + (b - a + 1) * self:suivant())
+end
 
 local TEXTURE_ETINCELLE = "rbxasset://textures/particles/sparkles_main.dds"
 local TEXTURE_FUMEE = "rbxasset://textures/particles/smoke_main.dds"
@@ -608,6 +845,8 @@ for _, nom in ipairs({
 	"Mobiles", -- tournent sur eux-mêmes (attribut VitesseRotation)
 	"Fragiles", -- s'effacent quand on marche dessus
 	"Tapis", -- tapis roulants (attribut VitesseTapis)
+	"Bijoux", -- modèles visibles des gemmes, du trophée et des reliques (un dossier par objet)
+	"Secrets", -- reliques cachées (attribut Secret = numéro)
 }) do
 	local dossier = Instance.new("Folder")
 	dossier.Name = nom
@@ -676,8 +915,9 @@ end
 function K.lumiere(parent, couleur, portee, luminosite)
 	local l = Instance.new("PointLight")
 	l.Color = couleur
-	l.Range = portee
-	l.Brightness = luminosite
+	-- Volontairement modérées : trop de lumières fortes noient l'image dans un voile.
+	l.Range = portee * 0.8
+	l.Brightness = luminosite * 0.5
 	l.Shadows = false
 	l.Parent = parent
 	return l
@@ -769,21 +1009,23 @@ function K.ambiance()
 	ciel.StarCount = 3000
 	ciel.Parent = Lighting
 
+	-- Netteté d'abord : la brume, l'éblouissement et le halo sont plafonnés, quel que
+	-- soit le thème (retour de jeu : « trop de lumière, on ne voit rien »).
 	local atmosphere = Instance.new("Atmosphere")
 	atmosphere.Name = "Fab_Atmosphere"
-	atmosphere.Density = L.atmosphere.densite
+	atmosphere.Density = math.min(L.atmosphere.densite, 0.26)
 	atmosphere.Offset = L.atmosphere.decalage
 	atmosphere.Color = K.rvb(L.atmosphere.couleur)
 	atmosphere.Decay = K.rvb(L.atmosphere.declin)
-	atmosphere.Glare = L.atmosphere.eblouissement
-	atmosphere.Haze = L.atmosphere.brume
+	atmosphere.Glare = math.min(L.atmosphere.eblouissement, 0.1)
+	atmosphere.Haze = math.min(L.atmosphere.brume, 0.6)
 	atmosphere.Parent = Lighting
 
 	local bloom = Instance.new("BloomEffect")
 	bloom.Name = "Fab_Bloom"
-	bloom.Intensity = L.bloom.intensite
-	bloom.Size = L.bloom.taille
-	bloom.Threshold = L.bloom.seuil
+	bloom.Intensity = math.min(L.bloom.intensite, 0.12)
+	bloom.Size = math.min(L.bloom.taille, 14)
+	bloom.Threshold = math.max(L.bloom.seuil, 2)
 	bloom.Parent = Lighting
 
 	local correction = Instance.new("ColorCorrectionEffect")
@@ -793,12 +1035,6 @@ function K.ambiance()
 	correction.Saturation = L.correction.saturation
 	correction.TintColor = K.rvb(L.correction.teinte)
 	correction.Parent = Lighting
-
-	local rayons = Instance.new("SunRaysEffect")
-	rayons.Name = "Fab_Rayons"
-	rayons.Intensity = 0.05
-	rayons.Spread = 0.6
-	rayons.Parent = Lighting
 
 	local nuages = Instance.new("Clouds")
 	nuages.Cover = L.nuages.couverture
@@ -1150,48 +1386,177 @@ function K.decorHasard(position)
 end
 
 --------------------------------------------------------------------------------
--- Gemmes à ramasser (1, 5 ou 25 points)
+-- Formes à facettes
 --------------------------------------------------------------------------------
+
+-- Pyramide à base carrée (côté 2 × demi) faite de quatre pièces en coin.
+-- `cf` : centre de la base ; la pointe est à `hauteur` au-dessus (en dessous si `inverse`).
+-- Orientation vérifiée dans le vrai moteur : le sommet d'une CornerWedgePart est
+-- au coin (+X, +Y, -Z) de sa boîte.
+function K.pyramide(cf, demi, hauteur, props, inverse)
+	local base = inverse and (cf * CFrame.Angles(math.pi, 0, 0)) or cf
+	local pieces = {}
+	for quart = 0, 3 do
+		local p = Instance.new("CornerWedgePart")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CastShadow = props.CastShadow == true
+		p.Size = Vector3.new(demi, hauteur, demi)
+		p.CFrame = base * CFrame.new(0, hauteur / 2, 0) * CFrame.Angles(0, quart * math.pi / 2, 0) * CFrame.new(-demi / 2, 0, demi / 2)
+		p.Color = props.Color
+		p.Material = props.Material or Enum.Material.Glass
+		p.Transparency = props.Transparency or 0
+		p.Reflectance = props.Reflectance or 0
+		p.Name = props.Name or "Facette"
+		p.Parent = props.Parent or D.Decor
+		table.insert(pieces, p)
+	end
+	return pieces
+end
+
+-- Gemme taillée : deux pyramides tête-bêche (huit facettes).
+function K.joyau(centre, taille, teinte, parent)
+	local cf = CFrame.new(centre)
+	local haut, bas = taille * 0.75, taille * 1.15
+	local demi = taille * 0.62
+	K.pyramide(cf * CFrame.new(0, (bas - haut) / 2, 0), demi, haut, { Color = K.melange(teinte, C.blanc, 0.3), Reflectance = 0.25, Parent = parent, Name = "Couronne" })
+	K.pyramide(cf * CFrame.new(0, (bas - haut) / 2, 0), demi, bas, { Color = teinte, Reflectance = 0.2, Parent = parent, Name = "Culasse" }, true)
+end
+
+-- Coupe de vainqueur : pied, tige, vasque évasée, deux anses, joyau au sommet.
+function K.coupe(centre, teinte, parent)
+	local function disque(y, hauteur, diametre, couleurDisque, materiau)
+		return K.cylindre(centre + Vector3.new(0, y, 0), hauteur, diametre, {
+			Color = couleurDisque or teinte,
+			Material = materiau or Enum.Material.Metal,
+			Reflectance = 0.25,
+			CanCollide = false,
+			CanTouch = false,
+			Parent = parent,
+			Name = "Coupe",
+		})
+	end
+	disque(-1.75, 0.4, 2.3, C.structureAlt, MAT.structureAlt)
+	disque(-1.45, 0.25, 1.7)
+	disque(-0.95, 0.8, 0.5)
+	K.boule(centre + Vector3.new(0, -0.5, 0), 0.8, { Color = teinte, Material = Enum.Material.Metal, Reflectance = 0.25, CanCollide = false, CanTouch = false, Parent = parent, Name = "Noeud" })
+	disque(-0.15, 0.3, 1.2)
+	disque(0.2, 0.5, 1.8)
+	disque(0.7, 0.6, 2.3)
+	disque(1.25, 0.6, 2.7)
+	disque(1.6, 0.14, 2.95, K.melange(teinte, C.blanc, 0.4))
+	disque(1.5, 0.1, 2.3, C.noir, Enum.Material.SmoothPlastic) -- l'intérieur, sombre : la vasque paraît creuse
+	for _, cote in ipairs({ -1, 1 }) do
+		for _, barre in ipairs({ { 1.75, 1.2, 0.9, 0.22 }, { 1.75, 0.3, 0.9, 0.22 }, { 2.1, 0.75, 0.22, 1.1 } }) do
+			K.deco({
+				Size = Vector3.new(barre[3], barre[4], 0.3),
+				Position = centre + Vector3.new(cote * barre[1], barre[2], 0),
+				Color = teinte,
+				Material = Enum.Material.Metal,
+				Reflectance = 0.25,
+				Parent = parent,
+				Name = "Anse",
+			})
+		end
+	end
+	K.joyau(centre + Vector3.new(0, 2.5, 0), 0.7, C.accent, parent)
+end
+
+-- Relique secrète : un joyau dans un anneau, sur un petit socle.
+function K.relique(centre, parent)
+	K.joyau(centre, 0.9, C.accent2, parent)
+	for _, angle in ipairs({ 0, math.pi / 2 }) do
+		K.deco({
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.14, 2.9, 2.9),
+			CFrame = CFrame.new(centre) * CFrame.Angles(0, angle, 0),
+			Color = C.piece,
+			Material = Enum.Material.Metal,
+			Transparency = 0.55,
+			Reflectance = 0.2,
+			CastShadow = false,
+			Parent = parent,
+			Name = "Anneau",
+		})
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Gemmes à ramasser (1, 5 ou 25 points) et reliques secrètes
+--
+-- Chaque objet a une pièce invisible dans `Collectibles` (c'est elle qu'on touche)
+-- et un modèle visible dans `Bijoux/<Id>`, que le script de jeu soude à la pièce
+-- invisible : ainsi tout le modèle tourne et flotte d'un bloc.
+--------------------------------------------------------------------------------
+
+local prochainBijou = 0
+
+function K.bijou(position, taille, options)
+	prochainBijou += 1
+	local id = "B" .. prochainBijou
+	local coeur = K.piece({
+		Size = taille,
+		Position = position,
+		Transparency = 1,
+		CanCollide = false,
+		CastShadow = false,
+		Parent = options.Parent or D.Collectibles,
+		Name = options.Name or "Gemme",
+	})
+	coeur:SetAttribute("Bijou", id)
+	local dossier = Instance.new("Folder")
+	dossier.Name = id
+	dossier.Parent = D.Bijoux
+	local son = Instance.new("Sound")
+	son.SoundId = SON_COLLECTE
+	son.Volume = 0.22 -- discret : le son d'origine, plus fort et plus grave, était pénible
+	son.PlaybackSpeed = options.pitch or 1.8
+	son.RollOffMaxDistance = 60
+	son.Parent = coeur
+	K.emetteur(coeur, {
+		Color = ColorSequence.new(options.couleur, Color3.new(1, 1, 1)),
+		Size = NumberSequence.new(0.7, 0.1),
+		Lifetime = NumberRange.new(0.4, 0.8),
+		Rate = 0,
+		Speed = NumberRange.new(4, 8),
+		SpreadAngle = Vector2.new(180, 180),
+		LightEmission = 0.6,
+		Enabled = false,
+	})
+	return coeur, dossier
+end
 
 function K.gemme(position, valeur)
 	local infos = {
-		[1] = { couleur = C.piece, taille = 1.5, pitch = 1.2 },
-		[5] = { couleur = C.accent2, taille = 2.1, pitch = 0.95 },
-		[25] = { couleur = C.accent, taille = 3, pitch = 0.7 },
+		[1] = { couleur = C.piece, taille = 1.15, pitch = 1.9 },
+		[5] = { couleur = C.accent2, taille = 1.6, pitch = 1.6 },
+		[25] = { couleur = C.piece, taille = 2.6, pitch = 1.25 },
 	}
 	local info = infos[valeur] or infos[1]
-	local gemme = K.piece({
-		Size = Vector3.new(info.taille * 0.7, info.taille, info.taille * 0.7),
-		CFrame = CFrame.new(position) * CFrame.Angles(math.rad(10), math.rad(45), 0),
-		Color = info.couleur,
-		Material = Enum.Material.Glass,
-		Transparency = 0.1,
-		Reflectance = 0.2,
-		CanCollide = false,
-		CastShadow = false,
-		Parent = D.Collectibles,
-		Name = "Gemme",
-	})
-	gemme:SetAttribute("Valeur", valeur)
-	if valeur > 1 then -- les petites gemmes n'éclairent pas : moins de lumières à calculer
-		K.lumiere(gemme, info.couleur, 9, 1.6)
+	local boite = (valeur == 25) and Vector3.new(4.4, 5.6, 4.4) or Vector3.new(info.taille * 1.7, info.taille * 2.4, info.taille * 1.7)
+	local coeur, dossier = K.bijou(position, boite, { couleur = info.couleur, pitch = info.pitch })
+	coeur:SetAttribute("Valeur", valeur)
+	if valeur == 25 then
+		K.coupe(position, info.couleur, dossier)
+		K.lumiere(coeur, info.couleur, 14, 1.6)
+	else
+		K.joyau(position, info.taille, info.couleur, dossier)
+		if valeur > 1 then
+			K.lumiere(coeur, info.couleur, 9, 1.4)
+		end
 	end
-	local son = Instance.new("Sound")
-	son.SoundId = SON_COLLECTE
-	son.Volume = 0.6
-	son.PlaybackSpeed = info.pitch
-	son.Parent = gemme
-	K.emetteur(gemme, {
-		Color = ColorSequence.new(info.couleur, Color3.new(1, 1, 1)),
-		Size = NumberSequence.new(0.9, 0.2),
-		Lifetime = NumberRange.new(0.5, 1),
-		Rate = 0,
-		Speed = NumberRange.new(4, 9),
-		SpreadAngle = Vector2.new(180, 180),
-		LightEmission = 1,
-		Enabled = false,
-	})
-	return gemme
+	return coeur
+end
+
+-- Relique secrète : comptée une fois par joueur, pour toujours (attribut Secret = numéro).
+function K.secret(position, numero)
+	local coeur, dossier = K.bijou(position, Vector3.new(3, 3.4, 3), { couleur = C.accent2, pitch = 1.05, Parent = D.Secrets, Name = "Relique" })
+	coeur:SetAttribute("Secret", numero)
+	coeur:SetAttribute("Collectible", true) -- le validateur vérifie ainsi qu'on peut l'atteindre
+	K.relique(position, dossier)
+	K.lumiere(coeur, C.accent2, 12, 1.6)
+	return coeur
 end
 
 --------------------------------------------------------------------------------
@@ -1209,7 +1574,7 @@ end
 --------------------------------------------------------------------------------
 
 local Y_DEPART = 40 -- altitude du sol de départ
-local SAUT_MAX = 6.5 -- plus grand vide à franchir (studs, bord à bord)
+local SAUT_MAX = 6.9 -- plus grand vide à franchir (studs, bord à bord) ; le validateur en accepte ≈ 8,3
 local EP_DALLE = 0.6
 
 local P = { etapes = {}, nbPlateformes = 0 }
@@ -1224,14 +1589,17 @@ local TRACES = {}
 function TRACES.tour()
 	local rayonTour = 20
 	local rayon = rayonTour + 9
-	local pente = 18 / (2 * math.pi * rayon)
-	local trace = { rayonTour = rayonTour, rayon = rayon, pente = pente, latBorne = 1.5, latMin = -2.5, latMax = 3.5, coteBonus = 1 }
+	local pente = 22 / (2 * math.pi * rayon)
+	local socle = 1.5 -- le chemin démarre un peu au-dessus de l'île : on y monte en sautant (même vers une première marche haute)
+	-- margeChute : tombé de cette hauteur sous sa dernière borne, le joueur y est ramené.
+	local trace = { rayonTour = rayonTour, rayon = rayon, pente = pente, latBorne = 1.5, latMin = -2.5, latMax = 3.5, coteBonus = 1, margeChute = 14 }
 	function trace.point(s)
 		-- Sens horaire vu du dessus : ainsi l'axe X des repères pointe vers l'extérieur.
 		local angle = -s / rayon
 		local dehors = Vector3.new(math.cos(angle), 0, math.sin(angle))
 		local avant = Vector3.new(math.sin(angle), 0, -math.cos(angle))
-		return Vector3.new(0, Y_DEPART + math.max(0, pente * s), 0) + dehors * rayon, avant, dehors
+		local hauteur = (s > 0) and (socle + pente * s) or 0
+		return Vector3.new(0, Y_DEPART + hauteur, 0) + dehors * rayon, avant, dehors
 	end
 	return trace
 end
@@ -1240,7 +1608,7 @@ end
 function TRACES.evasion()
 	local amplitude, periode = 12, 260
 	local vague, periodeVague = 3, 300
-	local trace = { latBorne = 0, latMin = -3, latMax = 3, coteBonus = 0 }
+	local trace = { latBorne = 0, latMin = -3, latMax = 3, coteBonus = 0, margeChute = 18 }
 	function trace.point(s)
 		local phase = 2 * math.pi * s / periode
 		local x = (s > 0) and amplitude * math.sin(phase) or 0
@@ -1269,81 +1637,78 @@ end
 -- Plateformes
 --------------------------------------------------------------------------------
 
--- Habillage du dessous d'une plateforme, selon le thème.
+local EP_CORPS = 2.5 -- épaisseur du corps sculpté sous le plateau
+
+-- Détail du thème tout en bas d'une plateforme : lueur, poutrelles ou stalactite.
 local function dessous(cf, larg, long)
 	local genre = THEME.dessous.genre
 	local teinte = C[THEME.dessous.couleur] or C.structure
+	local bas = cf * CFrame.new(0, -EP_DALLE - EP_CORPS, 0)
 	if genre == "lueur" then
 		K.deco({
-			Size = Vector3.new(larg - 1.4, 0.2, long - 1.4),
-			CFrame = cf * CFrame.new(0, -1.75, 0),
+			Size = Vector3.new(larg * 0.36, 0.3, long * 0.36),
+			CFrame = bas * CFrame.new(0, -0.15, 0),
 			Color = teinte,
-			Material = Enum.Material.Neon,
+			Material = Enum.Material[THEME.dessous.materiau or "Neon"],
 			CastShadow = false,
 			Name = "Lueur",
 		})
 	elseif genre == "poutre" then
-		K.deco({
-			Size = Vector3.new(0.7, 0.9, long - 0.2),
-			CFrame = cf * CFrame.new(0, -2.05, 0),
-			Color = teinte,
-			Material = Enum.Material.Metal,
-			Name = "Poutre",
-		})
-		K.deco({
-			Size = Vector3.new(larg - 0.6, 0.3, 0.7),
-			CFrame = cf * CFrame.new(0, -1.75, 0),
-			Color = teinte,
-			Material = Enum.Material.Metal,
-			Name = "Traverse",
-		})
-	else -- "pointes" : stalactites, racines, coulures…
-		local nb = (larg * long > 40) and 3 or 2
-		for _ = 1, nb do
-			local h = K.hasard(1.2, 2.8)
-			K.deco({
-				Size = Vector3.new(0.9, h, 0.9),
-				CFrame = cf
-					* CFrame.new(K.hasard(-0.3, 0.3) * larg, -1.6 - h / 2, K.hasard(-0.3, 0.3) * long)
-					* CFrame.Angles(0, K.hasard(0, 1.5), 0),
-				Color = K.nuance(teinte, 0.04),
-				Material = Enum.Material[THEME.dessous.materiau or "SmoothPlastic"],
-				Transparency = THEME.dessous.transparence or 0,
-				Name = "Pointe",
-			})
-		end
+		K.deco({ Size = Vector3.new(0.6, 0.7, long * 0.7), CFrame = bas * CFrame.new(0, 0.2, 0), Color = teinte, Material = Enum.Material.Metal, Name = "Poutre" })
+		K.deco({ Size = Vector3.new(larg * 0.7, 0.5, 0.6), CFrame = bas * CFrame.new(0, 0.3, 0), Color = teinte, Material = Enum.Material.Metal, Name = "Traverse" })
+	else -- "pointes" : une vraie pointe (stalactite, racine, coulure), taillée en pyramide
+		local demi = math.min(larg, long) * 0.16
+		K.pyramide(bas, demi, K.hasard(1.6, 3), {
+			Color = K.nuance(teinte, 0.04),
+			Material = Enum.Material[THEME.dessous.materiau or "SmoothPlastic"],
+			Transparency = THEME.dessous.transparence or 0,
+			Name = "Pointe",
+		}, true)
 	end
 end
 
 -- Dalle rectangulaire. `cf` : centre du DESSUS de la dalle. Renvoie la pièce où l'on marche.
+-- Modelé : un plateau couleur d'accent dont on ne voit que le pourtour (il sert de
+-- cadre, bien visible pour viser le saut), un dessus incrusté, un corps en deux
+-- gradins qui se resserrent vers le bas, puis le détail du thème.
 function P.dalle(cf, larg, long, options)
 	options = options or {}
 	P.nbPlateformes += 1
+	local teinte = options.Color or K.nuance(C.sol, 0.03)
 	local plateau = K.piece({
 		Size = Vector3.new(larg, EP_DALLE, long),
 		CFrame = cf * CFrame.new(0, -EP_DALLE / 2, 0),
-		Color = options.Color or K.nuance(C.sol, 0.03),
-		Material = options.Material or MAT.sol,
+		Color = options.nue and teinte or C.accent,
+		Material = options.nue and (options.Material or MAT.sol) or MAT.structureAlt,
 		Transparency = options.Transparency or 0,
 		Parent = options.Parent or D.Structure,
 		Name = options.Name or "Dalle",
 	})
-	if not options.nue then
-		for _, bout in ipairs({ -1, 1 }) do
-			K.deco({
-				Size = Vector3.new(larg, EP_DALLE + 0.1, 0.35),
-				CFrame = cf * CFrame.new(0, -EP_DALLE / 2, bout * (long / 2 - 0.17)),
-				Color = C.accent,
-				Name = "Lisere",
-			})
-		end
+	if options.nue then
+		return plateau
+	end
+	K.deco({
+		Size = Vector3.new(larg - 0.8, 0.1, long - 0.8),
+		CFrame = cf * CFrame.new(0, 0.03, 0),
+		Color = teinte,
+		Material = options.Material or MAT.sol,
+		CastShadow = false,
+		Name = "Dessus",
+	})
+	local gradins = { { 0.9, 1.2, C.structure, MAT.structure }, { 0.56, 1.3, C.structureAlt, MAT.structureAlt } }
+	local y = -EP_DALLE
+	for _, gradin in ipairs(gradins) do
 		K.deco({
-			Size = Vector3.new(larg - 0.8, 1.1, long - 0.8),
-			CFrame = cf * CFrame.new(0, -EP_DALLE - 0.55, 0),
-			Color = C.structure,
-			Material = MAT.structure,
-			Name = "Corps",
+			Size = Vector3.new(larg * gradin[1], gradin[2], long * gradin[1]),
+			CFrame = cf * CFrame.new(0, y - gradin[2] / 2, 0),
+			Color = gradin[3],
+			Material = gradin[4],
+			Name = "Gradin",
 		})
+		y -= gradin[2]
+	end
+	-- Les pointes (quatre pièces chacune) ne garnissent qu'une plateforme sur deux : budget de pièces.
+	if THEME.dessous.genre ~= "pointes" or P.nbPlateformes % 2 == 0 then
 		dessous(cf, larg, long)
 	end
 	return plateau
@@ -1365,22 +1730,19 @@ function P.pilier(s, lat, dy, diametre)
 		Parent = D.Structure,
 		Name = "Pilier",
 	})
-	K.cylindre(nil, 5, diametre * 0.72, {
-		CFrame = cf * CFrame.new(0, -EP_DALLE - 2.5, 0),
-		Color = C.structure,
-		Material = MAT.structure,
-		CanCollide = false,
-		CanTouch = false,
-		Name = "Fut",
-	})
-	K.cylindre(nil, 4, diametre * 0.42, {
-		CFrame = cf * CFrame.new(0, -EP_DALLE - 7, 0),
-		Color = C.structureAlt,
-		Material = MAT.structureAlt,
-		CanCollide = false,
-		CanTouch = false,
-		Name = "Pointe",
-	})
+	local etages = { { 0.35, 1.08, C.accent, MAT.structureAlt }, { 4.6, 0.74, C.structure, MAT.structure }, { 0.5, 0.9, C.structureAlt, MAT.structureAlt }, { 3.4, 0.46, C.structureAlt, MAT.structureAlt } }
+	local y = -EP_DALLE + 0.1
+	for _, etage in ipairs(etages) do
+		K.cylindre(nil, etage[1], diametre * etage[2], {
+			CFrame = cf * CFrame.new(0, y - etage[1] / 2, 0),
+			Color = etage[3],
+			Material = etage[4],
+			CanCollide = false,
+			CanTouch = false,
+			Name = "Fut",
+		})
+		y -= etage[1]
+	end
 	return dessus
 end
 
@@ -1393,17 +1755,21 @@ end
 -- Modules d'obstacles
 -- module(s, d) : `s` = fin de la plateforme précédente, `d` = difficulté (0 → 1).
 -- Renvoie le `s` de fin de sa dernière plateforme.
+--
+-- Retour de jeu sur la version 2 : « des cases partout, on pourrait presque tout
+-- faire en marchant ». Les vides vont donc de 4,6 à 6,9 studs (au lieu de 3,4 à
+-- 6,5), les dalles sont plus petites, et plus aucun module ne se traverse sans sauter.
 --------------------------------------------------------------------------------
 
 local function ecart(d, maxi)
-	return math.min(maxi or SAUT_MAX, 3.4 + 3 * d + K.hasard(-0.3, 0.3))
+	return math.min(maxi or SAUT_MAX, 4.6 + 2.2 * d + K.hasard(-0.25, 0.25))
 end
 
 local function largeur(d)
-	return 7 - 3 * d
+	return 6 - 2.5 * d
 end
 
--- Lampe du thème posée au bord d'une longue plateforme (un coin sur deux).
+-- Lampe du thème posée au bord d'une longue plateforme.
 function P.lampeBord(cf, larg, long)
 	local cote = K.choisir({ -1, 1 })
 	K.lampe((cf * CFrame.new(cote * (larg / 2 - 0.7), 0, cote * (long / 2 - 1.2))).Position)
@@ -1416,9 +1782,9 @@ function MODULES.dalles(s, d)
 	local larg = largeur(d)
 	local lat = 0
 	for i = 1, 4 do
-		local long = K.hasard(4.6, 6) - d
+		local long = K.hasard(3.6, 4.6)
 		s += ecart(d)
-		lat = P.borner(lat + K.hasard(-1, 1) * math.min(2.2, larg - 2))
+		lat = P.borner(lat + K.hasard(-1, 1) * math.min(1.8, larg - 2))
 		local piece = P.plateforme(s + long / 2, lat, 0, long, larg)
 		if i == 2 then
 			P.gemmeSur(piece)
@@ -1428,34 +1794,30 @@ function MODULES.dalles(s, d)
 	return s
 end
 
--- Poutre étroite en deux tronçons.
+-- Poutre étroite en deux tronçons décalés : il faut viser en sautant dessus.
 function MODULES.poutre(s, d)
-	local long = 7 + 3 * d
-	local larg = 2.4 - d
+	local long = 6 + 2 * d
+	local larg = 1.8 - 0.6 * d
 	local lat = K.hasard(-1, 1)
 	s += ecart(d, 5.5)
-	P.plateforme(s + 1.5, lat, 0, 3, 5) -- palier d'entrée
-	s += 3
 	local premier = P.plateforme(s + long / 2, lat, 0, long, larg, { Color = C.solAlt, Material = MAT.solAlt })
 	P.gemmeSur(premier)
 	s += long
-	P.plateforme(s + long / 2, lat + K.choisir({ -1, 1 }) * (larg - 0.4), 0, long, larg, { Color = C.solAlt, Material = MAT.solAlt })
-	s += long
-	P.plateforme(s + 1.5, lat, 0, 3, 5) -- palier de sortie
-	return s + 3
+	P.plateforme(s + long / 2, lat + K.choisir({ -1, 1 }) * (larg - 0.3), 0, long, larg, { Color = C.solAlt, Material = MAT.solAlt })
+	return s + long
 end
 
 -- Piliers ronds en quinconce.
 function MODULES.piliers(s, d)
-	local diametre = 4.4 - 1.6 * d
+	local diametre = 4 - 1.4 * d
 	local decalage = 1.4 + 0.8 * d
 	local lat = 0
 	local nb = 5
-	s += ecart(d, 6) + diametre / 2
+	s += ecart(d, 6.2) + diametre / 2
 	for i = 1, nb do
 		local nouveau = (i == 1 or i == nb) and 0 or ((i % 2 == 0) and decalage or -decalage)
 		if i > 1 then
-			local vide = ecart(d, 6)
+			local vide = ecart(d, 6.2)
 			local delta = nouveau - lat
 			s += math.sqrt(math.max(1, (vide + diametre) ^ 2 - delta * delta))
 		end
@@ -1470,11 +1832,11 @@ end
 
 -- Marches qui montent puis redescendent.
 function MODULES.bosse(s, d)
-	local larg = largeur(d) - 0.5
-	local long = 4.6
+	local larg = largeur(d)
+	local long = 4
 	local hauteurs = { 1.8, 3.6, 5, 2.6, 0 }
 	for i, dy in ipairs(hauteurs) do
-		s += ecart(d, 4.6)
+		s += ecart(d, 5.2)
 		local piece = P.plateforme(s + long / 2, 0, dy, long, larg, { Color = K.melange(C.sol, C.solAlt, i / #hauteurs), Material = MAT.solAlt })
 		if i == 3 then
 			P.gemmeSur(piece)
@@ -1484,38 +1846,38 @@ function MODULES.bosse(s, d)
 	return s
 end
 
--- Dalles longues en zigzag : on passe d'un côté à l'autre.
+-- Petites dalles en zigzag : chaque saut part en diagonale.
 function MODULES.zigzag(s, d)
-	local larg = 3.2 - 0.6 * d
-	local long = 6.5
-	local cote = K.choisir({ -1, 1 })
-	local decalage = 2.1 + 0.6 * d
-	s += ecart(d, 5)
-	P.plateforme(s + 1.5, 0, 0, 3, 7) -- palier d'entrée, large
-	s += 3
+	local cote = 3.4 - 0.6 * d
+	local decalage = 2.3
+	local lat = 0
+	local sens = K.choisir({ -1, 1 })
 	for i = 1, 5 do
-		local piece = P.plateforme(s + long / 2, cote * decalage, 0, long, larg)
+		local nouveau = (i == 1) and 0 or sens * decalage
+		local videLateral = math.max(0, math.abs(nouveau - lat) - cote)
+		local vide = ecart(d, 6.2)
+		s += math.sqrt(math.max(0.5, vide * vide - videLateral * videLateral))
+		lat = nouveau
+		sens = -sens
+		local piece = P.plateforme(s + cote / 2, lat, 0, cote, cote)
 		if i == 3 then
 			P.gemmeSur(piece)
 		end
-		s += long - 1.2
-		cote = -cote
+		s += cote
 	end
-	s += 1.2
-	P.plateforme(s + 1.5, 0, 0, 3, 7) -- palier de sortie
-	return s + 3
+	return s
 end
 
--- Longue plateforme balayée par des barres tournantes mortelles (à sauter).
+-- Plateforme balayée par des barres tournantes mortelles (à sauter).
 function MODULES.lames(s, d)
-	local long = 22
-	local larg = math.max(largeur(d) + 1, 7)
+	local long = 18
+	local larg = math.max(largeur(d) + 1, 6.5)
 	s += ecart(d, 5.5)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local sol = P.dalle(cf, larg, long, { Color = C.solAlt, Material = MAT.solAlt })
 	P.gemmeSur(sol)
 	P.lampeBord(cf, larg, long)
-	local positions = (d > 0.45) and { -5.5, 5.5 } or { 0 }
+	local positions = (d > 0.45) and { -4.5, 4.5 } or { 0 }
 	for i, z in ipairs(positions) do
 		K.cylindre(nil, 1.7, 1.5, {
 			CFrame = cf * CFrame.new(0, 0.85, z),
@@ -1523,6 +1885,7 @@ function MODULES.lames(s, d)
 			Material = Enum.Material.Metal,
 			Name = "Moyeu",
 		})
+		K.boule((cf * CFrame.new(0, 1.9, z)).Position, 1.1, { Color = C.danger, Material = Enum.Material.Metal, CanCollide = false, CanTouch = false, Name = "Coiffe" })
 		local barre = K.piece({
 			Size = Vector3.new(larg * 1.15, 1, 0.8),
 			CFrame = cf * CFrame.new(0, 0.9, z),
@@ -1538,17 +1901,17 @@ function MODULES.lames(s, d)
 	return s + long
 end
 
--- Longue plateforme coupée de bandes brûlantes (à sauter).
+-- Plateforme coupée de bandes brûlantes (à sauter).
 function MODULES.braises(s, d)
-	local long = 22
-	local larg = math.max(largeur(d), 5.5)
+	local long = 18
+	local larg = math.max(largeur(d), 5)
 	s += ecart(d, 5.5)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local sol = P.dalle(cf, larg, long)
 	P.lampeBord(cf, larg, long)
-	for i, z in ipairs({ -6.5, 0, 6.5 }) do
+	for i, z in ipairs({ -5, 0, 5 }) do
 		local bande = K.piece({
-			Size = Vector3.new(larg, 0.5, 1.8 + 1.4 * d),
+			Size = Vector3.new(larg - 0.8, 0.5, 1.8 + 1.2 * d),
 			CFrame = cf * CFrame.new(0, 0.15, z),
 			Color = C.danger,
 			Material = Enum.Material.Neon,
@@ -1565,11 +1928,11 @@ function MODULES.braises(s, d)
 	return s + long
 end
 
--- Dalles de verre qui s'effacent peu après qu'on a marché dessus.
+-- Dalles de verre : elles rougissent quand on marche dessus, puis s'effacent.
 function MODULES.fragiles(s, d)
 	local larg = largeur(d) + 0.5
 	for i = 1, 4 do
-		local long = 5
+		local long = 4.6
 		s += ecart(d, 5.5)
 		local cf = P.repere(s + long / 2, 0, 0)
 		local piece = P.dalle(cf, larg, long, {
@@ -1584,8 +1947,8 @@ function MODULES.fragiles(s, d)
 			Size = Vector3.new(larg + 0.4, 0.25, long + 0.4),
 			CFrame = cf * CFrame.new(0, -EP_DALLE - 0.15, 0),
 			Color = C.accent2,
-			Material = Enum.Material.Neon,
-			Transparency = 0.4,
+			Material = MAT.structureAlt,
+			Transparency = 0.2,
 			CastShadow = false,
 			Name = "Cadre",
 		})
@@ -1599,21 +1962,19 @@ end
 
 -- Tapis roulant qui pousse vers l'arrière.
 function MODULES.tapis(s, d)
-	local long = 22
+	local long = 18
 	local larg = math.max(largeur(d), 5)
 	s += ecart(d, 5.5)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local tapis = P.dalle(cf, larg, long, { Color = C.noir, Material = Enum.Material.DiamondPlate, Parent = D.Tapis, Name = "Tapis" })
 	local _, avant = trace.point(s + long / 2)
 	tapis:SetAttribute("VitesseTapis", avant * -(5 + 5 * d))
-	for z = -8, 8, 4 do
+	for z = -6, 6, 4 do
 		for _, cote in ipairs({ -1, 1 }) do
 			K.deco({
-				Size = Vector3.new(larg * 0.42, 0.08, 0.5),
-				CFrame = cf * CFrame.new(cote * larg * 0.16, 0.05, z) * CFrame.Angles(0, cote * math.rad(32), 0),
+				Size = Vector3.new(larg * 0.36, 0.08, 0.45),
+				CFrame = cf * CFrame.new(cote * larg * 0.14, 0.05, z) * CFrame.Angles(0, cote * math.rad(32), 0),
 				Color = C.accent,
-				Material = Enum.Material.Neon,
-				CastShadow = false,
 				Name = "Chevron",
 			})
 		end
@@ -1622,16 +1983,16 @@ function MODULES.tapis(s, d)
 	return s + long
 end
 
--- Longue plateforme barrée de murets à enjamber.
+-- Plateforme barrée de murets à enjamber.
 function MODULES.murets(s, d)
-	local long = 22
-	local larg = math.max(largeur(d), 6)
+	local long = 18
+	local larg = math.max(largeur(d), 5.5)
 	s += ecart(d, 5.5)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local sol = P.dalle(cf, larg, long)
 	P.lampeBord(cf, larg, long)
-	for _, z in ipairs({ -6.5, 0, 6.5 }) do
-		local h = 2.2 + 1.6 * d
+	local h = 2.2 + 1.6 * d
+	for _, z in ipairs({ -5, 0, 5 }) do
 		K.piece({
 			Size = Vector3.new(larg, h, 1),
 			CFrame = cf * CFrame.new(0, h / 2, z),
@@ -1644,12 +2005,11 @@ function MODULES.murets(s, d)
 			Size = Vector3.new(larg + 0.3, 0.3, 1.3),
 			CFrame = cf * CFrame.new(0, h + 0.15, z),
 			Color = C.accent,
-			Material = Enum.Material.Neon,
-			CastShadow = false,
+			Material = MAT.structureAlt,
 			Name = "Lisere",
 		})
 	end
-	K.gemme(sol.CFrame.Position + Vector3.new(0, 2.2 + 1.6 * d + 3.6, 0), 1) -- au-dessus du muret central
+	K.gemme(sol.CFrame.Position + Vector3.new(0, h + 3.6, 0), 1) -- au-dessus du muret central
 	return s + long
 end
 
@@ -1718,8 +2078,9 @@ function P.borne(s, numero, d)
 	})
 	local son = Instance.new("Sound")
 	son.SoundId = SON_COLLECTE
-	son.Volume = 0.8
-	son.PlaybackSpeed = 0.6
+	son.Volume = 0.28
+	son.PlaybackSpeed = 1.35
+	son.RollOffMaxDistance = 80
 	son.Parent = zone
 
 	-- Décor du palier : deux éléments du thème, aux coins de sortie.
@@ -1742,8 +2103,17 @@ function P.borne(s, numero, d)
 		x += cote * 1.75
 	end
 
-	P.etapes[numero] = { s = milieu, cf = cf }
+	P.etapes[numero] = { s = milieu, cf = cf, larg = larg, long = long, cote = cote }
 	return s + long
+end
+
+-- Cachette : une petite corniche sous un palier, côté détour bonus. On y descend
+-- en se laissant tomber entre le palier et la première dalle bonus ; la relique
+-- est sous le surplomb, presque invisible d'en haut.
+function P.cachette(cf, larg, long, cote, numero)
+	local corniche = cf * CFrame.new(cote * (larg / 2 + 0.6), -9, long / 2 - 2.2)
+	P.dalle(corniche, 4.2, 4.2, { Color = C.structureAlt, Material = MAT.structureAlt, Name = "Corniche" })
+	K.secret((corniche * CFrame.new(-cote * 0.9, 2.4, 0)).Position, numero)
 end
 
 -- Terrasse d'arrivée : trophée, zone de victoire, drapeaux.
@@ -1799,8 +2169,21 @@ function P.arrivee(s, numero)
 	K.lampe((cf * CFrame.new(-(larg / 2 - 3), 0, 0)).Position)
 	K.lampe((cf * CFrame.new(larg / 2 - 3, 0, 0)).Position)
 
-	P.fin = { s = s + long, cf = cf, hauteur = cf.Position.Y }
+	P.fin = { s = s + long, cf = cf, hauteur = cf.Position.Y, larg = larg, long = long }
 	return s + long
+end
+
+-- Ligne de départ : la franchir lance le chronomètre de la course.
+function P.ligneDepart(cf, larg)
+	return K.piece({
+		Size = Vector3.new(larg - 3.6, 7, 2),
+		CFrame = cf * CFrame.new(0, 3.5, 0),
+		Transparency = 1,
+		CanCollide = false,
+		CastShadow = false,
+		Parent = map,
+		Name = "LigneDepart",
+	})
 end
 
 --------------------------------------------------------------------------------
@@ -1815,10 +2198,12 @@ function P.construireChemin()
 		local d = 0.05 + 0.85 * (etape - 1) / math.max(1, nb - 1)
 		local choix = {}
 		-- Première étape sans piège ; ensuite un piège par étape, deux à partir de la mi-parcours.
-		local nbPieges = (etape == 1) and 0 or ((d > 0.5) and 2 or 1)
+		-- Toujours deux modules de sauts purs ; un piège dès la 2e étape, deux en fin de parcours.
+		local nbPieges = (etape == 1) and 0 or ((d > 0.6) and 2 or 1)
+		local nbModules = 2 + math.max(1, nbPieges)
 		local calmes, pieges = table.clone(MODULES_CALMES), table.clone(MODULES_PIEGES)
-		for i = 1, 3 do
-			local reserve = (i > 3 - nbPieges) and pieges or calmes
+		for i = 1, nbModules do
+			local reserve = (i > nbModules - nbPieges) and pieges or calmes
 			local nom
 			repeat
 				nom = table.remove(reserve, rng:NextInteger(1, #reserve))
@@ -1842,6 +2227,25 @@ function P.construireChemin()
 		end
 	end
 	map:SetAttribute("NombreEtapes", nb)
+	map:SetAttribute("MargeChute", trace.margeChute)
+
+	-- Reliques secrètes : sous quatre paliers répartis le long du parcours, et sous l'arrivée.
+	local nbBornes = nb - 1
+	local nbCachettes = math.min(4, nbBornes)
+	local dejaPrise = {}
+	local numero = 0
+	for k = 1, nbCachettes do
+		local borne = math.clamp(math.floor(k * nbBornes / nbCachettes + 0.5), 1, nbBornes)
+		if not dejaPrise[borne] then
+			dejaPrise[borne] = true
+			numero += 1
+			local e = P.etapes[borne]
+			P.cachette(e.cf, e.larg, e.long, e.cote, numero)
+		end
+	end
+	numero += 1
+	P.cachette(P.fin.cf, P.fin.larg, P.fin.long, (trace.coteBonus ~= 0) and trace.coteBonus or 1, numero)
+	map:SetAttribute("NombreSecrets", numero)
 	return s
 end
 
@@ -1969,11 +2373,12 @@ function SCENES.tour()
 	-- Départ : rosace, arche, dalles qui mènent au premier obstacle
 	local depart = P.repere(-14, 7, 0)
 	local spawn = P.spawn(depart)
-	P.arche(P.repere(1, 0, 0), 10, "▶")
+	P.arche(P.repere(0, 0, 0), 10, "▶")
+	P.ligneDepart(P.repere(0, 0, 0), 10)
 	for i = 0, 3 do
 		K.deco({
 			Size = Vector3.new(5, 0.2, 2.4),
-			CFrame = P.repere(-10 + i * 3.4, 6 - i * 1.6, 0.1),
+			CFrame = P.repere(-10.4 + i * 3.2, 6 - i * 1.6, 0.1),
 			Color = C.solAlt,
 			Material = MAT.solAlt,
 			Name = "Pas",
@@ -2219,6 +2624,7 @@ function SCENES.evasion(sFin)
 		})
 	end
 	P.arche(P.repere(3.5, 0, 0), 10, "▶")
+	P.ligneDepart(P.repere(3.5, 0, 0), 10)
 
 	-- Îlots de chaque côté du chemin, et grands pitons au loin
 	local niveauVide = Y_DEPART - 30
@@ -2228,7 +2634,7 @@ function SCENES.evasion(sFin)
 			local position = P.repere(s + K.hasard(-8, 8), cote * K.hasard(24, 38), K.hasard(-7, 9)).Position
 			P.ilot(position, K.hasard(6, 10))
 		end
-		s += 44
+		s += 62
 	end
 	-- Massifs étagés qui sortent du vide, de part et d'autre
 	s = 0
@@ -2259,7 +2665,7 @@ function SCENES.evasion(sFin)
 		K.special(sommetMassif + Vector3.new(0, 0.4, 0))
 		K.arbre(sommetMassif + Vector3.new(rayon * 0.28, 0.4, -rayon * 0.2), K.hasard(1, 1.5))
 		cote = -cote
-		s += 52
+		s += 66
 	end
 
 	-- Enceinte lointaine : deux murailles à tours qui ferment l'horizon

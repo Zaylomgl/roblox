@@ -24,7 +24,7 @@ on:
         options: ["", "volcan", "glace", "jungle", "bonbon", "neon", "prison"]
         default: ""
       etapes:
-        description: "Nombre d'étapes (3 à 14)"
+        description: "Nombre d'étapes (3 à 12)"
         type: number
         default: 10
 

@@ -13,6 +13,7 @@
 
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
+local roblox = require("@lune/roblox")
 
 local Moteur = require("../lib/moteur")
 local analyse = require("../lib/analyse")
@@ -207,6 +208,28 @@ for _, format in constructibles() do
 				end
 			end
 			t.egal(trophees, 1)
+			-- Reliques secrètes : numérotées de 1 à N, sans doublon, toutes atteignables (le
+			-- validateur les compte parmi les collectibles), chacune avec son modèle.
+			local nbSecrets = map:GetAttribute("NombreSecrets")
+			t.vrai(nbSecrets >= 2)
+			local numeros = {}
+			for _, relique in map.Secrets:GetChildren() do
+				local numero = relique:GetAttribute("Secret")
+				t.faux(numeros[numero])
+				numeros[numero] = true
+				t.vrai(relique:GetAttribute("Collectible"))
+			end
+			for n = 1, nbSecrets do
+				t.vrai(numeros[n])
+			end
+			for _, dossier in { map.Collectibles, map.Secrets } do
+				for _, coeur in dossier:GetChildren() do
+					local modele = map.Bijoux:FindFirstChild(coeur:GetAttribute("Bijou"))
+					t.vrai(modele ~= nil and #modele:GetChildren() >= 8)
+				end
+			end
+			t.vrai(map:FindFirstChild("LigneDepart") ~= nil)
+			t.vrai(map:GetAttribute("MargeChute") >= 10)
 			-- Un danger solide serait pris pour un sol par le validateur (et bloquerait le joueur).
 			for _, danger in map.Dangers:GetChildren() do
 				t.faux(danger.CanCollide)
@@ -221,11 +244,11 @@ for _, format in constructibles() do
 	end
 end
 
-M["jeu généré : 14 étapes (le maximum accepté par fabrique/creer) reste valide et sous le seuil de pièces"] = function(
+M["jeu généré : 12 étapes (le maximum accepté par fabrique/creer) reste valide et sous le seuil de pièces"] = function(
 	t
 )
 	for _, format in constructibles() do
-		local game = construirePlace(scriptDuJeu(format.cle, "glace", 5, 14))
+		local game = construirePlace(scriptDuJeu(format.cle, "glace", 5, 12))
 		local rapport = analyse.analyser(game, "test")
 		t.egal(rapport.resume.erreur, 0)
 		t.egal(rapport.resume.avertissement, 0)
@@ -241,6 +264,21 @@ M["jeu généré : même graine → même parcours ; autre graine → autre parc
 		t.egal(a, b)
 		t.vrai(a ~= c)
 	end
+end
+
+M["jeu généré : aucun tirage ne dépend du Random de Roblox (même jeu dans Studio et dans le pipeline)"] = function(
+	t
+)
+	-- Vérifié dans le vrai moteur : Random.new(graine) n'y donne pas les mêmes tirages
+	-- que hors de Roblox. Le script doit donc n'utiliser que son propre générateur.
+	local source = scriptDuJeu("evasion", "prison", 4127, 4)
+	t.faux(string.find(source, "Random.new", 1, true))
+	t.faux(string.find(source, "math.random", 1, true))
+	-- Et il ne doit rien demander au `Random` de l'environnement : on le retire.
+	local env, game = rbxenv.creer({ silencieux = true })
+	env.Random = nil
+	luau.load(source, { debugName = "jeu-de-test", environment = env })()
+	t.vrai(game:GetService("Workspace"):FindFirstChild("Parcours") ~= nil)
 end
 
 M["jeu généré : relancer le script remplace l'ancienne map au lieu de l'empiler"] = function(t)
@@ -486,6 +524,173 @@ M["parcours : étape et victoires sauvegardées, retrouvées au retour"] = funct
 	sansErreur(moteur)
 end
 
+M["parcours : tombé sous sa borne, le joueur y est ramené sans mourir"] = function(t)
+	local moteur, game = lancer()
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(2)
+	moteur:toucher(borne(game, 2), alice)
+	local cible = borne(game, 2).CFrame.Position
+	local marge = parcours(game):GetAttribute("MargeChute")
+
+	-- Un peu plus bas que la borne (détour, corniche secrète) : on le laisse tranquille.
+	racine(alice).CFrame = roblox.CFrame.new(cible.X + 30, cible.Y - marge + 2, cible.Z)
+	moteur:avancer(1)
+	t.vrai((racine(alice).CFrame.Position - cible).Magnitude > 20)
+
+	-- En chute libre sous la marge : retour à la borne, vivant.
+	racine(alice).CFrame = roblox.CFrame.new(cible.X + 30, cible.Y - marge - 5, cible.Z)
+	moteur:avancer(1)
+	t.vrai((racine(alice).CFrame.Position - cible).Magnitude < 6)
+	t.egal(alice.Character:FindFirstChildOfClass("Humanoid").Health, 100)
+	t.egal(stat(alice, "Étape"), 2)
+	sansErreur(moteur)
+end
+
+M["parcours : un joueur apparu dans le vide est ramené au départ"] = function(t)
+	local moteur, game = lancer({ format = "evasion" })
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	racine(alice).CFrame = roblox.CFrame.new(300, -500, 300)
+	moteur:avancer(1)
+	local ecart = (racine(alice).CFrame.Position - parcours(game).Depart.CFrame.Position).Magnitude
+	t.vrai(ecart < 8)
+	sansErreur(moteur)
+end
+
+M["parcours : après une mort, Roblox repose le joueur au départ — il est remis sur sa borne"] = function(t)
+	local moteur, game = lancer({ format = "evasion" })
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(2)
+	moteur:toucher(borne(game, 2), alice)
+	moteur:reapparaitre(alice)
+	-- Ce que fait le vrai moteur un instant après CharacterAdded : poser le personnage au point d'apparition.
+	racine(alice).CFrame = parcours(game).Depart.CFrame * roblox.CFrame.new(0, 3, 0)
+	moteur:avancer(1)
+	t.vrai((racine(alice).CFrame.Position - borne(game, 2).CFrame.Position).Magnitude < 6)
+	sansErreur(moteur)
+end
+
+M["secrets : une relique compte une fois par joueur, pour toujours ; bonus quand elles sont toutes trouvées"] = function(
+	t
+)
+	local moteur, game = lancer()
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	local bob = moteur:ajouterJoueur("Bob", 2)
+	moteur:avancer(2)
+	local reliques = parcours(game).Secrets:GetChildren()
+	local nb = parcours(game):GetAttribute("NombreSecrets")
+	t.egal(#reliques, nb)
+
+	moteur:toucher(reliques[1], alice)
+	t.egal(stat(alice, "Secrets"), 1)
+	t.egal(stat(alice, "Cristaux"), 15)
+	moteur:toucher(reliques[1], alice) -- déjà trouvée
+	t.egal(stat(alice, "Cristaux"), 15)
+	moteur:toucher(reliques[1], bob) -- la relique reste là pour les autres
+	t.egal(stat(bob, "Secrets"), 1)
+
+	for i = 2, nb do
+		moteur:toucher(reliques[i], alice)
+	end
+	t.egal(stat(alice, "Secrets"), nb)
+	t.egal(stat(alice, "Cristaux"), 15 * nb + 100)
+
+	-- Sauvegardé : au retour, les reliques déjà trouvées ne rapportent plus rien.
+	moteur:retirerJoueur(alice)
+	moteur:avancer(2)
+	local retour = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(3)
+	t.egal(stat(retour, "Secrets"), nb)
+	local avant = stat(retour, "Cristaux")
+	moteur:toucher(reliques[2], retour)
+	t.egal(stat(retour, "Cristaux"), avant)
+	sansErreur(moteur)
+end
+
+M["chrono : la ligne de départ lance la course, la victoire fixe le record, seul un meilleur temps le bat"] = function(
+	t
+)
+	local moteur, game = lancer()
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(2)
+	local map = parcours(game)
+	local function course(duree: number)
+		moteur:toucher(map.LigneDepart, alice)
+		moteur:avancer(duree)
+		for n = 1, ETAPES - 1 do
+			moteur:toucher(borne(game, n), alice)
+		end
+		moteur:toucher(map.Arrivee, alice)
+		moteur:avancer(6) -- célébration puis retour au départ
+	end
+	t.egal(stat(alice, "Record (s)"), 0)
+	course(120)
+	local premier = stat(alice, "Record (s)")
+	t.vrai(premier >= 120 and premier <= 123)
+	course(300) -- plus lent : le record ne bouge pas
+	t.egal(stat(alice, "Record (s)"), premier)
+	course(60) -- plus rapide : nouveau record
+	local second = stat(alice, "Record (s)")
+	t.vrai(second >= 60 and second <= 63)
+	t.egal(stat(alice, "Victoires"), 3)
+	sansErreur(moteur)
+end
+
+M["chrono : pas de record sans être parti de la ligne de départ (course reprise à une borne)"] = function(t)
+	local moteur, game = lancer()
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(2)
+	for n = 1, ETAPES - 1 do
+		moteur:toucher(borne(game, n), alice)
+	end
+	moteur:toucher(parcours(game).LigneDepart, alice) -- revenir toucher la ligne en cours de route ne compte pas
+	moteur:toucher(parcours(game).Arrivee, alice)
+	t.egal(stat(alice, "Victoires"), 1)
+	t.egal(stat(alice, "Record (s)"), 0)
+	sansErreur(moteur)
+end
+
+M["victoires : une traînée récompense le vainqueur et le suit après sa réapparition"] = function(t)
+	local moteur, game = lancer()
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(2)
+	t.vrai(racine(alice):FindFirstChild("TraineeVictoire") == nil)
+	for n = 1, ETAPES - 1 do
+		moteur:toucher(borne(game, n), alice)
+	end
+	moteur:toucher(parcours(game).Arrivee, alice)
+	t.vrai(racine(alice):FindFirstChild("TraineeVictoire") ~= nil)
+	moteur:avancer(6)
+	moteur:reapparaitre(alice)
+	moteur:avancer(1)
+	t.vrai(racine(alice):FindFirstChild("TraineeVictoire") ~= nil)
+	sansErreur(moteur)
+end
+
+M["gemmes : le modèle est soudé à la pièce qu'on touche, caché quand elle est prise, puis remontré"] = function(t)
+	local moteur, game = lancer()
+	local alice = moteur:ajouterJoueur("Alice", 1)
+	moteur:avancer(2)
+	local gemme = gemmeDe(game, 5)
+	local modele = parcours(game).Bijoux:FindFirstChild(gemme:GetAttribute("Bijou"))
+	local facette = modele:GetChildren()[1]
+	local soudures = 0
+	for _, enfant in gemme:GetChildren() do
+		if enfant.ClassName == "WeldConstraint" then
+			soudures += 1
+			t.vrai(enfant.Part0 == gemme)
+		end
+	end
+	t.egal(soudures, #modele:GetChildren())
+	t.faux(facette.Anchored) -- soudée : elle suit la pièce maîtresse, qui reste ancrée
+	t.vrai(gemme.Anchored)
+	t.vrai(facette.Transparency < 1)
+	moteur:toucher(gemme, alice)
+	t.egal(facette.Transparency, 1)
+	moteur:avancer(30, 1)
+	t.vrai(facette.Transparency < 1)
+	sansErreur(moteur)
+end
+
 M["parcours : deux joueurs ont chacun leur progression"] = function(t)
 	local moteur, game = lancer()
 	local alice = moteur:ajouterJoueur("Alice", 1)
@@ -545,12 +750,17 @@ M["pièges : une dalle fragile s'efface après le passage, puis revient"] = func
 	t.vrai(game ~= nil)
 	local alice = moteur:ajouterJoueur("Alice", 1)
 	local dalle = parcours(game).Fragiles:GetChildren()[1]
+	local couleur = dalle.Color
 	t.vrai(dalle.CanCollide)
 	moteur:toucher(dalle, alice)
+	moteur:avancer(2.5)
+	t.vrai(dalle.CanCollide) -- retour de jeu : elle doit laisser le temps de ressauter
+	t.vrai(dalle.Color ~= couleur) -- mais elle prévient en changeant de couleur
 	moteur:avancer(1)
 	t.faux(dalle.CanCollide)
-	moteur:avancer(4)
+	moteur:avancer(3)
 	t.vrai(dalle.CanCollide)
+	t.vrai(dalle.Color == couleur)
 	sansErreur(moteur)
 end
 

@@ -1,18 +1,18 @@
 {
   "accessibilite": {
-    "collectiblesAccessibles": 40,
-    "collectiblesTotal": 40,
-    "profondeurMaxCollectibles": 91,
-    "profondeurMedianeCollectibles": 51,
-    "surfacesAtteintes": 140,
-    "surfacesMarchables": 178
+    "collectiblesAccessibles": 49,
+    "collectiblesTotal": 49,
+    "profondeurMaxCollectibles": 117,
+    "profondeurMedianeCollectibles": 71,
+    "surfacesAtteintes": 160,
+    "surfacesMarchables": 198
   },
   "ambiance": {
     "Atmosphere": true,
     "BloomEffect": true,
     "ColorCorrectionEffect": true,
     "Sky": true,
-    "SunRaysEffect": true
+    "SunRaysEffect": false
   },
   "fichier": "build/evasion-prison.rbxl",
   "map": "evasion-prison",
@@ -25,12 +25,18 @@
   },
   "problemes": [
     {
+      "categorie": "Ambiance",
+      "code": "EFFET_ABSENT",
+      "gravite": "info",
+      "message": "Pas de SunRaysEffect dans Lighting."
+    },
+    {
       "categorie": "Accessibilité",
       "code": "GRANDES_SURFACES_NON_ATTEINTES",
       "gravite": "info",
       "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
       "objets": [
-        "Workspace.Parcours.Decor.Linteau (≈185 studs², Y=49.5)"
+        "Workspace.Parcours.Decor.Linteau (≈186 studs², Y=53)"
       ]
     },
     {
@@ -43,21 +49,21 @@
   "resume": {
     "avertissement": 0,
     "erreur": 0,
-    "info": 2
+    "info": 3
   },
   "statistiques": {
-    "collectibles": 40,
-    "emetteursParticules": 56,
-    "lumieres": 128,
+    "collectibles": 49,
+    "emetteursParticules": 65,
+    "lumieres": 119,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 3039,
+    "objets": 3371,
     "padsDeSaut": 0,
     "particulesParSeconde": 9,
-    "pieces": 2724,
+    "pieces": 2997,
     "piecesNonAncrees": 0,
     "scripts": 9,
-    "sons": 49,
+    "sons": 58,
     "spawns": 1
   },
   "statut": "OK",

@@ -7,7 +7,22 @@ local Lighting = game:GetService("Lighting")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local THEME = FABRIQUE.theme
-local rng = Random.new(FABRIQUE.graine)
+
+-- Générateur pseudo-aléatoire maison (Park–Miller). Le `Random` de Roblox ne donne
+-- pas les mêmes tirages hors de Roblox : avec celui-ci, le jeu construit dans
+-- Studio est exactement celui que le pipeline a construit et validé.
+local rng = { etat = math.floor(FABRIQUE.graine) % 2147483646 + 1 }
+function rng:suivant()
+	self.etat = (self.etat * 48271) % 2147483647
+	return (self.etat - 1) / 2147483646
+end
+function rng:NextNumber(a, b)
+	local mini, maxi = a or 0, b or 1
+	return mini + (maxi - mini) * self:suivant()
+end
+function rng:NextInteger(a, b)
+	return math.floor(a + (b - a + 1) * self:suivant())
+end
 
 local TEXTURE_ETINCELLE = "rbxasset://textures/particles/sparkles_main.dds"
 local TEXTURE_FUMEE = "rbxasset://textures/particles/smoke_main.dds"
@@ -105,6 +120,8 @@ for _, nom in ipairs({
 	"Mobiles", -- tournent sur eux-mêmes (attribut VitesseRotation)
 	"Fragiles", -- s'effacent quand on marche dessus
 	"Tapis", -- tapis roulants (attribut VitesseTapis)
+	"Bijoux", -- modèles visibles des gemmes, du trophée et des reliques (un dossier par objet)
+	"Secrets", -- reliques cachées (attribut Secret = numéro)
 }) do
 	local dossier = Instance.new("Folder")
 	dossier.Name = nom
@@ -173,8 +190,9 @@ end
 function K.lumiere(parent, couleur, portee, luminosite)
 	local l = Instance.new("PointLight")
 	l.Color = couleur
-	l.Range = portee
-	l.Brightness = luminosite
+	-- Volontairement modérées : trop de lumières fortes noient l'image dans un voile.
+	l.Range = portee * 0.8
+	l.Brightness = luminosite * 0.5
 	l.Shadows = false
 	l.Parent = parent
 	return l
@@ -266,21 +284,23 @@ function K.ambiance()
 	ciel.StarCount = 3000
 	ciel.Parent = Lighting
 
+	-- Netteté d'abord : la brume, l'éblouissement et le halo sont plafonnés, quel que
+	-- soit le thème (retour de jeu : « trop de lumière, on ne voit rien »).
 	local atmosphere = Instance.new("Atmosphere")
 	atmosphere.Name = "Fab_Atmosphere"
-	atmosphere.Density = L.atmosphere.densite
+	atmosphere.Density = math.min(L.atmosphere.densite, 0.26)
 	atmosphere.Offset = L.atmosphere.decalage
 	atmosphere.Color = K.rvb(L.atmosphere.couleur)
 	atmosphere.Decay = K.rvb(L.atmosphere.declin)
-	atmosphere.Glare = L.atmosphere.eblouissement
-	atmosphere.Haze = L.atmosphere.brume
+	atmosphere.Glare = math.min(L.atmosphere.eblouissement, 0.1)
+	atmosphere.Haze = math.min(L.atmosphere.brume, 0.6)
 	atmosphere.Parent = Lighting
 
 	local bloom = Instance.new("BloomEffect")
 	bloom.Name = "Fab_Bloom"
-	bloom.Intensity = L.bloom.intensite
-	bloom.Size = L.bloom.taille
-	bloom.Threshold = L.bloom.seuil
+	bloom.Intensity = math.min(L.bloom.intensite, 0.12)
+	bloom.Size = math.min(L.bloom.taille, 14)
+	bloom.Threshold = math.max(L.bloom.seuil, 2)
 	bloom.Parent = Lighting
 
 	local correction = Instance.new("ColorCorrectionEffect")
@@ -290,12 +310,6 @@ function K.ambiance()
 	correction.Saturation = L.correction.saturation
 	correction.TintColor = K.rvb(L.correction.teinte)
 	correction.Parent = Lighting
-
-	local rayons = Instance.new("SunRaysEffect")
-	rayons.Name = "Fab_Rayons"
-	rayons.Intensity = 0.05
-	rayons.Spread = 0.6
-	rayons.Parent = Lighting
 
 	local nuages = Instance.new("Clouds")
 	nuages.Cover = L.nuages.couverture
@@ -647,46 +661,175 @@ function K.decorHasard(position)
 end
 
 --------------------------------------------------------------------------------
--- Gemmes à ramasser (1, 5 ou 25 points)
+-- Formes à facettes
 --------------------------------------------------------------------------------
+
+-- Pyramide à base carrée (côté 2 × demi) faite de quatre pièces en coin.
+-- `cf` : centre de la base ; la pointe est à `hauteur` au-dessus (en dessous si `inverse`).
+-- Orientation vérifiée dans le vrai moteur : le sommet d'une CornerWedgePart est
+-- au coin (+X, +Y, -Z) de sa boîte.
+function K.pyramide(cf, demi, hauteur, props, inverse)
+	local base = inverse and (cf * CFrame.Angles(math.pi, 0, 0)) or cf
+	local pieces = {}
+	for quart = 0, 3 do
+		local p = Instance.new("CornerWedgePart")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CastShadow = props.CastShadow == true
+		p.Size = Vector3.new(demi, hauteur, demi)
+		p.CFrame = base * CFrame.new(0, hauteur / 2, 0) * CFrame.Angles(0, quart * math.pi / 2, 0) * CFrame.new(-demi / 2, 0, demi / 2)
+		p.Color = props.Color
+		p.Material = props.Material or Enum.Material.Glass
+		p.Transparency = props.Transparency or 0
+		p.Reflectance = props.Reflectance or 0
+		p.Name = props.Name or "Facette"
+		p.Parent = props.Parent or D.Decor
+		table.insert(pieces, p)
+	end
+	return pieces
+end
+
+-- Gemme taillée : deux pyramides tête-bêche (huit facettes).
+function K.joyau(centre, taille, teinte, parent)
+	local cf = CFrame.new(centre)
+	local haut, bas = taille * 0.75, taille * 1.15
+	local demi = taille * 0.62
+	K.pyramide(cf * CFrame.new(0, (bas - haut) / 2, 0), demi, haut, { Color = K.melange(teinte, C.blanc, 0.3), Reflectance = 0.25, Parent = parent, Name = "Couronne" })
+	K.pyramide(cf * CFrame.new(0, (bas - haut) / 2, 0), demi, bas, { Color = teinte, Reflectance = 0.2, Parent = parent, Name = "Culasse" }, true)
+end
+
+-- Coupe de vainqueur : pied, tige, vasque évasée, deux anses, joyau au sommet.
+function K.coupe(centre, teinte, parent)
+	local function disque(y, hauteur, diametre, couleurDisque, materiau)
+		return K.cylindre(centre + Vector3.new(0, y, 0), hauteur, diametre, {
+			Color = couleurDisque or teinte,
+			Material = materiau or Enum.Material.Metal,
+			Reflectance = 0.25,
+			CanCollide = false,
+			CanTouch = false,
+			Parent = parent,
+			Name = "Coupe",
+		})
+	end
+	disque(-1.75, 0.4, 2.3, C.structureAlt, MAT.structureAlt)
+	disque(-1.45, 0.25, 1.7)
+	disque(-0.95, 0.8, 0.5)
+	K.boule(centre + Vector3.new(0, -0.5, 0), 0.8, { Color = teinte, Material = Enum.Material.Metal, Reflectance = 0.25, CanCollide = false, CanTouch = false, Parent = parent, Name = "Noeud" })
+	disque(-0.15, 0.3, 1.2)
+	disque(0.2, 0.5, 1.8)
+	disque(0.7, 0.6, 2.3)
+	disque(1.25, 0.6, 2.7)
+	disque(1.6, 0.14, 2.95, K.melange(teinte, C.blanc, 0.4))
+	disque(1.5, 0.1, 2.3, C.noir, Enum.Material.SmoothPlastic) -- l'intérieur, sombre : la vasque paraît creuse
+	for _, cote in ipairs({ -1, 1 }) do
+		for _, barre in ipairs({ { 1.75, 1.2, 0.9, 0.22 }, { 1.75, 0.3, 0.9, 0.22 }, { 2.1, 0.75, 0.22, 1.1 } }) do
+			K.deco({
+				Size = Vector3.new(barre[3], barre[4], 0.3),
+				Position = centre + Vector3.new(cote * barre[1], barre[2], 0),
+				Color = teinte,
+				Material = Enum.Material.Metal,
+				Reflectance = 0.25,
+				Parent = parent,
+				Name = "Anse",
+			})
+		end
+	end
+	K.joyau(centre + Vector3.new(0, 2.5, 0), 0.7, C.accent, parent)
+end
+
+-- Relique secrète : un joyau dans un anneau, sur un petit socle.
+function K.relique(centre, parent)
+	K.joyau(centre, 0.9, C.accent2, parent)
+	for _, angle in ipairs({ 0, math.pi / 2 }) do
+		K.deco({
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.14, 2.9, 2.9),
+			CFrame = CFrame.new(centre) * CFrame.Angles(0, angle, 0),
+			Color = C.piece,
+			Material = Enum.Material.Metal,
+			Transparency = 0.55,
+			Reflectance = 0.2,
+			CastShadow = false,
+			Parent = parent,
+			Name = "Anneau",
+		})
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Gemmes à ramasser (1, 5 ou 25 points) et reliques secrètes
+--
+-- Chaque objet a une pièce invisible dans `Collectibles` (c'est elle qu'on touche)
+-- et un modèle visible dans `Bijoux/<Id>`, que le script de jeu soude à la pièce
+-- invisible : ainsi tout le modèle tourne et flotte d'un bloc.
+--------------------------------------------------------------------------------
+
+local prochainBijou = 0
+
+function K.bijou(position, taille, options)
+	prochainBijou += 1
+	local id = "B" .. prochainBijou
+	local coeur = K.piece({
+		Size = taille,
+		Position = position,
+		Transparency = 1,
+		CanCollide = false,
+		CastShadow = false,
+		Parent = options.Parent or D.Collectibles,
+		Name = options.Name or "Gemme",
+	})
+	coeur:SetAttribute("Bijou", id)
+	local dossier = Instance.new("Folder")
+	dossier.Name = id
+	dossier.Parent = D.Bijoux
+	local son = Instance.new("Sound")
+	son.SoundId = SON_COLLECTE
+	son.Volume = 0.22 -- discret : le son d'origine, plus fort et plus grave, était pénible
+	son.PlaybackSpeed = options.pitch or 1.8
+	son.RollOffMaxDistance = 60
+	son.Parent = coeur
+	K.emetteur(coeur, {
+		Color = ColorSequence.new(options.couleur, Color3.new(1, 1, 1)),
+		Size = NumberSequence.new(0.7, 0.1),
+		Lifetime = NumberRange.new(0.4, 0.8),
+		Rate = 0,
+		Speed = NumberRange.new(4, 8),
+		SpreadAngle = Vector2.new(180, 180),
+		LightEmission = 0.6,
+		Enabled = false,
+	})
+	return coeur, dossier
+end
 
 function K.gemme(position, valeur)
 	local infos = {
-		[1] = { couleur = C.piece, taille = 1.5, pitch = 1.2 },
-		[5] = { couleur = C.accent2, taille = 2.1, pitch = 0.95 },
-		[25] = { couleur = C.accent, taille = 3, pitch = 0.7 },
+		[1] = { couleur = C.piece, taille = 1.15, pitch = 1.9 },
+		[5] = { couleur = C.accent2, taille = 1.6, pitch = 1.6 },
+		[25] = { couleur = C.piece, taille = 2.6, pitch = 1.25 },
 	}
 	local info = infos[valeur] or infos[1]
-	local gemme = K.piece({
-		Size = Vector3.new(info.taille * 0.7, info.taille, info.taille * 0.7),
-		CFrame = CFrame.new(position) * CFrame.Angles(math.rad(10), math.rad(45), 0),
-		Color = info.couleur,
-		Material = Enum.Material.Glass,
-		Transparency = 0.1,
-		Reflectance = 0.2,
-		CanCollide = false,
-		CastShadow = false,
-		Parent = D.Collectibles,
-		Name = "Gemme",
-	})
-	gemme:SetAttribute("Valeur", valeur)
-	if valeur > 1 then -- les petites gemmes n'éclairent pas : moins de lumières à calculer
-		K.lumiere(gemme, info.couleur, 9, 1.6)
+	local boite = (valeur == 25) and Vector3.new(4.4, 5.6, 4.4) or Vector3.new(info.taille * 1.7, info.taille * 2.4, info.taille * 1.7)
+	local coeur, dossier = K.bijou(position, boite, { couleur = info.couleur, pitch = info.pitch })
+	coeur:SetAttribute("Valeur", valeur)
+	if valeur == 25 then
+		K.coupe(position, info.couleur, dossier)
+		K.lumiere(coeur, info.couleur, 14, 1.6)
+	else
+		K.joyau(position, info.taille, info.couleur, dossier)
+		if valeur > 1 then
+			K.lumiere(coeur, info.couleur, 9, 1.4)
+		end
 	end
-	local son = Instance.new("Sound")
-	son.SoundId = SON_COLLECTE
-	son.Volume = 0.6
-	son.PlaybackSpeed = info.pitch
-	son.Parent = gemme
-	K.emetteur(gemme, {
-		Color = ColorSequence.new(info.couleur, Color3.new(1, 1, 1)),
-		Size = NumberSequence.new(0.9, 0.2),
-		Lifetime = NumberRange.new(0.5, 1),
-		Rate = 0,
-		Speed = NumberRange.new(4, 9),
-		SpreadAngle = Vector2.new(180, 180),
-		LightEmission = 1,
-		Enabled = false,
-	})
-	return gemme
+	return coeur
+end
+
+-- Relique secrète : comptée une fois par joueur, pour toujours (attribut Secret = numéro).
+function K.secret(position, numero)
+	local coeur, dossier = K.bijou(position, Vector3.new(3, 3.4, 3), { couleur = C.accent2, pitch = 1.05, Parent = D.Secrets, Name = "Relique" })
+	coeur:SetAttribute("Secret", numero)
+	coeur:SetAttribute("Collectible", true) -- le validateur vérifie ainsi qu'on peut l'atteindre
+	K.relique(position, dossier)
+	K.lumiere(coeur, C.accent2, 12, 1.6)
+	return coeur
 end

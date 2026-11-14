@@ -139,9 +139,9 @@ if existant and not options.remplacer then
 	existant = nil
 end
 
--- Au-delà de 14 étapes, le format « evasion » dépasse le seuil de 4000 pièces du
--- validateur (mesuré : 3598 pièces à 14 étapes, 4070 à 16).
-local ETAPES_MAX = 14
+-- Au-delà de 12 étapes, le format « evasion » dépasse le seuil de 4000 pièces du
+-- validateur (mesuré : jusqu'à 3582 pièces à 12 étapes, 4171 à 14).
+local ETAPES_MAX = 12
 local etapes = math.clamp(math.floor(options.etapes), 3, ETAPES_MAX)
 local jeu = {
 	nom = nom,

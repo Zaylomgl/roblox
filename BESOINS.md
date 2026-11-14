@@ -1,33 +1,40 @@
 # Ce dont le projet a besoin de vous
 
-Document unique. Tout ce qui suit est **facultatif pour utiliser la version 2**
-(elle fonctionne telle quelle), mais chaque point débloque quelque chose de
-précis. Classé du plus utile au moins utile.
+Document unique. Tout ce qui suit est **facultatif pour utiliser le projet**
+(il fonctionne tel quel), mais chaque point débloque quelque chose de précis.
+Classé du plus utile au moins utile.
 
 Rien de payant n'a été utilisé. Outils employés, tous gratuits : Lune, selene,
 StyLua, three.js, Playwright/Chromium, l'API Open Cloud de Roblox, GitHub Actions.
 
-## 1. Jouer dix minutes à deux jeux dans Roblox Studio
+## 1. Rejouer dix minutes aux deux jeux corrigés
 
-**Pourquoi.** C'est la seule chose que je ne peux pas faire. L'environnement de
-test de Roblox n'a ni physique ni joueur : je n'ai donc jamais vu le vrai rendu,
-ni senti un saut. Les aperçus du dépôt sont dessinés hors de Roblox.
+Votre premier essai a tout changé : merci. Voici ce que j'en ai fait, et ce que
+je ne peux toujours pas vérifier sans vous (l'environnement de test de Roblox
+n'a ni physique, ni joueur, ni son, ni image).
 
 **Comment.** Dans Studio : View → Command Bar, coller tout le contenu de
-`maps/evasion-prison.lua`, Entrée, puis Play. Même chose avec `maps/tour-volcan.lua`.
+`maps/tour-volcan.lua`, Entrée, puis le bouton **Play** (pas « Play Here », qui
+fait apparaître à l'endroit de la caméra). Même chose avec `maps/evasion-prison.lua`.
 
-**Ce que j'ai besoin de savoir** (une phrase par point suffit) :
+| Votre retour | Ce que j'ai fait | À me confirmer |
+|---|---|---|
+| Trop de lumière, un flou, on ne voit rien | Brume, éblouissement et halo plafonnés ; lumières deux fois moins fortes ; rayons de soleil retirés ; dessous des plateformes du volcan en lave craquelée au lieu de néon | Est-ce net maintenant ? Trop terne ? Une capture d'écran m'aiderait beaucoup |
+| Gemmes et coupe : de simples cubes jaunes | Gemmes taillées à huit facettes, coupe avec pied, vasque et anses, plateformes à cadre et gradins | Est-ce au niveau ? Quel élément reste trop pauvre ? |
+| Apparition dans le vide sur l'évasion | Je n'ai pas pu le reproduire : dans le vrai moteur, le point d'apparition a bien un sol dessous. Hypothèse non vérifiée : le bouton « Play Here ». Dans tous les cas, un filet de sécurité ramène au départ tout joueur apparu ou tombé hors de la map | Apparaissez-vous bien dans la cour ? |
+| Après une chute, retour au début au lieu du checkpoint | Une chute ramène à la dernière arche franchie, sans mourir. Après une mort (barre, braise), le personnage est remis sur son arche | Les deux cas marchent-ils ? |
+| Des cases partout, on pourrait tout faire en marchant | Vides de 4,6 à 6,9 studs (au lieu de 3,4 à 6,5), dalles plus petites, plus aucun obstacle franchissable en marchant | Trop facile, bien, ou trop dur ? À partir de quelle étape ? |
+| Dalles de verre qui disparaissent trop vite | Elles rougissent au premier pas, pâlissent, et ne disparaissent qu'au bout de 3 secondes | Est-ce le bon délai ? |
+| Bruit horrible (gemmes, checkpoint) | Je ne peux pas écouter : j'ai gardé le son mais beaucoup plus bas et plus aigu, donc plus bref | Supportable ? Sinon, voir le point « son » ci-dessous |
+| Fini en 20 minutes, rien pour revenir | Chronomètre et record au classement ; cinq reliques secrètes par jeu, cachées sous des paliers ; traînée derrière le joueur à 1, 3, 5 et 10 victoires | Trouvez-vous une relique ? Le record s'affiche-t-il à l'arrivée ? |
 
-| Point | Question |
-|---|---|
-| Rendu | Est-ce beau ? Trop sombre, trop clair, trop chargé ? Une capture d'écran m'aiderait beaucoup |
-| Sauts | Y a-t-il un saut impossible ou trop dur ? À quelle étape ? |
-| Barres tournantes | Tuent-elles bien quand elles vous touchent, même si vous ne bougez pas ? |
-| Tapis roulant | Vous pousse-t-il vraiment vers l'arrière ? |
-| Dalles de verre | Disparaissent-elles sous vos pieds puis reviennent-elles ? |
-| Réapparition | Après une chute, revenez-vous bien sur la dernière arche franchie ? |
-| Victoire | En haut, le compteur de victoires monte-t-il, et revenez-vous au départ ? |
-| Fluidité | Sur téléphone si possible : est-ce fluide ? |
+**Pas encore testé par vous** (votre premier essai s'est arrêté avant) : barres
+tournantes (tuent-elles même si vous ne bougez pas ?), tapis roulant (vous
+pousse-t-il vers l'arrière ?), victoire en haut, fluidité sur téléphone.
+
+**Le son.** Le plus simple : dans Studio, ouvrir la Toolbox → Audio, choisir un
+son de ramassage et un son de checkpoint qui vous plaisent, et me donner leurs
+deux numéros (asset ID). Je les brancherai dans tous les jeux.
 
 **Variante qui me rend autonome.** Brancher Claude Code à Roblox Studio sur
 votre ordinateur, comme décrit dans `rpg/GUIDE-CLAUDE-CODE-STUDIO.md` (pull
@@ -38,9 +45,9 @@ jouant moi-même. Je n'ai pas vérifié ce guide dans cette session.
 
 **Pourquoi.** Une seule expérience est configurée (`pipeline/experience.json`) :
 celle des Îles Célestes. Pour tester deux jeux dans le vrai moteur, j'ai dû les
-envoyer en **brouillon** sur cette place (versions 9 et 10, invisibles des
-joueurs), puis y remettre Les Îles Célestes (version 11, re-testée). La version
-publiée, celle que voient les joueurs, n'a pas été touchée.
+envoyer en **brouillon** sur cette place (versions 9, 10, 12 et 13, invisibles
+des joueurs), puis y remettre à chaque fois Les Îles Célestes (versions 11 et
+14, re-testées). La version publiée, celle que voient les joueurs, n'a pas été touchée.
 
 **Ce qu'il me faut.** Une expérience vide créée sur le Creator Hub, et ses deux
 numéros : `universeId` et `placeId`. Si la clé API est limitée à une

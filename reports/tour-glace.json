@@ -1,18 +1,18 @@
 {
   "accessibilite": {
-    "collectiblesAccessibles": 40,
-    "collectiblesTotal": 40,
-    "profondeurMaxCollectibles": 92,
-    "profondeurMedianeCollectibles": 50,
-    "surfacesAtteintes": 182,
-    "surfacesMarchables": 189
+    "collectiblesAccessibles": 49,
+    "collectiblesTotal": 49,
+    "profondeurMaxCollectibles": 118,
+    "profondeurMedianeCollectibles": 65,
+    "surfacesAtteintes": 188,
+    "surfacesMarchables": 192
   },
   "ambiance": {
     "Atmosphere": true,
     "BloomEffect": true,
     "ColorCorrectionEffect": true,
     "Sky": true,
-    "SunRaysEffect": true
+    "SunRaysEffect": false
   },
   "fichier": "build/tour-glace.rbxl",
   "map": "tour-glace",
@@ -25,13 +25,19 @@
   },
   "problemes": [
     {
+      "categorie": "Ambiance",
+      "code": "EFFET_ABSENT",
+      "gravite": "info",
+      "message": "Pas de SunRaysEffect dans Lighting."
+    },
+    {
       "categorie": "Accessibilité",
       "code": "GRANDES_SURFACES_NON_ATTEINTES",
       "gravite": "info",
       "message": "2 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
       "objets": [
-        "Workspace.Parcours.Decor.Tour (≈1600 studs², Y=174.1)",
-        "Workspace.Parcours.Decor.Linteau (≈267 studs², Y=170.8)"
+        "Workspace.Parcours.Decor.Tour (≈1600 studs², Y=218)",
+        "Workspace.Parcours.Decor.Linteau (≈314 studs², Y=214.7)"
       ]
     },
     {
@@ -44,21 +50,21 @@
   "resume": {
     "avertissement": 0,
     "erreur": 0,
-    "info": 2
+    "info": 3
   },
   "statistiques": {
-    "collectibles": 40,
-    "emetteursParticules": 54,
-    "lumieres": 114,
+    "collectibles": 49,
+    "emetteursParticules": 63,
+    "lumieres": 119,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 2169,
+    "objets": 2730,
     "padsDeSaut": 0,
     "particulesParSeconde": 6,
-    "pieces": 1870,
+    "pieces": 2358,
     "piecesNonAncrees": 0,
     "scripts": 9,
-    "sons": 49,
+    "sons": 58,
     "spawns": 1
   },
   "statut": "OK",

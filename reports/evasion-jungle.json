@@ -1,18 +1,18 @@
 {
   "accessibilite": {
-    "collectiblesAccessibles": 40,
-    "collectiblesTotal": 40,
-    "profondeurMaxCollectibles": 84,
-    "profondeurMedianeCollectibles": 56,
-    "surfacesAtteintes": 146,
-    "surfacesMarchables": 184
+    "collectiblesAccessibles": 49,
+    "collectiblesTotal": 49,
+    "profondeurMaxCollectibles": 125,
+    "profondeurMedianeCollectibles": 69,
+    "surfacesAtteintes": 161,
+    "surfacesMarchables": 199
   },
   "ambiance": {
     "Atmosphere": true,
     "BloomEffect": true,
     "ColorCorrectionEffect": true,
     "Sky": true,
-    "SunRaysEffect": true
+    "SunRaysEffect": false
   },
   "fichier": "build/evasion-jungle.rbxl",
   "map": "evasion-jungle",
@@ -25,13 +25,10 @@
   },
   "problemes": [
     {
-      "categorie": "Accessibilité",
-      "code": "GRANDES_SURFACES_NON_ATTEINTES",
+      "categorie": "Ambiance",
+      "code": "EFFET_ABSENT",
       "gravite": "info",
-      "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
-      "objets": [
-        "Workspace.Parcours.Decor.Linteau (≈166 studs², Y=48)"
-      ]
+      "message": "Pas de SunRaysEffect dans Lighting."
     },
     {
       "categorie": "Rétention",
@@ -46,18 +43,18 @@
     "info": 2
   },
   "statistiques": {
-    "collectibles": 40,
-    "emetteursParticules": 55,
-    "lumieres": 165,
+    "collectibles": 49,
+    "emetteursParticules": 65,
+    "lumieres": 153,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 3154,
+    "objets": 3558,
     "padsDeSaut": 0,
-    "particulesParSeconde": 7.5,
-    "pieces": 2803,
+    "particulesParSeconde": 9,
+    "pieces": 3150,
     "piecesNonAncrees": 0,
     "scripts": 9,
-    "sons": 49,
+    "sons": 58,
     "spawns": 1
   },
   "statut": "OK",

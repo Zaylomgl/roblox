@@ -1,5 +1,31 @@
 # Journal des décisions
 
+## 2026-11-14 — Rejouabilité : record, reliques secrètes, traînée des vainqueurs
+Retour du propriétaire : « en 20 minutes c'est fait, il faudrait que les gens reviennent, des easter eggs ». Chaque jeu reçoit un chronomètre avec record sauvegardé, cinq reliques cachées sous des paliers (comptées une fois par joueur, pour toujours) et une traînée derrière le joueur selon ses victoires. Idée écartée pour l'instant : une boutique de cosmétiques payés en gemmes (demande une interface côté client).
+
+## 2026-11-14 — Une chute ramène à la dernière borne, sans mourir
+Retour du propriétaire : après une chute il se retrouvait au début, pas au checkpoint. Quatre fois par seconde, tout joueur tombé sous sa dernière borne y est ramené ; cela couvre aussi une apparition hors de la map. Après une mort, le personnage est remis sur sa borne pendant trois secondes, car Roblox le repose au point de départ un peu après sa création (comportement non vérifié dans le vrai moteur : il faut un joueur).
+
+## 2026-11-14 — De vrais sauts, moins de dalles
+Retour du propriétaire : « des cases de partout, on pourrait presque tout faire en marchant ». Les vides passent de 3,4–6,5 à 4,6–6,9 studs, les dalles rétrécissent, et les deux modules qui se traversaient en marchant (poutre avec paliers, zigzag jointif) demandent maintenant de sauter.
+
+## 2026-11-14 — La netteté passe avant l'effet lumineux
+Retour du propriétaire : « trop de lumière, ça fait un flou, on ne voit rien ». Brume, éblouissement et halo sont plafonnés pour tous les thèmes, les lumières ponctuelles sont deux fois moins fortes, les rayons de soleil sont retirés, et le dessous néon des plateformes du volcan devient de la lave craquelée. Rendu non vérifié par moi : à confirmer en jeu.
+
+## 2026-11-14 — Modèles à facettes, soudés à une pièce invisible
+Retour du propriétaire : gemmes et coupe n'étaient « que des cubes jaunes ». Les gemmes sont maintenant taillées (huit pièces en coin), la coupe a un pied, une vasque et des anses. Chaque modèle est soudé par le script de jeu à une pièce invisible, seule à être animée : vérifié dans le vrai moteur (les facettes suivent, dérive nulle).
+
+## 2026-11-14 — Sons : discrets en attendant mieux
+Retour du propriétaire : « le bruit est horrible ». Faute de pouvoir écouter, le son d'origine est gardé mais beaucoup plus bas et plus aigu (donc plus bref). Un vrai choix de son reste à faire par le propriétaire (voir BESOINS.md).
+
+## 2026-11-14 — Le hasard du jeu ne dépend plus du Random de Roblox
+**Ce qu'on pensait** : hors de Roblox, seuls des détails de décor différaient (position d'une fleur).
+**Pourquoi on a tourné** : mesuré dans le vrai moteur, le même script donnait 133 plateformes et 2668 pièces dans Roblox contre 141 et 2724 dans le pipeline. Le propriétaire jouait donc un parcours qui n'était pas celui validé.
+**Ce qui a changé** : le script embarque son propre générateur. Vérifié dans le vrai moteur : 2997 pièces des deux côtés pour l'évasion, 2283 pour la tour.
+
+## 2026-11-14 — 12 étapes au maximum (au lieu de 14)
+Les modèles plus détaillés coûtent des pièces. Mesuré : le format « evasion » atteint 3582 pièces à 12 étapes et 4171 à 14, au-dessus du seuil de 4000 du validateur.
+
 ## 2026-11-14 — Tests dans le vrai moteur sur le brouillon de la place existante
 Une seule expérience Roblox est configurée. Pour tester deux jeux générés dans le vrai moteur, ils ont été envoyés en version « Saved » (brouillon, invisible des joueurs) sur la place des Îles Célestes (versions 9 et 10), puis Les Îles Célestes ont été remises en brouillon (version 11, re-testée : 33 réussis, 2 non vérifiables, comme avant). Une place de test dédiée éviterait ce va-et-vient (voir BESOINS.md).
 

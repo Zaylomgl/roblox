@@ -1,19 +1,19 @@
 # Tests dans le vrai moteur Roblox — iles-celestes
 
-- Date : 2026-11-14T08:25:47+00:00
-- Place : [116414227319701](https://www.roblox.com/games/116414227319701), version testée : 11
-- Tâche Luau Execution : `universes/10774067194/places/116414227319701/versions/11/luau-execution-sessions/55cca9b5-fd0c-443e-ab3e-8a35603be486/tasks/55cca9b5-fd0c-443e-ab3e-8a35603be486` — état : **COMPLETE**
+- Date : 2026-11-14T13:16:51+00:00
+- Place : [116414227319701](https://www.roblox.com/games/116414227319701), version testée : 14
+- Tâche Luau Execution : `universes/10774067194/places/116414227319701/versions/14/luau-execution-sessions/6d71c155-0c91-48f7-a7a1-1bdc9805e6d7/tasks/6d71c155-0c91-48f7-a7a1-1bdc9805e6d7` — état : **COMPLETE**
 - **33 réussi(s), 0 échoué(s), 2 non vérifiable(s)** dans cet environnement
 
 | | Groupe | Test | Détail |
 |---|---|---|---|
-| ✅ | Place | c'est la version qui vient d'être publiée | place 116414227319701, version 11 |
+| ✅ | Place | c'est la version qui vient d'être publiée | place 116414227319701, version 14 |
 | ✅ | Place | scripts du noyau, de la map et de l'interface présents |  |
 | ✅ | Place | Configuration : pass et produits ont leur vrai ID Roblox | 3 objet(s) avec un ID |
 | ✅ | Place | contenu identique au fichier construit (comptages du validateur) | 1189 pièces, 50 cristaux, 100 lumières, 1 spawn |
 | ✅ | Place | saut et marche réels ≥ ceux supposés par le test d'accessibilité | saut 6.37 studs (validateur 6.37), marche 16 |
 | ✅ | Place | point d'apparition : sol réel juste dessous, au-dessus de la zone mortelle | sol à Y = 189.6, zone mortelle à Y = 60 |
-| ✅ | Terrain | le plan du Terrain se rejoue sans erreur dans le vrai moteur | 372 opérations en 0.13 s |
+| ✅ | Terrain | le plan du Terrain se rejoue sans erreur dans le vrai moteur | 372 opérations en 0.14 s |
 | ✅ | Terrain | chaque île a un sol d'herbe au niveau prévu (lecture des voxels) | 6 îles, points d'herbe au bon niveau : 12/12, 12/12, 12/12, 12/12, 12/12, 12/12 |
 | ✅ | Terrain | les 50 cristaux ont un sol réel juste dessous (pièces ou Terrain) | 24 au-dessus du Terrain, 26 au-dessus de pièces (ponts, pierres, grotte…) |
 | ✅ | Terrain | la grotte secrète et son passage ne sont pas bouchés par le Terrain | Terrain : grotte remplie à 6 %, passage à 0 % ; chute libre jusqu'au palier |
@@ -36,7 +36,7 @@
 | ✅ | Noyau | sauvegarde : pannes passagères du DataStore surmontées |  |
 | ✅ | Noyau | sauvegarde : un serveur qui a perdu le verrou ne peut plus écraser |  |
 | ✅ | Noyau | sauvegarde : verrou — un 2e serveur attend que le 1er libère |  |
-| ✅ | DataStore réel | sauvegarde, verrou de session entre 2 serveurs, libération | clé test_d0548ce5-5d4e-434f-af08-b8480e7fdf98 supprimée ; 2 s |
+| ✅ | DataStore réel | sauvegarde, verrou de session entre 2 serveurs, libération | clé test_83bd6a83-121c-4989-a5dd-338e89dd5bce supprimée ; 1.9 s |
 | ✅ | Boutique | pass « Cristaux x2 » (id 2062597704) en vente au prix prévu | « Cristaux x2 », 99 Robux, en vente : true |
 | ✅ | Boutique | produit « Sac de cristaux » (id 3725192416) en vente au prix prévu | « Sac de cristaux », 25 Robux, en vente : true |
 | ✅ | Boutique | produit « Coffre de cristaux » (id 3725192420) en vente au prix prévu | « Coffre de cristaux », 99 Robux, en vente : true |
@@ -49,7 +49,7 @@
 |---|---|
 | characterUseJumpPower | True |
 | collectibles | 50 |
-| dureeTestDataStore | 2.01 |
+| dureeTestDataStore | 1.86 |
 | emetteursParticules | 110 |
 | environmentDiffuseScale | 1 |
 | environmentSpecularScale | 1 |
@@ -62,12 +62,12 @@
 | passageRemplissageTerrain | 0 |
 | pieces | 1189 |
 | piecesNonAncrees | 0 |
-| placeVersion | 11 |
+| placeVersion | 14 |
 | sons | 50 |
 | spawns | 1 |
 | technologie | illisible ici |
 | terrainOperations | 372 |
-| terrainSecondes | 0.13 |
+| terrainSecondes | 0.14 |
 | versionMoteur | 0.747.0.7471481 |
 | vitesseMarche | 16 |
 

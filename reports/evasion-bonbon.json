@@ -1,18 +1,18 @@
 {
   "accessibilite": {
-    "collectiblesAccessibles": 40,
-    "collectiblesTotal": 40,
-    "profondeurMaxCollectibles": 100,
-    "profondeurMedianeCollectibles": 60,
-    "surfacesAtteintes": 155,
-    "surfacesMarchables": 193
+    "collectiblesAccessibles": 49,
+    "collectiblesTotal": 49,
+    "profondeurMaxCollectibles": 120,
+    "profondeurMedianeCollectibles": 68,
+    "surfacesAtteintes": 161,
+    "surfacesMarchables": 199
   },
   "ambiance": {
     "Atmosphere": true,
     "BloomEffect": true,
     "ColorCorrectionEffect": true,
     "Sky": true,
-    "SunRaysEffect": true
+    "SunRaysEffect": false
   },
   "fichier": "build/evasion-bonbon.rbxl",
   "map": "evasion-bonbon",
@@ -25,12 +25,18 @@
   },
   "problemes": [
     {
+      "categorie": "Ambiance",
+      "code": "EFFET_ABSENT",
+      "gravite": "info",
+      "message": "Pas de SunRaysEffect dans Lighting."
+    },
+    {
       "categorie": "Accessibilité",
       "code": "GRANDES_SURFACES_NON_ATTEINTES",
       "gravite": "info",
       "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
       "objets": [
-        "Workspace.Parcours.Decor.Linteau (≈106 studs², Y=51.8)"
+        "Workspace.Parcours.Decor.Linteau (≈187 studs², Y=53)"
       ]
     },
     {
@@ -43,21 +49,21 @@
   "resume": {
     "avertissement": 0,
     "erreur": 0,
-    "info": 2
+    "info": 3
   },
   "statistiques": {
-    "collectibles": 40,
-    "emetteursParticules": 56,
-    "lumieres": 125,
+    "collectibles": 49,
+    "emetteursParticules": 65,
+    "lumieres": 123,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 2853,
+    "objets": 3209,
     "padsDeSaut": 0,
     "particulesParSeconde": 9,
-    "pieces": 2541,
+    "pieces": 2831,
     "piecesNonAncrees": 0,
     "scripts": 9,
-    "sons": 49,
+    "sons": 58,
     "spawns": 1
   },
   "statut": "OK",

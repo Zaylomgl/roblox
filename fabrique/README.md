@@ -23,7 +23,7 @@ Avec une nouvelle photo des classements Roblox juste avant :
 ./fabrique/nouveau-jeu.sh --photo
 ```
 
-En imposant le format, le thème, la graine ou le nombre d'étapes (3 à 14) :
+En imposant le format, le thème, la graine ou le nombre d'étapes (3 à 12) :
 
 ```bash
 ./fabrique/nouveau-jeu.sh --format tour --theme glace --graine 52 --etapes 12
@@ -80,32 +80,42 @@ pour montrer ce que la Fabrique ne sait pas encore faire.
 |---|---|
 | Formats | `tour` : spirale autour d'une tour, île de départ, couronne lumineuse au sommet. `evasion` : chemin sinueux au-dessus du vide, cour fortifiée au départ, enceinte et massifs, porte de sortie |
 | Thèmes | volcan, glace, jungle, bonbon, néon, prison ([`themes.luau`](themes.luau)) : palette, matériaux Roblox, ambiance, arbres, lampes et décor propres à chacun. Aucun asset externe |
-| Obstacles | 10 modules : dalles, poutre, piliers, bosse, zigzag, barres tournantes, braises, dalles fragiles, tapis roulant, murets. La difficulté monte d'étape en étape |
-| Progression | Bornes d'étape sauvegardées (on réapparaît à la dernière borne, même le lendemain), compteur de victoires, retour au départ après la victoire |
-| Récompenses | Gemmes (1, 5, 25) créditées dans la monnaie du noyau commun ; +3 par borne, +50 par victoire |
+| Obstacles | 10 modules : dalles, poutre, piliers, bosse, zigzag, barres tournantes, braises, dalles de verre, tapis roulant, murets. Aucun ne se traverse sans sauter ; les vides vont de 4,6 à 6,9 studs et grandissent d'étape en étape |
+| Modèles | Gemmes taillées à huit facettes, coupe de vainqueur avec anses, reliques dans leur anneau, plateformes à cadre et corps en gradins. Tout est fait de pièces Roblox (blocs, cylindres, coins) |
+| Progression | Bornes d'étape sauvegardées. Une chute ramène à la dernière borne **sans mourir** ; une mort (barre, braise) aussi |
+| Rejouabilité | **Chronomètre** de la ligne de départ à l'arrivée, record sauvegardé et affiché au classement. **Cinq reliques secrètes** par jeu, cachées sous des paliers, comptées une fois par joueur pour toujours. **Traînée** derrière le joueur selon ses victoires (1, 3, 5, 10). Compteur de victoires, retour au départ après chaque victoire |
+| Récompenses | Gemmes (1, 5, 25) dans la monnaie du noyau commun ; +3 par borne, +50 par victoire, +15 par relique, +100 quand elles sont toutes trouvées |
 | Sans le noyau | Le script collé seul dans Studio fonctionne aussi, sans sauvegarde |
 
-**Règle de conception.** Le chemin obligatoire n'utilise que des plateformes
-fixes ; les pièges ne font qu'ajouter du danger. Le validateur, qui ne voit que
-la géométrie fixe, prouve donc que chaque étape est franchissable : le trophée
-d'arrivée fait partie des objets à atteindre depuis l'unique point d'apparition.
-Le plus grand vide à sauter fait 6,5 studs (le validateur en accepte ≈ 8,3).
+**Trois règles de conception.**
+
+1. Le chemin obligatoire n'utilise que des plateformes fixes ; les pièges ne font
+   qu'ajouter du danger. Le validateur, qui ne voit que la géométrie fixe, prouve
+   donc que chaque étape est franchissable : le trophée d'arrivée et les
+   reliques font partie des objets à atteindre depuis l'unique point d'apparition.
+2. Le script n'utilise jamais le `Random` de Roblox, mais son propre générateur :
+   le `Random` de Roblox ne donne pas les mêmes tirages hors de Roblox (vérifié
+   dans le vrai moteur). Le jeu collé dans Studio est ainsi exactement celui que
+   le pipeline a validé.
+3. La netteté passe avant l'effet : brume, éblouissement et halo lumineux sont
+   plafonnés dans `gabarits/kit.lua`, quel que soit le thème.
 
 ## Ce qui est testé
 
 | Où | Quoi |
 |---|---|
-| `pipeline/tests/fabrique.test.luau` (36 tests) | Choix d'après les tendances ; les 12 combinaisons format × thème construites et validées ; reproductibilité ; parcours joueur complet dans le moteur simulé (gemmes, bornes, mort, réapparition, victoire, sauvegarde, deux joueurs, sans noyau) ; pièges ; trois sabotages volontaires qui vérifient que les tests détectent bien une régression |
+| `pipeline/tests/fabrique.test.luau` (45 tests) | Choix d'après les tendances ; les 12 combinaisons format × thème construites et validées ; même jeu avec ou sans le `Random` de Roblox ; parcours joueur complet dans le moteur simulé (gemmes, bornes, mort, chute, apparition dans le vide, victoire, sauvegarde, deux joueurs, sans noyau) ; reliques, chronomètre et record, traînée, soudure des modèles ; pièges ; trois sabotages volontaires qui vérifient que les tests détectent bien une régression |
 | `./pipeline/run.sh` | Lint, formatage, construction et validation de chaque jeu du dépôt |
-| `pipeline/reel/tests-parcours.luau` (17 tests) | Dans le **vrai moteur Roblox** (Open Cloud) : fichier relu à l'identique, vrai sol sous chaque borne, fonctions du moteur utilisées par le jeu, script de jeu exécuté sans erreur, animations |
+| `pipeline/reel/tests-parcours.luau` (21 tests) | Dans le **vrai moteur Roblox** (Open Cloud) : fichier relu à l'identique, vrai sol sous chaque borne et chaque relique, modèles à facettes, fonctions du moteur utilisées par le jeu, script de jeu exécuté sans erreur, modèles soudés qui suivent leur gemme |
 
 Derniers résultats dans le vrai moteur : [`reports/evasion-prison-moteur-reel.md`](../reports/evasion-prison-moteur-reel.md)
 et [`reports/tour-volcan-moteur-reel.md`](../reports/tour-volcan-moteur-reel.md).
 
 **Ce qui n'est PAS vérifié.** Dans l'environnement de test de Roblox, la
 physique ne tourne pas et il n'y a pas de joueur : les sauts, les contacts
-réels, le tapis roulant qui entraîne le personnage, la fluidité sur téléphone
-et le plaisir de jeu ne peuvent être vérifiés qu'en jouant dans Roblox Studio.
+réels, le retour à la borne après une mort, le tapis roulant qui entraîne le
+personnage, les sons, le rendu des lumières, la fluidité sur téléphone et le
+plaisir de jeu ne peuvent être vérifiés qu'en jouant dans Roblox Studio.
 
 ## L'aperçu en images
 
@@ -118,6 +128,9 @@ repérer un décor vide ou raté, pas à juger le rendu final.
 ```bash
 ./fabrique/apercu/apercu.sh <nom>
 ```
+
+Avec un troisième argument `details` passé à `rendre.mjs`, la planche montre des gros
+plans (gemme, coupe, relique, borne).
 
 Il demande Node.js et Playwright (`npm install --no-save playwright` puis
 `npx playwright install chromium` dans `fabrique/apercu/`).

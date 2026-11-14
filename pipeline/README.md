@@ -31,7 +31,7 @@ rampe, pad de saut, zone mortelle, etc.
 | `tests/analyse.test.luau` | Le validateur de maps, sur des places artificielles |
 | `tests/noyau.test.luau` | Les modules purs du noyau (`src/ServerScriptService/Noyau`) : profil, récompense quotidienne (jours UTC, séries), achats (jamais de double crédit, jamais de perte), sauvegarde (verrou de session, pannes du DataStore) |
 | `tests/integration.test.luau` | Les **vrais scripts** du jeu (serveur, interface, map) exécutés dans un **moteur Roblox simulé** (`lib/moteur.luau`) avec des joueurs simulés : arrivée, interface, récompense le lendemain, achats, pass x2, collecte de cristaux, départ/retour, panne du DataStore, fermeture du serveur |
-| `tests/fabrique.test.luau` | La Fabrique ([`fabrique/`](../fabrique/README.md)) : choix d'après les tendances, les 12 combinaisons format × thème construites et validées, parcours joueur complet (bornes, mort, réapparition, victoire, sauvegarde), pièges, sabotages volontaires |
+| `tests/fabrique.test.luau` | La Fabrique ([`fabrique/`](../fabrique/README.md)) : choix d'après les tendances, les 12 combinaisons format × thème construites et validées, parcours joueur complet (bornes, mort, chute, victoire, sauvegarde), reliques, record, pièges, sabotages volontaires |
 
 Le moteur simulé utilise les vraies instances Roblox de Lune : un nom de
 propriété mal écrit ou une valeur du mauvais type fait échouer le test, comme

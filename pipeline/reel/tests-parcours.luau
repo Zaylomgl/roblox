@@ -132,11 +132,25 @@ end)
 
 lancer("Place", "le jeu de la Fabrique est là, avec ses dossiers et son script", function(t)
 	t.vrai(map ~= nil)
-	for _, nom in { "Structure", "Decor", "Etapes", "Collectibles", "Dangers", "Mobiles", "Fragiles", "Tapis" } do
+	for _, nom in
+		{
+			"Structure",
+			"Decor",
+			"Etapes",
+			"Collectibles",
+			"Secrets",
+			"Bijoux",
+			"Dangers",
+			"Mobiles",
+			"Fragiles",
+			"Tapis",
+		}
+	do
 		t.vrai(map:FindFirstChild(nom) ~= nil)
 	end
 	t.vrai(map:FindFirstChild("Depart") and map.Depart:IsA("SpawnLocation"))
 	t.vrai(map:FindFirstChild("Arrivee") ~= nil)
+	t.vrai(map:FindFirstChild("LigneDepart") ~= nil)
 	local scriptJeu = game:GetService("ServerScriptService"):FindFirstChild("Parcours_Jeu")
 	t.vrai(scriptJeu and scriptJeu:IsA("Script"))
 	t.vrai(game:GetService("ServerScriptService"):FindFirstChild("Noyau") ~= nil)
@@ -306,6 +320,46 @@ lancer("Géométrie", "chaque gemme a un sol réel à portée en dessous", funct
 	return `{nb} gemmes, la plus haute à {arrondi(plusLoin, 1)} studs du sol`
 end)
 
+lancer("Géométrie", "chaque relique secrète a sa corniche juste dessous, sous le niveau du palier", function(t)
+	local nb = 0
+	for _, relique in map.Secrets:GetChildren() do
+		local sol = solSous(relique.Position, 6)
+		if not sol or not sol.Instance.CanCollide then
+			error(`pas de corniche sous la relique {relique:GetAttribute("Secret")}`)
+		end
+		t.egal(sol.Instance.Name, "Corniche")
+		nb += 1
+	end
+	t.egal(nb, map:GetAttribute("NombreSecrets"))
+	return `{nb} reliques, chacune sur sa corniche`
+end)
+
+lancer("Géométrie", "modèles : chaque gemme et chaque relique a ses facettes, la coupe est au sommet", function(t)
+	local facettes, coupes = 0, 0
+	for _, dossier in { map.Collectibles, map.Secrets } do
+		for _, coeur in dossier:GetChildren() do
+			local modele = map.Bijoux:FindFirstChild(coeur:GetAttribute("Bijou"))
+			t.vrai(modele ~= nil)
+			local coins = 0
+			for _, piece in modele:GetChildren() do
+				if piece:IsA("CornerWedgePart") then
+					coins += 1
+					-- une facette reste collée à son cœur (moins de 4 studs)
+					t.vrai((piece.Position - coeur.Position).Magnitude < 4)
+				end
+			end
+			t.vrai(coins >= 8)
+			facettes += coins
+			if coeur:GetAttribute("Valeur") == 25 then
+				coupes += 1
+				t.vrai(#modele:GetChildren() >= 20)
+			end
+		end
+	end
+	t.egal(coupes, 1)
+	return `{facettes} facettes taillées, 1 coupe`
+end)
+
 lancer("Géométrie", "les pièges mortels ne sont pas solides, les sols le sont", function(t)
 	local dangers = 0
 	for _, danger in map.Dangers:GetChildren() do
@@ -387,6 +441,33 @@ lancer("Moteur", "un tapis ancré accepte une vitesse (AssemblyLinearVelocity)",
 	return `vitesse {arrondi(vitesse.Magnitude, 1)} studs/s acceptée et relue`
 end)
 
+lancer("Moteur", "traînée des vainqueurs : Trail et ses deux attaches se créent sur un personnage", function(t)
+	local racine = Instance.new("Part")
+	racine.Anchored = true
+	racine.Parent = workspace
+	local haut = Instance.new("Attachment")
+	haut.Position = Vector3.new(0, 0.9, 0)
+	haut.Parent = racine
+	local bas = Instance.new("Attachment")
+	bas.Position = Vector3.new(0, -0.9, 0)
+	bas.Parent = racine
+	local trainee = Instance.new("Trail")
+	trainee.Attachment0 = haut
+	trainee.Attachment1 = bas
+	trainee.Lifetime = 0.7
+	trainee.LightEmission = 0.4
+	trainee.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 220, 80)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 220, 255)),
+	})
+	trainee.Transparency = NumberSequence.new(0.3, 1)
+	trainee.Parent = racine
+	t.vrai(trainee.Attachment0 == haut and trainee.Attachment1 == bas)
+	racine:Destroy()
+	return "ok"
+end)
+
 lancer("Moteur", "Humanoid : mettre la vie à 0, et annonce dans un PlayerGui", function(t)
 	local perso = Instance.new("Model")
 	local humanoide = Instance.new("Humanoid")
@@ -446,8 +527,44 @@ lancer("Script de jeu", "s'exécute jusqu'au bout sans erreur dans le vrai moteu
 	return "terminé en " .. arrondi(os.clock() - debut, 1) .. " s"
 end)
 
-lancer("Script de jeu", "les animations tournent (barres, gemmes) sans erreur", function(t)
+lancer(
+	"Script de jeu",
+	"il a soudé chaque modèle à sa pièce maîtresse (facettes libérées, cœur ancré)",
+	function(t)
+		local soudures = 0
+		for _, dossier in { map.Collectibles, map.Secrets } do
+			for _, coeur in dossier:GetChildren() do
+				t.vrai(coeur.Anchored)
+				local modele = map.Bijoux:FindFirstChild(coeur:GetAttribute("Bijou"))
+				for _, piece in modele:GetChildren() do
+					if piece:IsA("BasePart") then
+						t.faux(piece.Anchored)
+						soudures += 1
+					end
+				end
+			end
+		end
+		local nb = 0
+		for _, objet in map.Collectibles:GetDescendants() do
+			if objet:IsA("WeldConstraint") then
+				nb += 1
+			end
+		end
+		for _, objet in map.Secrets:GetDescendants() do
+			if objet:IsA("WeldConstraint") then
+				nb += 1
+			end
+		end
+		t.egal(nb, soudures)
+		return `{soudures} pièces soudées`
+	end
+)
+
+lancer("Script de jeu", "les animations tournent : la gemme bouge et ses facettes la suivent d'un bloc", function(t)
 	local gemme = map.Collectibles:FindFirstChildWhichIsA("BasePart")
+	local facette = map.Bijoux:FindFirstChild(gemme:GetAttribute("Bijou")):FindFirstChildWhichIsA("BasePart")
+	local relatif = gemme.CFrame:ToObjectSpace(facette.CFrame)
+	local avantFacette = facette.Position
 	local avant = gemme.CFrame
 	local images = 0
 	local ecoute = RunService.Heartbeat:Connect(function()
@@ -463,7 +580,14 @@ lancer("Script de jeu", "les animations tournent (barres, gemmes) sans erreur", 
 		ignorer("Heartbeat ne tourne pas dans cet environnement")
 	end
 	t.vrai(gemme.CFrame ~= avant)
-	return `{images} images en 3 s, la gemme a bougé de {arrondi((gemme.Position - avant.Position).Magnitude, 2)} studs`
+	-- La facette a bougé, et sa place par rapport à la gemme n'a pas changé : la soudure tient.
+	t.vrai((facette.Position - avantFacette).Magnitude > 0.01)
+	local derive = (gemme.CFrame:ToObjectSpace(facette.CFrame).Position - relatif.Position).Magnitude
+	t.vrai(derive < 0.01)
+	return `{images} images en 3 s, la gemme a bougé de {arrondi((gemme.Position - avant.Position).Magnitude, 2)} studs, facette solidaire (dérive {arrondi(
+		derive,
+		4
+	)})`
 end)
 
 connexion:Disconnect()

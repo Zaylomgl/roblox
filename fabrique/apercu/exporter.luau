@@ -38,6 +38,12 @@ for _, objet in workspace:GetDescendants() do
 			reperes.arrivee = { position.X, position.Y, position.Z }
 		elseif objet:GetAttribute("Numero") and objet.Parent and objet.Parent.Name == "Etapes" then
 			reperes.etapes[objet:GetAttribute("Numero")] = { position.X, position.Y, position.Z }
+		elseif objet:GetAttribute("Secret") == 1 then
+			reperes.relique = { position.X, position.Y, position.Z }
+		elseif objet:GetAttribute("Valeur") == 25 then
+			reperes.coupe = { position.X, position.Y, position.Z }
+		elseif objet:GetAttribute("Valeur") == 5 and not reperes.gemme then
+			reperes.gemme = { position.X, position.Y, position.Z }
 		end
 		if objet.Transparency < 0.99 then
 			local composantes = { objet.CFrame:GetComponents() }
@@ -49,6 +55,8 @@ for _, objet in workspace:GetDescendants() do
 				forme = objet.Shape.Name
 			elseif objet.ClassName == "WedgePart" then
 				forme = "Wedge"
+			elseif objet.ClassName == "CornerWedgePart" then
+				forme = "CornerWedge"
 			end
 			table.insert(pieces, {
 				f = forme,
