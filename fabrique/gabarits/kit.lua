@@ -670,7 +670,9 @@ function K.gemme(position, valeur)
 		Name = "Gemme",
 	})
 	gemme:SetAttribute("Valeur", valeur)
-	K.lumiere(gemme, info.couleur, 9, 1.6)
+	if valeur > 1 then -- les petites gemmes n'éclairent pas : moins de lumières à calculer
+		K.lumiere(gemme, info.couleur, 9, 1.6)
+	end
 	local son = Instance.new("Sound")
 	son.SoundId = SON_COLLECTE
 	son.Volume = 0.6

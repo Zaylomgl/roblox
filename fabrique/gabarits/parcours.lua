@@ -133,6 +133,14 @@ function P.dalle(cf, larg, long, options)
 		Name = options.Name or "Dalle",
 	})
 	if not options.nue then
+		for _, bout in ipairs({ -1, 1 }) do
+			K.deco({
+				Size = Vector3.new(larg, EP_DALLE + 0.1, 0.35),
+				CFrame = cf * CFrame.new(0, -EP_DALLE / 2, bout * (long / 2 - 0.17)),
+				Color = C.accent,
+				Name = "Lisere",
+			})
+		end
 		K.deco({
 			Size = Vector3.new(larg - 0.8, 1.1, long - 0.8),
 			CFrame = cf * CFrame.new(0, -EP_DALLE - 0.55, 0),
@@ -197,6 +205,12 @@ end
 
 local function largeur(d)
 	return 7 - 3 * d
+end
+
+-- Lampe du thème posée au bord d'une longue plateforme (un coin sur deux).
+function P.lampeBord(cf, larg, long)
+	local cote = K.choisir({ -1, 1 })
+	K.lampe((cf * CFrame.new(cote * (larg / 2 - 0.7), 0, cote * (long / 2 - 1.2))).Position)
 end
 
 local MODULES = {}
@@ -304,6 +318,7 @@ function MODULES.lames(s, d)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local sol = P.dalle(cf, larg, long, { Color = C.solAlt, Material = MAT.solAlt })
 	P.gemmeSur(sol)
+	P.lampeBord(cf, larg, long)
 	local positions = (d > 0.45) and { -5.5, 5.5 } or { 0 }
 	for i, z in ipairs(positions) do
 		K.cylindre(nil, 1.7, 1.5, {
@@ -334,6 +349,7 @@ function MODULES.braises(s, d)
 	s += ecart(d, 5.5)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local sol = P.dalle(cf, larg, long)
+	P.lampeBord(cf, larg, long)
 	for i, z in ipairs({ -6.5, 0, 6.5 }) do
 		local bande = K.piece({
 			Size = Vector3.new(larg, 0.5, 1.8 + 1.4 * d),
@@ -417,6 +433,7 @@ function MODULES.murets(s, d)
 	s += ecart(d, 5.5)
 	local cf = P.repere(s + long / 2, 0, 0)
 	local sol = P.dalle(cf, larg, long)
+	P.lampeBord(cf, larg, long)
 	for _, z in ipairs({ -6.5, 0, 6.5 }) do
 		local h = 2.2 + 1.6 * d
 		K.piece({
@@ -638,23 +655,29 @@ end
 
 function P.vide(centre, taille)
 	local V = THEME.vide
-	local plan = K.piece({
-		Size = taille,
-		Position = centre,
-		Color = K.rvb(V.couleur),
-		Material = Enum.Material[V.materiau],
-		Transparency = V.transparence,
-		Reflectance = (V.genre == "eau") and 0.25 or 0,
-		CanCollide = false,
-		CastShadow = false,
-		Parent = D.Dangers,
-		Name = "Vide",
-	})
-	if V.genre == "eau" then
-		K.deco({ Size = taille, Position = centre - Vector3.new(0, 6, 0), Color = K.melange(K.rvb(V.couleur), C.noir, 0.6), Name = "Fond" })
+	-- Une pièce Roblox ne dépasse pas 2048 studs de côté : on pave en longueur si besoin.
+	local nb = math.ceil(taille.Z / 1800)
+	local longueur = taille.Z / nb
+	for n = 1, nb do
+		local milieu = centre + Vector3.new(0, 0, -taille.Z / 2 + (n - 0.5) * longueur)
+		local dalle = Vector3.new(taille.X, taille.Y, longueur)
+		K.piece({
+			Size = dalle,
+			Position = milieu,
+			Color = K.rvb(V.couleur),
+			Material = Enum.Material[V.materiau],
+			Transparency = V.transparence,
+			Reflectance = (V.genre == "eau") and 0.25 or 0,
+			CanCollide = false,
+			CastShadow = false,
+			Parent = D.Dangers,
+			Name = "Vide",
+		})
+		if V.genre == "eau" then
+			K.deco({ Size = dalle, Position = milieu - Vector3.new(0, 6, 0), Color = K.melange(K.rvb(V.couleur), C.noir, 0.6), Name = "Fond" })
+		end
 	end
 	workspace.FallenPartsDestroyHeight = centre.Y - 30
-	return plan
 end
 
 -- Brume qui monte du vide, autour d'un point.

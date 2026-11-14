@@ -1,12 +1,48 @@
-# Roblox : maps générées, testées et améliorées automatiquement
+# Roblox : des jeux créés à partir des tendances, testés automatiquement
+
+**Nouveau (version 2) : [la Fabrique](fabrique/README.md).** Elle lit les
+classements Roblox, choisit un format de jeu qui monte et un thème, puis écrit
+un jeu complet, construit, testé et validé. Un jeu de plus, en une commande :
+
+```bash
+./fabrique/nouveau-jeu.sh
+```
+
+## Les jeux de la version 2
+
+Six jeux, six thèmes, deux formats. Tous passent le pipeline sans erreur ni
+avertissement ; les deux premiers ont aussi été testés dans le vrai moteur
+Roblox (17 tests sur 17 chacun).
+
+| Jeu | Format | Thème | Pièces | Gemmes atteignables | |
+|---|---|---|---|---|---|
+| 🚨 [Escape The Prison Run](jeux/evasion-prison.md) | Évasion | prison | 2724 | 40 / 40 | [aperçu](jeux/apercus/evasion-prison.jpg) · [rapport](reports/evasion-prison.md) |
+| 🌋 [Tower Of Volcano](jeux/tour-volcan.md) | Tour | volcan | 1669 | 40 / 40 | [aperçu](jeux/apercus/tour-volcan.jpg) · [rapport](reports/tour-volcan.md) |
+| 🌃 [Night City Escape Obby](jeux/evasion-neon.md) | Évasion | neon | 2141 | 40 / 40 | [aperçu](jeux/apercus/evasion-neon.jpg) · [rapport](reports/evasion-neon.md) |
+| 🌴 [Ruins Prison Run](jeux/evasion-jungle.md) | Évasion | jungle | 2803 | 40 / 40 | [aperçu](jeux/apercus/evasion-jungle.jpg) · [rapport](reports/evasion-jungle.md) |
+| 🧊 [Tower Of Ice](jeux/tour-glace.md) | Tour | glace | 1870 | 40 / 40 | [aperçu](jeux/apercus/tour-glace.jpg) · [rapport](reports/tour-glace.md) |
+| 🍭 [Escape The Candy Run](jeux/evasion-bonbon.md) | Évasion | bonbon | 2541 | 40 / 40 | [aperçu](jeux/apercus/evasion-bonbon.jpg) · [rapport](reports/evasion-bonbon.md) |
+
+![Aperçu de « Tower Of Volcano »](jeux/apercus/tour-volcan.jpg)
+
+_Aperçu approximatif (dessiné hors de Roblox) : le rendu réel, avec les
+matériaux et les lumières de Roblox, se voit dans Roblox Studio._
+
+Ce dont le projet a besoin de votre part est réuni dans un seul document :
+[`BESOINS.md`](BESOINS.md).
+
+## Le dépôt
 
 | Dossier / fichier | Contenu |
 |---|---|
+| [`fabrique/`](fabrique/) | La Fabrique : choix d'après les tendances, thèmes, obstacles, script de jeu, aperçu ([mode d'emploi](fabrique/README.md)) |
+| [`jeux/`](jeux/) | Fiche et aperçu de chaque jeu créé, catalogue |
 | [`src/`](src/) | Noyau commun à tous les jeux : sauvegarde (avec verrou de session), récompense quotidienne, achats, boutique, interface |
-| [`maps/`](maps/) | Scripts de construction des maps (à coller dans la barre de commande de Roblox Studio, ou à construire avec le pipeline) |
+| [`maps/`](maps/) | Scripts de construction des jeux (à coller dans la barre de commande de Roblox Studio, ou à construire avec le pipeline) |
 | [`pipeline/`](pipeline/) | Chaîne automatique : construction hors Studio, tests, rapport de validation ([mode d'emploi](pipeline/README.md)) |
-| [`reports/`](reports/) | Derniers rapports de validation de chaque map, et des tests dans le vrai moteur Roblox |
+| [`reports/`](reports/) | Derniers rapports de validation de chaque jeu, et des tests dans le vrai moteur Roblox |
 | [`recherche/`](recherche/) | Recherche de niche à partir des classements officiels Roblox ([dernier rapport](recherche/rapport-niche.md)) |
+| [`PROJECT.md`](PROJECT.md), [`DECISIONS.md`](DECISIONS.md), [`PROGRESS.md`](PROGRESS.md) | Suivi du projet : ce qu'on construit, les décisions, ce qui est fait |
 | [`prompt-map-roblox.md`](prompt-map-roblox.md) | Prompt d'origine pour générer une map |
 
 Lancer tous les tests :

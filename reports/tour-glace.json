@@ -1,0 +1,75 @@
+{
+  "accessibilite": {
+    "collectiblesAccessibles": 40,
+    "collectiblesTotal": 40,
+    "profondeurMaxCollectibles": 92,
+    "profondeurMedianeCollectibles": 50,
+    "surfacesAtteintes": 182,
+    "surfacesMarchables": 189
+  },
+  "ambiance": {
+    "Atmosphere": true,
+    "BloomEffect": true,
+    "ColorCorrectionEffect": true,
+    "Sky": true,
+    "SunRaysEffect": true
+  },
+  "fichier": "build/tour-glace.rbxl",
+  "map": "tour-glace",
+  "monde": {
+    "fallenPartsDestroyHeight": -52,
+    "gravite": 196.1999969482422,
+    "hauteurSautTheorique": 6.37,
+    "porteeSautAPlat": 8.15,
+    "vitesseMarche": 16
+  },
+  "problemes": [
+    {
+      "categorie": "Accessibilité",
+      "code": "GRANDES_SURFACES_NON_ATTEINTES",
+      "gravite": "info",
+      "message": "2 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
+      "objets": [
+        "Workspace.Parcours.Decor.Tour (≈1600 studs², Y=174.1)",
+        "Workspace.Parcours.Decor.Linteau (≈267 studs², Y=170.8)"
+      ]
+    },
+    {
+      "categorie": "Rétention",
+      "code": "PAS_DE_BADGES",
+      "gravite": "info",
+      "message": "Aucun badge : les badges donnent des objectifs à long terme aux joueurs."
+    }
+  ],
+  "resume": {
+    "avertissement": 0,
+    "erreur": 0,
+    "info": 2
+  },
+  "statistiques": {
+    "collectibles": 40,
+    "emetteursParticules": 54,
+    "lumieres": 114,
+    "lumieresAvecOmbres": 0,
+    "meshParts": 0,
+    "objets": 2169,
+    "padsDeSaut": 0,
+    "particulesParSeconde": 6,
+    "pieces": 1870,
+    "piecesNonAncrees": 0,
+    "scripts": 9,
+    "sons": 49,
+    "spawns": 1
+  },
+  "statut": "OK",
+  "systemes": {
+    "AdService": false,
+    "BadgeService": false,
+    "DataStoreService": true,
+    "MarketplaceService": true
+  },
+  "terrain": {
+    "operations": 0,
+    "surfacesMarchables": 0
+  }
+}

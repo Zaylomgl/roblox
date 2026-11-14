@@ -52,8 +52,11 @@ if not fs.isFile(RAPPORT) then
 	process.exit(1)
 end
 local tendances = tendancesLib.lire(RAPPORT)
-local source =
-	`Tendances : {tendances.photos} relevés des classements Roblox, du {string.sub(tendances.periode[1], 1, 10)} au {string.sub(tendances.periode[2], 1, 10)} (recherche/rapport-niche.md).`
+local source = `Tendances : {tendances.photos} relevés des classements Roblox, du {string.sub(
+	tendances.periode[1],
+	1,
+	10
+)} au {string.sub(tendances.periode[2], 1, 10)} (recherche/rapport-niche.md).`
 
 local function trouver(liste, cle: string, genre: string)
 	for _, element in liste do
@@ -105,7 +108,9 @@ if options.format then
 		end
 	end
 	if not format.gabarit then
-		print(`✖ Le format « {format.nom} » est repéré dans les tendances mais la Fabrique ne sait pas encore le construire.`)
+		print(
+			`✖ Le format « {format.nom} » est repéré dans les tendances mais la Fabrique ne sait pas encore le construire.`
+		)
 		process.exit(1)
 	end
 end
@@ -134,7 +139,10 @@ if existant and not options.remplacer then
 	existant = nil
 end
 
-local etapes = math.clamp(math.floor(options.etapes), 3, 20)
+-- Au-delà de 14 étapes, le format « evasion » dépasse le seuil de 4000 pièces du
+-- validateur (mesuré : 3598 pièces à 14 étapes, 4070 à 16).
+local ETAPES_MAX = 14
+local etapes = math.clamp(math.floor(options.etapes), 3, ETAPES_MAX)
 local jeu = {
 	nom = nom,
 	titre = titre,
@@ -208,27 +216,29 @@ if genreStats then
 	)
 	table.insert(fiche, "")
 end
-for _, ligne in {
-	"## Ce que ces chiffres ne disent pas",
-	"",
-	"Ils montrent ce qui monte dans les classements, pas ce qui marchera pour ce jeu : aucun de ces chiffres ne garantit des joueurs. Le rendu réel (lumières, matériaux) et le plaisir de jeu ne se vérifient que dans Roblox Studio, en jouant.",
-	"",
-	"## Page Roblox (proposition)",
-	"",
-	`- **Nom** : {theme.emoji} {titre}`,
-	`- **Description** : Climb, jump and dodge your way through {etapes} stages of the {theme.motsTitre[1]} world. Your stage is saved: come back and finish later. Collect gems, reach the top and count your wins!`,
-	"",
-	"L'interface du jeu (boutique, récompense du jour) est en français ; le titre et la description sont en anglais, comme les noms relevés dans les classements.",
-	"",
-	"## Construire, valider, tester",
-	"",
-	"```bash",
-	`./pipeline/run.sh maps/{nom}.lua`,
-	"```",
-	"",
-	`Le rapport de validation est écrit dans \`reports/{nom}.md\`, la place dans \`build/{nom}.rbxl\` (ouvrable dans Roblox Studio).`,
-	"",
-} do
+for _, ligne in
+	{
+		"## Ce que ces chiffres ne disent pas",
+		"",
+		"Ils montrent ce qui monte dans les classements, pas ce qui marchera pour ce jeu : aucun de ces chiffres ne garantit des joueurs. Le rendu réel (lumières, matériaux) et le plaisir de jeu ne se vérifient que dans Roblox Studio, en jouant.",
+		"",
+		"## Page Roblox (proposition)",
+		"",
+		`- **Nom** : {theme.emoji} {titre}`,
+		`- **Description** : Climb, jump and dodge your way through {etapes} stages of the {theme.motsTitre[1]} world. Your stage is saved: come back and finish later. Collect gems, reach the top and count your wins!`,
+		"",
+		"L'interface du jeu (boutique, récompense du jour) est en français ; le titre et la description sont en anglais, comme les noms relevés dans les classements.",
+		"",
+		"## Construire, valider, tester",
+		"",
+		"```bash",
+		`./pipeline/run.sh maps/{nom}.lua`,
+		"```",
+		"",
+		`Le rapport de validation est écrit dans \`reports/{nom}.md\`, la place dans \`build/{nom}.rbxl\` (ouvrable dans Roblox Studio).`,
+		"",
+	}
+do
 	table.insert(fiche, ligne)
 end
 fs.writeFile(`jeux/{nom}.md`, table.concat(fiche, "\n"))

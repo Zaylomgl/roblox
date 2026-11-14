@@ -21,7 +21,13 @@ export type Parametres = {
 	- UseJumpPower = true  : vitesse initiale = JumpPower
 	- UseJumpPower = false : vitesse initiale = sqrt(2 * g * JumpHeight)
 ]]
-function M.parametres(gravite: number, vitesseMarche: number, useJumpPower: boolean, jumpPower: number, jumpHeight: number): Parametres
+function M.parametres(
+	gravite: number,
+	vitesseMarche: number,
+	useJumpPower: boolean,
+	jumpPower: number,
+	jumpHeight: number
+): Parametres
 	local v0 = if useJumpPower then jumpPower else math.sqrt(2 * gravite * jumpHeight)
 	return {
 		gravite = gravite,

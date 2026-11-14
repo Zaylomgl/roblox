@@ -76,8 +76,10 @@ end
 	tendance la plus forte, sans refaire dix fois le même format.
 
 	Thème : parmi ceux pas encore utilisés avec ce format (tous, s'ils l'ont
-	tous été), celui dont les mots sont le plus présents dans les tendances ;
-	à égalité, tirage au sort reproductible (graine).
+	tous été), on ne garde que les moins employés dans tout le catalogue (un
+	thème ne revient que lorsque tous ont servi) ; puis celui dont les mots
+	sont le plus présents dans les tendances ; à égalité, tirage au sort
+	reproductible (graine).
 ]]
 function M.choisir(tendances, formats, themes, catalogue, graine: number)
 	local dejaParFormat, dejaCombinaison = {}, {}
@@ -97,14 +99,29 @@ function M.choisir(tendances, formats, themes, catalogue, graine: number)
 	end
 	assert(meilleur, "aucun format constructible dans le catalogue")
 
-	local candidats = {}
+	-- Variété d'abord : on ne reprend un thème que lorsque tous ont servi autant de fois.
+	local emplois = {}
+	for _, jeu in catalogue do
+		emplois[jeu.theme] = (emplois[jeu.theme] or 0) + 1
+	end
+	local libres = {}
 	for _, theme in themes do
 		if not dejaCombinaison[meilleur.format.cle .. "/" .. theme.cle] then
-			table.insert(candidats, theme)
+			table.insert(libres, theme)
 		end
 	end
-	if #candidats == 0 then
-		candidats = table.clone(themes)
+	if #libres == 0 then
+		libres = table.clone(themes)
+	end
+	local minimum = math.huge
+	for _, theme in libres do
+		minimum = math.min(minimum, emplois[theme.cle] or 0)
+	end
+	local candidats = {}
+	for _, theme in libres do
+		if (emplois[theme.cle] or 0) == minimum then
+			table.insert(candidats, theme)
+		end
 	end
 	local tirer = M.hasard(graine)
 	local notes = {}

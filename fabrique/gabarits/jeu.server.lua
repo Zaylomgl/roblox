@@ -167,7 +167,13 @@ local function placer(joueur, perso)
 	end
 	local zone = bornes[p.etape]
 	if zone then
-		racine.CFrame = zone.CFrame * CFrame.new(0, 1, 2)
+		local cible = zone.CFrame * CFrame.new(0, 1, 2)
+		-- PivotTo déplace tout le personnage ; à défaut, on déplace sa pièce racine.
+		if not pcall(function()
+			perso:PivotTo(cible)
+		end) then
+			racine.CFrame = cible
+		end
 	end
 end
 
@@ -360,11 +366,40 @@ for _, objet in ipairs(map:GetDescendants()) do
 	end
 end
 
-local temps = 0
+-- Précaution : une barre ancrée déplacée par script peut ne pas déclencher Touched
+-- sur un personnage immobile. Les barres mortelles regardent donc elles-mêmes,
+-- dix fois par seconde, ce qu'elles recouvrent.
+local barres = {}
+for _, rotor in ipairs(rotors) do
+	if rotor.Parent == dossierDangers then
+		table.insert(barres, rotor)
+	end
+end
+local function balayer()
+	for _, barre in ipairs(barres) do
+		local ok, touches = pcall(function()
+			return workspace:GetPartsInPart(barre)
+		end)
+		if ok then
+			for _, piece in ipairs(touches) do
+				local joueur, humanoide = joueurDe(piece)
+				if joueur and not enVictoire[joueur] then
+					humanoide.Health = 0
+				end
+			end
+		end
+	end
+end
+
+local temps, dernierBalayage = 0, 0
 RunService.Heartbeat:Connect(function(dt)
 	temps += dt
 	for _, rotor in ipairs(rotors) do
 		rotor.CFrame = basesRotors[rotor] * CFrame.Angles(0, temps * rotor:GetAttribute("VitesseRotation"), 0)
+	end
+	if temps - dernierBalayage >= 0.1 then
+		dernierBalayage = temps
+		balayer()
 	end
 	for i, gemme in ipairs(gemmes) do
 		gemme.CFrame = basesGemmes[gemme] * CFrame.new(0, math.sin(temps * 2 + i) * 0.35, 0) * CFrame.Angles(0, temps * 1.5, 0)

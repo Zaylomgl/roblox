@@ -202,7 +202,8 @@ local function notifier(message: string, couleur: Color3?)
 	arrondi(14).Parent = toast
 	contour(couleur or COULEURS.contour, 2).Parent = toast
 	task.delay(2.5, function()
-		local fondu = TweenService:Create(toast, TweenInfo.new(0.4), { TextTransparency = 1, BackgroundTransparency = 1 })
+		local fondu =
+			TweenService:Create(toast, TweenInfo.new(0.4), { TextTransparency = 1, BackgroundTransparency = 1 })
 		fondu:Play()
 		fondu.Completed:Wait()
 		toast:Destroy()
@@ -235,10 +236,20 @@ local grille = creer("Frame", {
 })
 local cases = {}
 for i, gain in Configuration.RECOMPENSES_QUOTIDIENNES do
-	local case = creer("Frame", { BackgroundColor3 = COULEURS.fondClair, LayoutOrder = i, Parent = grille }, { arrondi(10) })
+	local case = creer(
+		"Frame",
+		{ BackgroundColor3 = COULEURS.fondClair, LayoutOrder = i, Parent = grille },
+		{ arrondi(10) }
+	)
 	local trait = contour(COULEURS.fondClair, 2)
 	trait.Parent = case
-	texte({ Size = UDim2.fromScale(1, 0.35), Text = "J" .. i, TextColor3 = COULEURS.texteDoux, _max = 18, Parent = case })
+	texte({
+		Size = UDim2.fromScale(1, 0.35),
+		Text = "J" .. i,
+		TextColor3 = COULEURS.texteDoux,
+		_max = 18,
+		Parent = case,
+	})
 	texte({
 		Position = UDim2.fromScale(0, 0.4),
 		Size = UDim2.fromScale(1, 0.5),

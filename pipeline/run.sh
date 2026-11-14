@@ -15,9 +15,16 @@ echo "═══ 1/4 Tests du validateur"
 lune run pipeline/test
 
 echo "═══ 2/4 Lint et formatage (pipeline + scripts du jeu)"
-selene pipeline/
+selene pipeline/ fabrique/creer.luau fabrique/formats.luau fabrique/themes.luau fabrique/lib/ fabrique/apercu/exporter.luau
 (cd pipeline/lint && selene ../../src ../reel)
-stylua --check pipeline/ src/
+# fabrique/gabarits/ : fragments, vérifiés une fois assemblés dans maps/ (étape 3/4)
+# stylua doit être compilé avec la syntaxe Luau (--features luau) : sans elle, il ignore
+# en silence les fichiers qui utilisent des chaînes entre accents graves.
+if ! printf 'local _x = `a{1}`\n' | stylua --check - >/dev/null 2>&1; then
+	echo "✖ stylua ne comprend pas la syntaxe Luau : réinstaller avec « cargo install --locked stylua@2.6.0 --features luau »"
+	exit 2
+fi
+stylua --check pipeline/ src/ fabrique/creer.luau fabrique/formats.luau fabrique/themes.luau fabrique/lib/ fabrique/apercu/exporter.luau
 
 if [ "$#" -gt 0 ]; then maps=("$@"); else maps=(maps/*.lua); fi
 

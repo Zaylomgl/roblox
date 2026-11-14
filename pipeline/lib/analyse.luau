@@ -124,7 +124,16 @@ function M.analyser(game, nom: string)
 		Trail = { "Texture" },
 		MeshPart = { "MeshID", "TextureID" },
 		SpecialMesh = { "MeshId", "TextureId" },
-		Sky = { "SkyboxBk", "SkyboxDn", "SkyboxFt", "SkyboxLf", "SkyboxRt", "SkyboxUp", "SunTextureId", "MoonTextureId" },
+		Sky = {
+			"SkyboxBk",
+			"SkyboxDn",
+			"SkyboxFt",
+			"SkyboxLf",
+			"SkyboxRt",
+			"SkyboxUp",
+			"SunTextureId",
+			"MoonTextureId",
+		},
 		ImageLabel = { "Image" },
 		ImageButton = { "Image" },
 		Animation = { "AnimationId" },
@@ -219,8 +228,20 @@ function M.analyser(game, nom: string)
 					virtuelle.Shape = roblox.Enum.PartType.Cylinder
 					-- Terrain:FillCylinder a son axe sur Y ; un cylindre Part, sur X.
 					virtuelle.Size = roblox.Vector3.new(parametres[1], parametres[2] * 2, parametres[2] * 2)
-					virtuelle.CFrame = roblox.CFrame.new(c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11], c[12])
-						* roblox.CFrame.Angles(0, 0, math.rad(90))
+					virtuelle.CFrame = roblox.CFrame.new(
+						c[1],
+						c[2],
+						c[3],
+						c[4],
+						c[5],
+						c[6],
+						c[7],
+						c[8],
+						c[9],
+						c[10],
+						c[11],
+						c[12]
+					) * roblox.CFrame.Angles(0, 0, math.rad(90))
 					table.insert(pieces, virtuelle)
 					terrainPlan.surfacesMarchables += 1
 				end
@@ -230,7 +251,9 @@ function M.analyser(game, nom: string)
 				"erreur",
 				"Terrain",
 				"PLAN_TERRAIN_ILLISIBLE",
-				`ServerStorage.PlanTerrain ne renvoie pas de table OPERATIONS : le Terrain ne sera pas généré. ({tostring(plan)})`,
+				`ServerStorage.PlanTerrain ne renvoie pas de table OPERATIONS : le Terrain ne sera pas généré. ({tostring(
+					plan
+				)})`,
 				{ cheminDe(modulePlan) }
 			)
 		end
@@ -243,10 +266,16 @@ function M.analyser(game, nom: string)
 	local starterPlayer = game:FindFirstChildOfClass("StarterPlayer")
 	local P = config.PHYSIQUE
 	local gravite = lire(workspace, "Gravity", P.GRAVITE)
-	local vitesseMarche = if starterPlayer then lire(starterPlayer, "CharacterWalkSpeed", P.VITESSE_MARCHE) else P.VITESSE_MARCHE
-	local useJumpPower = if starterPlayer then lire(starterPlayer, "CharacterUseJumpPower", P.USE_JUMP_POWER) else P.USE_JUMP_POWER
+	local vitesseMarche = if starterPlayer
+		then lire(starterPlayer, "CharacterWalkSpeed", P.VITESSE_MARCHE)
+		else P.VITESSE_MARCHE
+	local useJumpPower = if starterPlayer
+		then lire(starterPlayer, "CharacterUseJumpPower", P.USE_JUMP_POWER)
+		else P.USE_JUMP_POWER
 	local jumpPower = if starterPlayer then lire(starterPlayer, "CharacterJumpPower", P.JUMP_POWER) else P.JUMP_POWER
-	local jumpHeight = if starterPlayer then lire(starterPlayer, "CharacterJumpHeight", P.JUMP_HEIGHT) else P.JUMP_HEIGHT
+	local jumpHeight = if starterPlayer
+		then lire(starterPlayer, "CharacterJumpHeight", P.JUMP_HEIGHT)
+		else P.JUMP_HEIGHT
 	local hauteurDestruction = lire(workspace, "FallenPartsDestroyHeight", -500)
 
 	local phys = physique.parametres(gravite, vitesseMarche, useJumpPower, jumpPower, jumpHeight)
@@ -266,7 +295,13 @@ function M.analyser(game, nom: string)
 	end
 	for _, spawn in spawns do
 		if not lire(spawn, "Anchored", true) then
-			signaler("erreur", "Spawn", "SPAWN_NON_ANCRE", "Le SpawnLocation n'est pas ancré : il va tomber.", { cheminDe(spawn) })
+			signaler(
+				"erreur",
+				"Spawn",
+				"SPAWN_NON_ANCRE",
+				"Le SpawnLocation n'est pas ancré : il va tomber.",
+				{ cheminDe(spawn) }
+			)
 		end
 		if spawn.CFrame.Position.Y <= hauteurDestruction then
 			signaler(
@@ -443,7 +478,12 @@ function M.analyser(game, nom: string)
 		if ok then
 			table.insert(profondeurs, prof)
 		else
-			table.insert(inaccessibles, `{cheminDe(c)} @ ({arrondi(c.CFrame.Position.X)}, {arrondi(c.CFrame.Position.Y)}, {arrondi(c.CFrame.Position.Z)})`)
+			table.insert(
+				inaccessibles,
+				`{cheminDe(c)} @ ({arrondi(c.CFrame.Position.X)}, {arrondi(c.CFrame.Position.Y)}, {arrondi(
+					c.CFrame.Position.Z
+				)})`
+			)
 		end
 	end
 	table.sort(profondeurs)
@@ -564,7 +604,12 @@ function M.analyser(game, nom: string)
 		)
 	end
 	if not services.BadgeService then
-		signaler("info", "Rétention", "PAS_DE_BADGES", "Aucun badge : les badges donnent des objectifs à long terme aux joueurs.")
+		signaler(
+			"info",
+			"Rétention",
+			"PAS_DE_BADGES",
+			"Aucun badge : les badges donnent des objectifs à long terme aux joueurs."
+		)
 	end
 
 	--------------------------------------------------------------------------------
@@ -658,7 +703,7 @@ function M.analyser(game, nom: string)
 
 	local rapport = {
 		map = nom,
-			statut = if compte.erreur > 0 then "A_CORRIGER" else "OK",
+		statut = if compte.erreur > 0 then "A_CORRIGER" else "OK",
 		resume = compte,
 		statistiques = stats,
 		terrain = terrainPlan,

@@ -1,6 +1,6 @@
 # 🌋 Tower Of Volcano
 
-Jeu créé par la Fabrique le 2026-11-13 — script de construction : [`maps/tour-volcan.lua`](../maps/tour-volcan.lua).
+Jeu créé par la Fabrique le 2026-11-14 — script de construction : [`maps/tour-volcan.lua`](../maps/tour-volcan.lua).
 
 | | |
 |---|---|

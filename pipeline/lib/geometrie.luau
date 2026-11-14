@@ -147,7 +147,10 @@ end
 
 -- b est-il entièrement recouvert (en vue de dessus) par a ?
 function M.estRecouvert(b: Surface, a: Surface, marge: number): boolean
-	return b.minX >= a.minX - marge and b.maxX <= a.maxX + marge and b.minZ >= a.minZ - marge and b.maxZ <= a.maxZ + marge
+	return b.minX >= a.minX - marge
+		and b.maxX <= a.maxX + marge
+		and b.minZ >= a.minZ - marge
+		and b.maxZ <= a.maxZ + marge
 end
 
 -- Grille spatiale 2D (vue de dessus).

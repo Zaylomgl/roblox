@@ -2,10 +2,10 @@
   "accessibilite": {
     "collectiblesAccessibles": 40,
     "collectiblesTotal": 40,
-    "profondeurMaxCollectibles": 94,
-    "profondeurMedianeCollectibles": 50,
-    "surfacesAtteintes": 148,
-    "surfacesMarchables": 186
+    "profondeurMaxCollectibles": 91,
+    "profondeurMedianeCollectibles": 51,
+    "surfacesAtteintes": 140,
+    "surfacesMarchables": 178
   },
   "ambiance": {
     "Atmosphere": true,
@@ -30,7 +30,7 @@
       "gravite": "info",
       "message": "1 grande(s) surface(s) (≥100 studs²) jamais atteintes depuis le spawn. Décor normal, ou zone coupée du reste : à vérifier. Les 10 plus grandes :",
       "objets": [
-        "Workspace.Parcours.Decor.Linteau (≈173 studs², Y=50.1)"
+        "Workspace.Parcours.Decor.Linteau (≈185 studs², Y=49.5)"
       ]
     },
     {
@@ -48,13 +48,13 @@
   "statistiques": {
     "collectibles": 40,
     "emetteursParticules": 56,
-    "lumieres": 133,
+    "lumieres": 128,
     "lumieresAvecOmbres": 0,
     "meshParts": 0,
-    "objets": 2007,
+    "objets": 3039,
     "padsDeSaut": 0,
     "particulesParSeconde": 9,
-    "pieces": 1687,
+    "pieces": 2724,
     "piecesNonAncrees": 0,
     "scripts": 9,
     "sons": 49,

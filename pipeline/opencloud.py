@@ -52,6 +52,9 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 EXPERIENCE = RACINE / "pipeline" / "experience.json"
 CONFIGURATION = RACINE / "src" / "ReplicatedStorage" / "Partage" / "Configuration.luau"
 TESTS_REELS = RACINE / "pipeline" / "reel" / "tests.luau"
+TESTS_REELS_PARCOURS = RACINE / "pipeline" / "reel" / "tests-parcours.luau"
+SCRIPT_JEU_PARCOURS = RACINE / "fabrique" / "gabarits" / "jeu.server.lua"
+CATALOGUE_FABRIQUE = RACINE / "jeux" / "catalogue.json"
 TESTS_NOYAU = RACINE / "pipeline" / "tests" / "noyau.test.luau"
 DERNIERE_PUBLICATION = RACINE / "build" / "derniere-publication.json"
 RAPPORTS = RACINE / "reports"
@@ -269,8 +272,13 @@ def commande_publier(args) -> int:
 
 
 def assembler_script(map_nom: str, version: int | None = None) -> str:
-    """pipeline/reel/tests.luau + chiffres attendus (rapport du validateur, version publiée) + tests du noyau."""
-    script = TESTS_REELS.read_text()
+    """Script de tests + chiffres attendus (rapport du validateur, version publiée) + tests du noyau.
+
+    Un jeu de la Fabrique (présent dans jeux/catalogue.json) est testé avec
+    pipeline/reel/tests-parcours.luau, les autres maps avec pipeline/reel/tests.luau.
+    """
+    fabrique = est_jeu_fabrique(map_nom)
+    script = (TESTS_REELS_PARCOURS if fabrique else TESTS_REELS).read_text()
     rapport = RAPPORTS / f"{map_nom}.json"
     if rapport.exists():
         donnees = json.loads(rapport.read_text())
@@ -284,6 +292,9 @@ def assembler_script(map_nom: str, version: int | None = None) -> str:
         champs = {}
     if version:
         champs["placeVersion"] = int(version)
+    if fabrique:
+        champs["placeId"] = int(experience()["placeId"])
+        champs["nom"] = map_nom
     attendu = "{ " + ", ".join(f"{k} = {json.dumps(v)}" for k, v in champs.items()) + " }" if champs else "nil"
     noyau = re.sub(
         r'require\("\.\./\.\./src/ServerScriptService/Noyau/(\w+)"\)',
@@ -296,6 +307,10 @@ def assembler_script(map_nom: str, version: int | None = None) -> str:
     for ligne in script.splitlines():
         if "--@@ATTENDU@@" in ligne:
             lignes.append(f"local ATTENDU = {attendu}")
+        elif "--@@SCRIPT_JEU@@" in ligne:
+            lignes.append("local function scriptDeJeu()")
+            lignes += ["\t" + l if l else l for l in SCRIPT_JEU_PARCOURS.read_text().splitlines()]
+            lignes.append("end")
         elif "--@@TESTS_NOYAU@@" in ligne:
             lignes.append("local function testsNoyau()")
             lignes += ["\t" + l if l else l for l in noyau.splitlines()]
@@ -303,6 +318,12 @@ def assembler_script(map_nom: str, version: int | None = None) -> str:
         else:
             lignes.append(ligne)
     return "\n".join(lignes) + "\n"
+
+
+def est_jeu_fabrique(map_nom: str) -> bool:
+    if not CATALOGUE_FABRIQUE.exists():
+        return False
+    return any(jeu.get("nom") == map_nom for jeu in json.loads(CATALOGUE_FABRIQUE.read_text()))
 
 
 def commande_tester(args) -> int:
@@ -399,7 +420,7 @@ def ecrire_rapport_md(rapport: dict, chemin: pathlib.Path) -> None:
         "_Généré par `python3 pipeline/opencloud.py tester` (API Open Cloud « Luau Execution »). "
         "Dans cet environnement, d'après la documentation Roblox, la physique ne tourne pas et les scripts de la "
         "place ne démarrent pas d'eux-mêmes ; il n'y a pas de vrai joueur. Le parcours joueur complet reste couvert "
-        "par les tests d'intégration du moteur simulé (`pipeline/tests/integration.test.luau`)._",
+        "par les tests du moteur simulé (`pipeline/tests/integration.test.luau`, `pipeline/tests/fabrique.test.luau`)._",
     ]
     chemin.write_text("\n".join(lignes) + "\n")
 

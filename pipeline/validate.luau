@@ -53,7 +53,9 @@ end
 local icones = { erreur = "❌", avertissement = "⚠️", info = "ℹ️" }
 ajouter(`# Rapport de validation — {nom}`)
 ajouter("")
-ajouter(`**Statut : {if rapport.statut == "OK" then "✅ OK" else "❌ À corriger"}** — {compte.erreur} erreur(s), {compte.avertissement} avertissement(s), {compte.info} info(s).`)
+ajouter(
+	`**Statut : {if rapport.statut == "OK" then "✅ OK" else "❌ À corriger"}** — {compte.erreur} erreur(s), {compte.avertissement} avertissement(s), {compte.info} info(s).`
+)
 ajouter("")
 ajouter("## Chiffres clés")
 ajouter("")
@@ -66,7 +68,9 @@ ajouter(`| Scripts | {stats.scripts} |`)
 ajouter(`| Spawns | {stats.spawns} |`)
 ajouter(`| Pads de saut | {stats.padsDeSaut} |`)
 if rapport.terrain and rapport.terrain.operations > 0 then
-	ajouter(`| Terrain (plan rejoué au démarrage) | {rapport.terrain.operations} opérations, {rapport.terrain.surfacesMarchables} sols marchables |`)
+	ajouter(
+		`| Terrain (plan rejoué au démarrage) | {rapport.terrain.operations} opérations, {rapport.terrain.surfacesMarchables} sols marchables |`
+	)
 end
 local acc = rapport.accessibilite
 local services = rapport.systemes
@@ -80,9 +84,13 @@ if acc.profondeurMedianeCollectibles then
 		`| Déplacements pour atteindre un collectible (médiane / max) | {acc.profondeurMedianeCollectibles} / {acc.profondeurMaxCollectibles} |`
 	)
 end
-ajouter(`| Saut théorique (hauteur / portée à plat) | {rapport.monde.hauteurSautTheorique} / {rapport.monde.porteeSautAPlat} studs |`)
 ajouter(
-	`| Sauvegarde (DataStore) / Monétisation (Marketplace) / Badges | {ouiNon(services.DataStoreService)} / {ouiNon(services.MarketplaceService)} / {ouiNon(services.BadgeService)} |`
+	`| Saut théorique (hauteur / portée à plat) | {rapport.monde.hauteurSautTheorique} / {rapport.monde.porteeSautAPlat} studs |`
+)
+ajouter(
+	`| Sauvegarde (DataStore) / Monétisation (Marketplace) / Badges | {ouiNon(services.DataStoreService)} / {ouiNon(
+		services.MarketplaceService
+	)} / {ouiNon(services.BadgeService)} |`
 )
 ajouter("")
 ajouter("## Problèmes")
@@ -104,10 +112,14 @@ for _, p in problemes do
 end
 ajouter("")
 ajouter("---")
-ajouter("_Rapport généré automatiquement par `pipeline/validate.luau`. L'accessibilité est une estimation géométrique (voir pipeline/README.md) : un « inaccessible » doit être confirmé en jeu._")
+ajouter(
+	"_Rapport généré automatiquement par `pipeline/validate.luau`. L'accessibilité est une estimation géométrique (voir pipeline/README.md) : un « inaccessible » doit être confirmé en jeu._"
+)
 fs.writeFile(`{dossierRapport}/{nom}.md`, table.concat(md, "\n") .. "\n")
 
-print(`{if rapport.statut == "OK" then "✔" else "✖"} {nom} : {compte.erreur} erreur(s), {compte.avertissement} avertissement(s), {compte.info} info(s) → {dossierRapport}/{nom}.md`)
+print(
+	`{if rapport.statut == "OK" then "✔" else "✖"} {nom} : {compte.erreur} erreur(s), {compte.avertissement} avertissement(s), {compte.info} info(s) → {dossierRapport}/{nom}.md`
+)
 if compte.erreur > 0 then
 	process.exit(1)
 end

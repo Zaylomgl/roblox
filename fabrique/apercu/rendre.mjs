@@ -1,6 +1,8 @@
 // Aperçu en images d'un jeu de la Fabrique.
 //
-// Usage : node fabrique/apercu/rendre.mjs build/<nom>/scene.json jeux/apercus/<nom>
+// Usage : node fabrique/apercu/rendre.mjs build/<nom>/scene.json jeux/apercus/<nom>.jpg
+//
+// Écrit UNE image : une planche de quatre vues (ensemble, départ, une étape, arrivée).
 //
 // RENDU APPROXIMATIF : three.js dans Chromium, pas le moteur Roblox. Formes,
 // couleurs, proportions et composition sont fidèles ; les matériaux, l'éclairage
@@ -15,9 +17,9 @@ const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
 const ici = dirname(fileURLToPath(import.meta.url));
-const [cheminScene, prefixe] = process.argv.slice(2);
-if (!cheminScene || !prefixe) {
-	console.error("Usage : node fabrique/apercu/rendre.mjs <scene.json> <préfixe-de-sortie>");
+const [cheminScene, sortie] = process.argv.slice(2);
+if (!cheminScene || !sortie) {
+	console.error("Usage : node fabrique/apercu/rendre.mjs <scene.json> <planche.jpg>");
 	process.exit(2);
 }
 const scene = await readFile(cheminScene, "utf8");
@@ -34,6 +36,8 @@ const couleur = (c) => new THREE.Color(c[0], c[1], c[2]);
 const rendu = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 rendu.setSize(innerWidth, innerHeight);
 rendu.setPixelRatio(devicePixelRatio);
+rendu.autoClear = false;
+rendu.setScissorTest(true);
 rendu.shadowMap.enabled = true;
 rendu.shadowMap.type = THREE.PCFSoftShadowMap;
 rendu.toneMapping = THREE.ACESFilmicToneMapping;
@@ -45,7 +49,7 @@ const brume = couleur(L.brume);
 const nuit = L.heure < 5.5 || L.heure > 19;
 const ciel = brume.clone().lerp(couleur(L.declin), 0.35);
 monde.background = ciel;
-monde.fog = new THREE.FogExp2(ciel, 0.0006 + L.densite * 0.0022);
+monde.fog = new THREE.FogExp2(ciel, 0.0003 + L.densite * 0.0012);
 
 monde.add(new THREE.HemisphereLight(couleur(L.exterieur).multiplyScalar(2.2), couleur(L.ambiance).multiplyScalar(1.2), 1.4));
 const angle = ((L.heure - 6) / 12) * Math.PI;
@@ -95,7 +99,14 @@ for (const p of scene.pieces) {
 }
 
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.5, 6000);
-window.photo = (position, cible, champ) => {
+window.photo = (position, cible, champ, case_) => {
+	// Chaque vue occupe un quart de l'image (grille 2 × 2, de gauche à droite puis de haut en bas).
+	const l = innerWidth / 2, h = innerHeight / 2;
+	const x = (case_ % 2) * l, y = (1 - Math.floor(case_ / 2)) * h;
+	rendu.setViewport(x, y, l, h);
+	rendu.setScissor(x, y, l, h);
+	rendu.clear();
+	camera.aspect = l / h;
 	camera.fov = champ || 60;
 	camera.updateProjectionMatrix();
 	camera.position.set(...position);
@@ -149,16 +160,18 @@ if (format === "tour") {
 	vues["4-arrivee"] = [[a[0] + dehorsFin[0] * 34 - dehorsFin[2] * 14, a[1] + 14, a[2] + dehorsFin[2] * 34 + dehorsFin[0] * 14], [a[0], a[1] + 2, a[2]], 65];
 } else {
 	vues["1-ensemble"] = [[centre[0] + etendue * 0.3 + 150, centre[1] + 170, d[2] - 120], [centre[0], centre[1] - 20, centre[2] - etendue * 0.12], 55];
-	vues["2-depart"] = [[d[0] + 5, d[1] + 9, d[2] - 14], [d[0] - 2, d[1] + 3, d[2] + 60], 75];
-	vues["3-etape"] = [[milieu[0] + 26, milieu[1] + 16, milieu[2] - 44], [milieu[0], milieu[1], milieu[2] + 16], 65];
-	vues["4-arrivee"] = [[a[0] + 22, a[1] + 15, a[2] - 46], [a[0], a[1] + 6, a[2] + 12], 65];
+	vues["2-depart"] = [[d[0] + 3, d[1] + 8, d[2] - 5], [d[0] - 1, d[1] + 3, d[2] + 60], 80];
+	vues["3-etape"] = [[milieu[0] + 22, milieu[1] + 14, milieu[2] - 40], [milieu[0], milieu[1], milieu[2] + 16], 68];
+	vues["4-arrivee"] = [[a[0] + 26, a[1] + 16, a[2] - 52], [a[0], a[1] + 5, a[2] + 6], 62];
 }
 
-await mkdir(dirname(prefixe), { recursive: true });
-for (const [nom, [position, cible, champ]] of Object.entries(vues)) {
-	await page.evaluate(([p, c, f]) => window.photo(p, c, f), [position, cible, champ]);
-	await page.screenshot({ path: `${prefixe}-${nom}.png` });
-	console.log(`✔ ${prefixe}-${nom}.png`);
+await mkdir(dirname(sortie), { recursive: true });
+let case_ = 0;
+for (const [position, cible, champ] of Object.values(vues)) {
+	await page.evaluate(([p, c, f, n]) => window.photo(p, c, f, n), [position, cible, champ, case_]);
+	case_ += 1;
 }
+await page.screenshot({ path: sortie, type: "jpeg", quality: 82 });
+console.log(`✔ ${sortie}`);
 await navigateur.close();
 serveur.close();

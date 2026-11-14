@@ -22,14 +22,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin
-          key: outils-${{ runner.os }}-lune${{ env.LUNE_VERSION }}-selene${{ env.SELENE_VERSION }}-stylua${{ env.STYLUA_VERSION }}
+          key: outils-${{ runner.os }}-lune${{ env.LUNE_VERSION }}-selene${{ env.SELENE_VERSION }}-stylua${{ env.STYLUA_VERSION }}-luau
 
       - name: Installation des outils
         if: steps.cache-outils.outputs.cache-hit != 'true'
         run: |
           cargo install --locked lune@${LUNE_VERSION}
           cargo install --locked selene@${SELENE_VERSION}
-          cargo install --locked stylua@${STYLUA_VERSION}
+          cargo install --locked stylua@${STYLUA_VERSION} --features luau
 
       - name: Lancer le pipeline
         run: ./pipeline/run.sh

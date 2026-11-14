@@ -1,0 +1,154 @@
+{
+ "date": "2026-11-14T08:25:09+00:00",
+ "placeId": 116414227319701,
+ "versionTestee": 10,
+ "map": "tour-volcan",
+ "tache": "universes/10774067194/places/116414227319701/versions/10/luau-execution-sessions/da2608df-61cc-4e00-a504-18f7752b9d39/tasks/da2608df-61cc-4e00-a504-18f7752b9d39",
+ "etat": "COMPLETE",
+ "erreur": null,
+ "resultats": {
+  "ignores": 0,
+  "tests": [
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "place 116414227319701, version 10",
+    "nom": "c'est la version qui vient d'être envoyée"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "Tower Of Volcano — format tour, thème volcan, 10 étapes",
+    "nom": "le jeu de la Fabrique est là, avec ses dossiers et son script"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "1669 pièces, 40 gemmes, 108 lumières, 1 spawn",
+    "nom": "contenu identique au fichier construit (comptages du validateur)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "10 matériaux différents, plus grande pièce : 1800 studs",
+    "nom": "matériaux, tailles et attributs relus tels qu'ils ont été écrits"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "heure 18.4, technologie illisible ici",
+    "nom": "ambiance du thème en place (atmosphère, nuages, étalonnage)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Place",
+    "detail": "arches numérotées de 1 à 9",
+    "nom": "textes des arches lisibles (numéros d'étape sur les linteaux)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Géométrie",
+    "detail": "sol « Ile » à Y = 40, zone mortelle à Y = -52",
+    "nom": "point d'apparition : sol réel juste dessous, au-dessus de la zone mortelle"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Géométrie",
+    "detail": "9 bornes, chacune sur un sol solide",
+    "nom": "chaque borne d'étape est posée sur un vrai sol"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Géométrie",
+    "detail": "sol « Socle »",
+    "nom": "la zone d'arrivée est posée sur l'estrade"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Géométrie",
+    "detail": "40 gemmes, la plus haute à 5.3 studs du sol",
+    "nom": "chaque gemme a un sol réel à portée en dessous"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Géométrie",
+    "detail": "15 pièges",
+    "nom": "les pièges mortels ne sont pas solides, les sols le sont"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Moteur",
+    "detail": "racine et tête déplacées ensemble",
+    "nom": "PivotTo déplace un personnage entier sur une borne"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Moteur",
+    "detail": "pièce témoin détectée dans « Barre »",
+    "nom": "GetPartsInPart voit une pièce qui recouvre une barre ou un piège"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Moteur",
+    "detail": "vitesse 9.5 studs/s acceptée et relue",
+    "nom": "un tapis ancré accepte une vitesse (AssemblyLinearVelocity)"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Moteur",
+    "detail": "ok",
+    "nom": "Humanoid : mettre la vie à 0, et annonce dans un PlayerGui"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Script de jeu",
+    "detail": "terminé en 0 s ; tapis mis en vitesse par le script",
+    "nom": "s'exécute jusqu'au bout sans erreur dans le vrai moteur"
+   },
+   {
+    "statut": "ok",
+    "groupe": "Script de jeu",
+    "detail": "181 images en 3 s, la gemme a bougé de 0.24 studs",
+    "nom": "les animations tournent (barres, gemmes) sans erreur"
+   }
+  ],
+  "reussis": 17,
+  "echoues": 0,
+  "mesures": {
+   "emetteursParticules": 97,
+   "versionMoteur": "0.747.0.7471481",
+   "sons": 49,
+   "lumieres": 108,
+   "piecesNonAncrees": 0,
+   "spawns": 1,
+   "plusGrandePiece": 1800,
+   "collectibles": 40,
+   "placeVersion": 10,
+   "erreursJournal": 0,
+   "imagesEn3s": 181,
+   "technologie": "illisible ici",
+   "pieces": 1669
+  }
+ },
+ "journal": [
+  "Moteur Roblox 0.747.0.7471481 — place 116414227319701, version 10",
+  "[ok] Place — c'est la version qui vient d'être envoyée : place 116414227319701, version 10",
+  "[ok] Place — le jeu de la Fabrique est là, avec ses dossiers et son script : Tower Of Volcano — format tour, thème volcan, 10 étapes",
+  "[ok] Place — contenu identique au fichier construit (comptages du validateur) : 1669 pièces, 40 gemmes, 108 lumières, 1 spawn",
+  "[ok] Place — matériaux, tailles et attributs relus tels qu'ils ont été écrits : 10 matériaux différents, plus grande pièce : 1800 studs",
+  "[ok] Place — ambiance du thème en place (atmosphère, nuages, étalonnage) : heure 18.4, technologie illisible ici",
+  "[ok] Place — textes des arches lisibles (numéros d'étape sur les linteaux) : arches numérotées de 1 à 9",
+  "[ok] Géométrie — point d'apparition : sol réel juste dessous, au-dessus de la zone mortelle : sol « Ile » à Y = 40, zone mortelle à Y = -52",
+  "[ok] Géométrie — chaque borne d'étape est posée sur un vrai sol : 9 bornes, chacune sur un sol solide",
+  "[ok] Géométrie — la zone d'arrivée est posée sur l'estrade : sol « Socle »",
+  "[ok] Géométrie — chaque gemme a un sol réel à portée en dessous : 40 gemmes, la plus haute à 5.3 studs du sol",
+  "[ok] Géométrie — les pièges mortels ne sont pas solides, les sols le sont : 15 pièges",
+  "[ok] Moteur — PivotTo déplace un personnage entier sur une borne : racine et tête déplacées ensemble",
+  "[ok] Moteur — GetPartsInPart voit une pièce qui recouvre une barre ou un piège : pièce témoin détectée dans « Barre »",
+  "[ok] Moteur — un tapis ancré accepte une vitesse (AssemblyLinearVelocity) : vitesse 9.5 studs/s acceptée et relue",
+  "[ok] Moteur — Humanoid : mettre la vie à 0, et annonce dans un PlayerGui : ok",
+  "[ok] Script de jeu — s'exécute jusqu'au bout sans erreur dans le vrai moteur : terminé en 0 s ; tapis mis en vitesse par le script",
+  "[ok] Script de jeu — les animations tournent (barres, gemmes) sans erreur : 181 images en 3 s, la gemme a bougé de 0.24 studs",
+  "Bilan : 17 réussi(s), 0 échoué(s), 0 non vérifiable(s)"
+ ]
+}

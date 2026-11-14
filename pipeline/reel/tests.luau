@@ -248,7 +248,8 @@ lancer("Place", "point d'apparition : sol réel juste dessous, au-dessus de la z
 	-- Lancer de rayon du moteur (requête spatiale, sans simulation physique).
 	local parametres = RaycastParams.new()
 	parametres.RespectCanCollide = true
-	local resultat = workspace:Raycast(spawn.Position + Vector3.new(0, spawn.Size.Y / 2 + 0.5, 0), Vector3.new(0, -5, 0), parametres)
+	local resultat =
+		workspace:Raycast(spawn.Position + Vector3.new(0, spawn.Size.Y / 2 + 0.5, 0), Vector3.new(0, -5, 0), parametres)
 	if not resultat then
 		error("le rayon ne touche rien sous le point d'apparition")
 	end
@@ -323,7 +324,9 @@ local function remplissage(cf: CFrame, taille: Vector3): number
 	for ix = 1, occupations.Size.X do
 		for iy = 1, occupations.Size.Y do
 			for iz = 1, occupations.Size.Z do
-				local centre = region.CFrame.Position - region.Size / 2 + Vector3.new(ix - 0.5, iy - 0.5, iz - 0.5) * VOXEL
+				local centre = region.CFrame.Position
+					- region.Size / 2
+					+ Vector3.new(ix - 0.5, iy - 0.5, iz - 0.5) * VOXEL
 				local l = cf:PointToObjectSpace(centre)
 				-- seulement les voxels dont le centre est dans la boîte orientée
 				if math.abs(l.X) <= demi.X and math.abs(l.Y) <= demi.Y and math.abs(l.Z) <= demi.Z then
@@ -342,7 +345,8 @@ lancer("Terrain", "chaque île a un sol d'herbe au niveau prévu (lecture des vo
 	if not terrainGenere then
 		ignorer("Terrain non généré (test précédent)")
 	end
-	local MATERIAUX_SOL = { [Enum.Material.Grass] = true, [Enum.Material.LeafyGrass] = true, [Enum.Material.Water] = true }
+	local MATERIAUX_SOL =
+		{ [Enum.Material.Grass] = true, [Enum.Material.LeafyGrass] = true, [Enum.Material.Water] = true }
 	local iles, bilanIles = 0, {}
 	for _, op in plan.OPERATIONS do
 		if op[1] == "Cylindre" and op[3] == true then
@@ -360,7 +364,9 @@ lancer("Terrain", "chaque île a un sol d'herbe au niveau prévu (lecture des vo
 			end
 			table.insert(bilanIles, `{bons}/12`)
 			if bons < 11 then
-				error(`île centrée en ({math.floor(c[1])}, {math.floor(c[3])}) : seulement {bons}/12 points d'herbe (ou d'eau) à Y = {dessus}`)
+				error(
+					`île centrée en ({math.floor(c[1])}, {math.floor(c[3])}) : seulement {bons}/12 points d'herbe (ou d'eau) à Y = {dessus}`
+				)
 			end
 		end
 	end
@@ -372,7 +378,8 @@ lancer("Terrain", "les 50 cristaux ont un sol réel juste dessous (pièces ou Te
 	if not terrainGenere then
 		ignorer("Terrain non généré (test précédent)")
 	end
-	local dossier = workspace:FindFirstChild("MapIlesCelestes") and workspace.MapIlesCelestes:FindFirstChild("Collectibles")
+	local dossier = workspace:FindFirstChild("MapIlesCelestes")
+		and workspace.MapIlesCelestes:FindFirstChild("Collectibles")
 	t.vrai(dossier ~= nil)
 	local parametres = RaycastParams.new()
 	parametres.FilterType = Enum.RaycastFilterType.Exclude
@@ -382,7 +389,8 @@ lancer("Terrain", "les 50 cristaux ont un sol réel juste dessous (pièces ou Te
 	for _, cristal in dossier:GetChildren() do
 		-- une sphère de 1 stud de rayon ≈ les pieds d'un personnage (un rayon fin passerait entre deux planches)
 		local r = workspace:Spherecast(cristal.Position, 1, Vector3.new(0, -12, 0), parametres)
-		local hautTerrain = dessusTerrain(cristal.Position.X, cristal.Position.Z, cristal.Position.Y - 12, cristal.Position.Y, false)
+		local hautTerrain =
+			dessusTerrain(cristal.Position.X, cristal.Position.Z, cristal.Position.Y - 12, cristal.Position.Y, false)
 		if r then
 			surPieces += 1
 		elseif hautTerrain and hautTerrain <= cristal.Position.Y then
@@ -454,7 +462,9 @@ lancer("Terrain", "éclairage réaliste actif (lumière tirée du ciel, herbe an
 	if okDeco then
 		t.egal(decoration, true)
 	end
-	return `Technology {mesures.technologie}, EnvironmentDiffuse/Specular 1/1, herbe animée {if okDeco then tostring(decoration) else "illisible ici"}`
+	return `Technology {mesures.technologie}, EnvironmentDiffuse/Specular 1/1, herbe animée {if okDeco
+		then tostring(decoration)
+		else "illisible ici"}`
 end)
 
 --------------------------------------------------------------------------------

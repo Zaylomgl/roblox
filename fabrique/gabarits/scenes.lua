@@ -107,6 +107,26 @@ function SCENES.tour()
 			end
 		end
 	end
+	for n = 1, nbBandes * 2 do -- bannières de tissu accrochées à la tour
+		local angle = n * 2.4
+		local haut = Y_DEPART + (n / (nbBandes * 2)) * (sommet - Y_DEPART - 16) + 12
+		local accroche = CFrame.new(0, haut, 0) * CFrame.Angles(0, angle, 0) * CFrame.new(rayonTour + 0.5, 0, 0)
+		K.deco({ Size = Vector3.new(0.9, 0.5, 4.6), CFrame = accroche * CFrame.new(0.2, 0, 0), Color = C.bois, Material = MAT.bois, Name = "Tringle" })
+		K.deco({
+			Size = Vector3.new(0.15, 9, 3.8),
+			CFrame = accroche * CFrame.new(0.3, -4.7, 0),
+			Color = (n % 2 == 0) and C.accent or C.accent2,
+			Material = Enum.Material.Fabric,
+			Name = "Banniere",
+		})
+		K.deco({
+			Size = Vector3.new(0.2, 1.2, 3.8),
+			CFrame = accroche * CFrame.new(0.32, -8.6, 0),
+			Color = C.blanc,
+			Material = Enum.Material.Fabric,
+			Name = "Frange",
+		})
+	end
 	for n = 1, 6 do -- contreforts sur toute la hauteur
 		K.deco({
 			Size = Vector3.new(1.4, sommet - Y_DEPART, 2),
@@ -129,9 +149,13 @@ function SCENES.tour()
 			Name = "Creneau",
 		})
 	end
-	K.cristaux(Vector3.new(0, sommet + 2, 0), 22, C.accent)
-	K.cristaux(Vector3.new(7, sommet + 2, 3), 12, C.accent2)
-	K.cristaux(Vector3.new(-6, sommet + 2, -5), 10, C.accent2)
+	K.cristaux(Vector3.new(0, sommet + 2, 0), 26, C.accent)
+	for n = 1, 6 do
+		local angle = n * math.pi / 3 + 0.4
+		K.cristaux(Vector3.new(math.cos(angle) * 10, sommet + 2, math.sin(angle) * 10), K.hasard(9, 15), (n % 2 == 0) and C.accent or C.accent2)
+	end
+	local fanal = K.boule(Vector3.new(0, sommet + 30, 0), 5, { Color = C.accent2, Material = Enum.Material.Neon, CanCollide = false, CanTouch = false, CastShadow = false, Name = "Fanal" })
+	K.lumiere(fanal, C.accent2, 60, 3)
 
 	-- Consoles qui relient chaque palier d'étape à la tour
 	for _, etape in pairs(P.etapes) do
@@ -151,12 +175,48 @@ function SCENES.tour()
 		})
 	end
 
-	-- Décor de l'île : couronne d'arbres, lampes, rochers ; rien près du départ
-	local semes = 0
-	while semes < 30 do
-		local angle, distance = K.hasard(0, 6.28), K.hasard(44, 62)
+	-- Sol en deux tons : parvis clair autour de la tour, anneau extérieur
+	K.cylindre(centre + Vector3.new(0, 0.06, 0), 0.12, 84, { Color = C.solAlt, Material = MAT.solAlt, CanCollide = false, CanTouch = false, CastShadow = false, Name = "Parvis" })
+	K.cylindre(centre + Vector3.new(0, -3.9, 0), 8.3, 138, { Color = C.structureAlt, Material = MAT.structureAlt, CanCollide = false, CanTouch = false, Name = "Bordure" })
+
+	-- Mares (lave, eau, sirop… selon le thème) bordées de rochers
+	local mares = {}
+	for n = 1, 5 do
+		local angle = n * (2 * math.pi / 5) + K.hasard(-0.3, 0.3)
+		local position = centre + Vector3.new(math.cos(angle) * K.hasard(49, 57), 0, math.sin(angle) * K.hasard(49, 57))
+		if (position - spawn.CFrame.Position).Magnitude > 20 then
+			local rayon = K.hasard(4.5, 7.5)
+			local mare = K.cylindre(position + Vector3.new(0, 0.1, 0), 0.2, rayon * 2, {
+				Color = K.rvb(THEME.vide.couleur),
+				Material = Enum.Material[THEME.vide.materiau],
+				Transparency = THEME.vide.transparence,
+				CanCollide = false,
+				CanTouch = false,
+				CastShadow = false,
+				Name = "Mare",
+			})
+			K.lumiere(mare, K.rvb(THEME.vide.couleur), rayon * 3, 1)
+			for r = 1, 7 do
+				local a = r * 0.9 + K.hasard(-0.2, 0.2)
+				K.rocher(position + Vector3.new(math.cos(a) * rayon, -0.4, math.sin(a) * rayon), K.hasard(1.4, 2.4))
+			end
+			table.insert(mares, { position = position, rayon = rayon })
+		end
+	end
+
+	-- Décor de l'île : arbres, lampes, rochers, cristaux ; rien près du départ ni dans les mares
+	local semes, essais = 0, 0
+	while semes < 44 and essais < 400 do
+		essais += 1
+		local angle, distance = K.hasard(0, 6.28), K.hasard(44, 63)
 		local position = centre + Vector3.new(math.cos(angle) * distance, 0, math.sin(angle) * distance)
-		if (position - spawn.CFrame.Position).Magnitude > 16 then
+		local libre = (position - spawn.CFrame.Position).Magnitude > 16
+		for _, mare in ipairs(mares) do
+			if (position - mare.position).Magnitude < mare.rayon + 3 then
+				libre = false
+			end
+		end
+		if libre then
 			K.decorHasard(position)
 			semes += 1
 		end
@@ -252,25 +312,61 @@ function SCENES.evasion(sFin)
 		end
 		s += 44
 	end
+	-- Massifs étagés qui sortent du vide, de part et d'autre
 	s = 0
 	local cote = 1
 	while s < sFin + 60 do
-		local pied = P.repere(s, cote * K.hasard(54, 84), 0).Position
-		local hauteur = K.hasard(36, 72)
-		local largeurPiton = K.hasard(10, 18)
-		for n = 1, 3 do
-			local h = hauteur * (1.1 - n * 0.25)
-			K.deco({
-				Size = Vector3.new(largeurPiton * (1.2 - n * 0.25), h, largeurPiton * (1.2 - n * 0.25)),
-				CFrame = CFrame.new(pied.X + K.hasard(-3, 3), niveauVide + h / 2, pied.Z + K.hasard(-3, 3)) * CFrame.Angles(0, K.hasard(0, 1.5), 0),
-				Color = K.nuance((n == 1) and C.structure or C.structureAlt, 0.04),
-				Material = (n == 1) and MAT.structure or MAT.structureAlt,
-				Name = "Piton",
+		local pied = P.repere(s, cote * K.hasard(52, 78), 0).Position
+		local hauteur = K.hasard(34, 66)
+		local rayon = K.hasard(9, 15)
+		local y = niveauVide
+		K.cylindre(Vector3.new(pied.X, niveauVide + 1.2, pied.Z), 0.4, rayon * 3.2, { Color = K.melange(K.rvb(THEME.vide.couleur), C.blanc, 0.45), Material = Enum.Material.SmoothPlastic, Transparency = 0.35, CanCollide = false, CanTouch = false, CastShadow = false, Name = "Ecume" })
+		for n = 1, 4 do
+			local h = hauteur * ({ 0.4, 0.28, 0.2, 0.12 })[n]
+			local r = rayon * (1.25 - n * 0.2)
+			K.cylindre(Vector3.new(pied.X + K.hasard(-1.5, 1.5), y + h / 2, pied.Z + K.hasard(-1.5, 1.5)), h, r * 2, {
+				Color = K.nuance((n % 2 == 1) and C.structure or C.structureAlt, 0.04),
+				Material = (n % 2 == 1) and MAT.structure or MAT.structureAlt,
+				CanCollide = false,
+				CanTouch = false,
+				Name = "Massif",
 			})
+			y += h
+			if n < 4 then
+				K.cylindre(Vector3.new(pied.X, y + 0.2, pied.Z), 0.4, r * 2 + 0.8, { Color = (n == 2) and C.accent or C.sol, Material = (n == 2) and Enum.Material.Neon or MAT.sol, CanCollide = false, CanTouch = false, CastShadow = n ~= 2, Name = "Corniche" })
+			end
 		end
-		K.cristaux(Vector3.new(pied.X, niveauVide + hauteur * 0.85, pied.Z), K.hasard(5, 9), K.choisir({ C.accent, C.accent2 }))
+		local sommetMassif = Vector3.new(pied.X, y, pied.Z)
+		K.cylindre(sommetMassif + Vector3.new(0, 0.2, 0), 0.4, rayon * 0.95, { Color = C.sol, Material = MAT.sol, CanCollide = false, CanTouch = false, Name = "Plateau" })
+		K.special(sommetMassif + Vector3.new(0, 0.4, 0))
+		K.arbre(sommetMassif + Vector3.new(rayon * 0.28, 0.4, -rayon * 0.2), K.hasard(1, 1.5))
 		cote = -cote
-		s += 58
+		s += 52
+	end
+
+	-- Enceinte lointaine : deux murailles à tours qui ferment l'horizon
+	local hautMur = Y_DEPART - niveauVide + 12
+	for _, bord in ipairs({ -1, 1 }) do
+		local z = -60
+		local n = 0
+		while z < sFin + 120 do
+			n += 1
+			local x = bord * (118 + 10 * math.sin(n * 1.3))
+			K.deco({ Size = Vector3.new(7, hautMur, 112), Position = Vector3.new(x, niveauVide + hautMur / 2, z + 56), Color = K.nuance(C.structure, 0.03), Material = MAT.structure, Name = "Muraille" })
+			K.deco({ Size = Vector3.new(8, 1, 112), Position = Vector3.new(x, niveauVide + hautMur + 0.5, z + 56), Color = C.structureAlt, Material = MAT.structureAlt, Name = "Chemin de ronde" })
+			K.deco({ Size = Vector3.new(0.4, 0.8, 112), Position = Vector3.new(x - bord * 3.6, niveauVide + hautMur * 0.72, z + 56), Color = C.accent, Material = Enum.Material.Neon, CastShadow = false, Name = "Filet" })
+			local hautTour = hautMur + K.hasard(14, 26)
+			K.deco({ Size = Vector3.new(16, hautTour, 16), Position = Vector3.new(x, niveauVide + hautTour / 2, z), Color = K.nuance(C.structureAlt, 0.03), Material = MAT.structureAlt, Name = "Tour de guet" })
+			K.deco({ Size = Vector3.new(19, 2, 19), Position = Vector3.new(x, niveauVide + hautTour + 1, z), Color = C.structure, Material = MAT.structure, Name = "Chapeau" })
+			for etage = 1, 3 do
+				K.deco({ Size = Vector3.new(0.4, 3, 2), Position = Vector3.new(x - bord * 8.1, niveauVide + hautTour - etage * 9, z), Color = C.accent2, Material = Enum.Material.Neon, CastShadow = false, Name = "Fenetre" })
+			end
+			local feu = K.boule(Vector3.new(x, niveauVide + hautTour + 4, z), 3, { Color = C.danger, Material = Enum.Material.Neon, CanCollide = false, CanTouch = false, CastShadow = false, Name = "Feu" })
+			if n % 2 == 0 then
+				K.lumiere(feu, C.danger, 40, 1.6)
+			end
+			z += 112
+		end
 	end
 
 	-- Porte de sortie monumentale derrière la terrasse d'arrivée
